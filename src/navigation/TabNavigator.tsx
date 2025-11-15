@@ -1,0 +1,28 @@
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { RootStackParamList } from '../types';
+import Dashboard from '../screens/Dashboard';
+import AddEntry from '../screens/AddEntry';
+import Stats from '../screens/Stats';
+import Welcome from '@/screens/Welcome';
+
+const Tab = createBottomTabNavigator<RootStackParamList>();
+
+const TabNavigator: React.FC = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: { display: 'none' }, // Hide default tab bar, we use custom BottomNav
+      }}
+      initialRouteName="Welcome"
+    >
+      <Tab.Screen name="Welcome" component={Welcome} />
+      <Tab.Screen name="Dashboard" component={Dashboard} />
+      <Tab.Screen name="AddEntry" component={AddEntry} />
+      <Tab.Screen name="Stats" component={Stats} />
+    </Tab.Navigator>
+  );
+};
+
+export default TabNavigator;
