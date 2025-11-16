@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { MoreHorizontal, X } from "lucide-react-native";
+import { defaultTemplates } from "../data/defaultTemplates";
 
 interface Exercise {
   id: number;
@@ -126,6 +127,17 @@ export default function TemplateManager({
           </View>
 
           <ScrollView contentContainerStyle={styles.content}>
+            <Text style={styles.sectionHeader}>Default Templates</Text>
+            {defaultTemplates.map((template) => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                onSelect={() => onLoadTemplate(template)}
+                onShowOptions={() => {}} // No options for default templates
+              />
+            ))}
+
+            <Text style={styles.sectionHeader}>My Templates</Text>
             {templates.map((template) => (
               <TemplateCard
                 key={template.id}
@@ -134,6 +146,11 @@ export default function TemplateManager({
                 onShowOptions={() => handleShowOptions(template)}
               />
             ))}
+            {templates.length === 0 && (
+              <View style={styles.emptyStateContainer}>
+                <Text style={styles.emptyStateText}>Your saved templates will appear here.</Text>
+              </View>
+            )}
           </ScrollView>
 
           <View style={styles.footer}>
@@ -164,6 +181,15 @@ const styles = StyleSheet.create({
 
   content: { padding: 24, gap: 16 },
 
+  sectionHeader: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#999',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+    marginTop: 16,
+  },
   card: {
     backgroundColor: "#f8f8f8",
     borderRadius: 12,
@@ -175,7 +201,19 @@ const styles = StyleSheet.create({
   cardContent: { flex: 1 },
   cardTitle: { fontSize: 17, fontWeight: "600", marginBottom: 4 },
   cardSubtitle: { fontSize: 14, color: "#999" },
-  optionsButton: { padding: 8, marginLeft: 12 },
+  optionsButton: { padding: 8, marginLeft: 12, opacity: 0 }, // Hide options for default templates
+
+  emptyStateContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+  },
+  emptyStateText: {
+    fontSize: 15,
+    color: '#999',
+  },
 
   footer: {
     padding: 24,

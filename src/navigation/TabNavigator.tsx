@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { RootStackParamList } from '../types';
 import Dashboard from '../screens/Dashboard';
-import AddEntry from '../screens/AddEntry';
+import Heart from '../screens/Heart';
 import FoodLog from '../screens/FoodLog';
 import Welcome from '../screens/Welcome';
 import Workout from '../screens/Workout';
@@ -21,7 +21,7 @@ const TabNavigator: React.FC = () => {
     >
       <Tab.Screen name="Welcome" component={Welcome} />
       <Tab.Screen name="Dashboard" component={Dashboard} />
-      <Tab.Screen name="AddEntry" component={AddEntry} />
+      <Tab.Screen name="Heart" component={Heart} />
       <Tab.Screen name="FoodLog" component={FoodLog} />
       <Tab.Screen name="Workout" component={Workout} />
       <Tab.Screen name="Settings" component={Settings} />
