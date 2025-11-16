@@ -41,11 +41,15 @@ export interface Stat {
 }
 
 // Navigation types
+// Navigation types
 export type RootStackParamList = {
   Welcome: undefined;
   Dashboard: undefined;
   AddEntry: undefined;
-  Stats: undefined;
+  FoodLog: undefined;      
+  Workout: undefined; 
+  Settings: undefined;     
 };
+
 
 export type ScreenName = keyof RootStackParamList;
