@@ -57,19 +57,20 @@ const initialLog: DailyFoodLog = {
 
 // Storage keys
 const LOG_KEY_PREFIX = "@foodlog_";
+const CALORIE_TARGET_KEY = "@calorieTarget";
 
 // ==== Components ====
 
-const CalorieSummaryBar = ({ consumed, target }: { consumed: number; target: number }) => (
+const CalorieSummaryBar = ({ consumed, target, onPressTarget }: { consumed: number; target: number; onPressTarget: () => void; }) => (
   <View style={styles.summaryBar}>
     <View style={styles.summaryItem}>
       <Text style={styles.summaryValue}>{consumed}</Text>
       <Text style={styles.summaryLabel}>Consumed</Text>
     </View>
-    <View style={styles.summaryItem}>
-      <Text style={styles.summaryValue}>{target}</Text>
-      <Text style={styles.summaryLabel}>Target</Text>
-    </View>
+    <TouchableOpacity style={styles.summaryItem} onPress={onPressTarget} activeOpacity={0.8}>
+        <Text style={styles.summaryValue}>{target}</Text>
+        <Text style={styles.summaryLabel}>Target</Text>
+    </TouchableOpacity>
     <View style={styles.summaryItem}>
       <Text style={[styles.summaryValue, { color: "#4ade80" }]}>{target - consumed}</Text>
       <Text style={styles.summaryLabel}>Remaining</Text>
@@ -467,7 +468,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
 export default function FoodLog() {
   const { selectedDate, setSelectedDate } = useDate();
   const [log, setLog] = useState<DailyFoodLog>(initialLog);
-  const [calorieTarget] = useState(2000);
+  const [calorieTarget, setCalorieTarget] = useState(2000);
   const [isLoading, setIsLoading] = useState(true);
 
   const [isModalVisible, setModalVisible] = useState(false);
@@ -482,6 +483,14 @@ export default function FoodLog() {
   const loadLog = useCallback(async () => {
     setIsLoading(true);
     try {
+      const storedTarget = await AsyncStorage.getItem(CALORIE_TARGET_KEY);
+      if (storedTarget) {
+        const parsedTarget = parseInt(storedTarget, 10);
+        if (!isNaN(parsedTarget)) {
+          setCalorieTarget(parsedTarget);
+        }
+      }
+
       const storedLog = await AsyncStorage.getItem(storageKey);
       // Reset log before loading new day's data
       setLog(initialLog);
@@ -590,6 +599,23 @@ export default function FoodLog() {
     saveLog(newLog);
   };
 
+  const handleSetCalorieTarget = () => {
+    Alert.prompt(
+      "Set Calorie Target",
+      "Enter your daily calorie goal:",
+      async (text) => {
+        const newTarget = parseInt(text, 10);
+        if (!isNaN(newTarget) && newTarget > 0) {
+          setCalorieTarget(newTarget);
+          await AsyncStorage.setItem(CALORIE_TARGET_KEY, String(newTarget));
+        }
+      },
+      "plain-text",
+      String(calorieTarget),
+      "number-pad"
+    );
+  };
+
   const handleCopyYesterday = async () => {
     const y = new Date();
     y.setDate(selectedDate.getDate() - 1);
@@ -673,7 +699,7 @@ export default function FoodLog() {
             )}
           </View>
 
-          <CalorieSummaryBar consumed={totalCalories} target={calorieTarget} />
+          <CalorieSummaryBar consumed={totalCalories} target={calorieTarget} onPressTarget={handleSetCalorieTarget} />
           <MacroSummary protein={totalProtein} carbs={totalCarbs} fat={totalFat} />
 
           {isLoading ? (
@@ -776,6 +802,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
     textTransform: "uppercase",
     letterSpacing: 0.5,
+  },
+  editableLabel: {
+    textDecorationLine: 'underline',
+    textDecorationStyle: 'dotted',
   },
 
   // Macros
