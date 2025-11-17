@@ -94,6 +94,19 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 4,
     borderRadius: 4,
   },
+  timerToggle: {
+    position: 'absolute',
+    left: 8,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  timerToggleText: {
+    color: '#007AFF',
+    fontSize: 12,
+    fontWeight: '500',
+  },
   restToggle: {
     position: 'absolute',
     right: 8,

@@ -12,6 +12,7 @@ import DateHeader from '../components/common/DateHeader';
 import CalendarModal from '../components/common/CalendarModal';
 import { ChangeDayModal } from '../components/workout/ChangeDayModal';
 import { RenameDayModal } from '../components/workout/RenameDayModal';
+import { CountdownTimer } from '../components/workout/CountdownTimer';
 import { styles } from '../styles/Workout.styles';
 import WorkoutHeader from '../components/workout/WorkoutHeader';
 import DaySelector from '../components/workout/DaySelector';
@@ -58,6 +59,7 @@ export default function Workout() {
   const [isChangeDayModalVisible, setChangeDayModalVisible] = useState(false);
   const [isRenameModalVisible, setRenameModalVisible] = useState(false);
   const [newDayName, setNewDayName] = useState('');
+  const [isTimerVisible, setTimerVisible] = useState(false);
 
   const openDayActionSheet = (day: WorkoutDay) => {
     setSelectedDay(day);
@@ -152,6 +154,12 @@ export default function Workout() {
     return (
       <>
         <View style={styles.workoutDayHeader}>
+          <TouchableOpacity
+            style={styles.timerToggle}
+            onPress={() => setTimerVisible(true)}
+          >
+            <Text style={styles.timerToggleText}>Timer</Text>
+          </TouchableOpacity>
           <View style={{ flex: 1, alignItems: 'center' }}>
             <TouchableOpacity
               onPress={() => setChangeDayModalVisible(true)}
@@ -247,6 +255,10 @@ export default function Workout() {
           onSave={handleSaveRename}
           newDayName={newDayName}
           setNewDayName={setNewDayName}
+        />
+        <CountdownTimer
+          isVisible={isTimerVisible}
+          onClose={() => setTimerVisible(false)}
         />
 
         <ScrollView contentContainerStyle={styles.content}>
