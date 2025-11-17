@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, Animated} from "react-native";
+import { View, Text, TouchableOpacity, Animated, Easing} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Svg, { Circle, Line } from "react-native-svg";
 import { styles } from "../styles/Welcome.styles";
@@ -12,40 +12,64 @@ export default function Welcome() {
     "protein", "progress", "goals", "nutrition"
   ];
 
-  // floating animations
-  const animatedValues = useRef(tags.map(() => new Animated.Value(0))).current;
+  // DVD-style bouncing animations
+  const animatedValues = useRef(
+    tags.map(() => ({
+      x: new Animated.Value(Math.random() * 100),
+      y: new Animated.Value(Math.random() * 100),
+      directionX: useRef(Math.random() > 0.5 ? 1 : -1).current,
+      directionY: useRef(Math.random() > 0.5 ? 1 : -1).current,
+    }))
+  ).current;
 
   useEffect(() => {
-    animatedValues.forEach((anim, idx) => {
-      const loop = () =>
-        Animated.sequence([
-          Animated.timing(anim, {
-            toValue: -10,
-            duration: 1500 + (idx % 3) * 500,
-            delay: idx * 200,
+    const bounceAnimation = (anim: any, idx: number) => {
+      const speed = 0.5 + (idx % 3) * 0.2;
+
+      const animate = () => {
+        anim.x.addListener(({ value }: { value: number }) => {
+          if (value >= 85 || value <= 0) {
+            anim.directionX *= -1;
+          }
+        });
+
+        anim.y.addListener(({ value }: { value: number }) => {
+          if (value >= 75 || value <= 0) {
+            anim.directionY *= -1;
+          }
+        });
+
+        Animated.parallel([
+          Animated.timing(anim.x, {
+            toValue: anim.directionX > 0 ? 85 : 0,
+            duration: 5000 / speed,
+            easing: Easing.linear,
             useNativeDriver: true,
           }),
-          Animated.timing(anim, {
-            toValue: 0,
-            duration: 1500 + (idx % 3) * 500,
+          Animated.timing(anim.y, {
+            toValue: anim.directionY > 0 ? 75 : 0,
+            duration: 5000 / speed,
+            easing: Easing.linear,
             useNativeDriver: true,
-          })
-        ]).start(loop);
+          }),
+        ]).start(() => {
+          animate();
+        });
+      };
 
-      loop();
-    });
+      animate();
+    };
+
+    animatedValues.forEach((anim, idx) => bounceAnimation(anim, idx));
+
+    return () => {
+      animatedValues.forEach((anim) => {
+        anim.x.removeAllListeners();
+        anim.y.removeAllListeners();
+      });
+    };
   }, []);
 
-  const positions = [
-    { top: '5%', left: '15%' },
-    { top: '15%', right: '10%' },
-    { top: '30%', left: '5%' },
-    { top: '45%', right: '0%' },
-    { top: '60%', left: '10%' },
-    { top: '75%', right: '15%' },
-    { top: '85%', left: '25%' },
-    { top: '70%', left: '60%' },
-  ];
 
   return (
     <View style={styles.container}>
@@ -68,15 +92,23 @@ export default function Welcome() {
           <Circle cx="82" cy="100" r="3" fill="black" />
         </Svg>
 
-        {/* Floating tags */}
+        {/* Bouncing tags */}
         {tags.map((tag, idx) => (
           <Animated.View
             key={tag}
             style={[
               styles.tag,
-              positions[idx] as any, // Type assertion to bypass the type error
               {
-                transform: [{ translateY: animatedValues[idx] }]
+                transform: [
+                  { translateX: animatedValues[idx].x.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: [0, 200],
+                  })},
+                  { translateY: animatedValues[idx].y.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: [0, 200],
+                  })},
+                ]
               }
             ]}
           >
