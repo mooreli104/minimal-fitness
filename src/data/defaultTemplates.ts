@@ -1,22 +1,4 @@
-export interface Exercise {
-  id: number;
-  name: string;
-  sets: string;
-  reps: string;
-  weight: string;
-}
-
-export interface WorkoutDay {
-  id: number;
-  name: string;
-  exercises: Exercise[];
-}
-
-export interface WorkoutTemplate {
-  id: number;
-  name: string;
-  days: WorkoutDay[];
-}
+import { Exercise, WorkoutTemplate } from '../types';
 
 let exerciseIdCounter = 1000; // Start from a high number to avoid collisions with user-generated IDs
 const createExercise = (name: string, sets: string, reps: string): Exercise => ({

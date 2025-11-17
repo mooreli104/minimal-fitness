@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, Animated, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Animated} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Svg, { Circle, Line } from "react-native-svg";
+import { styles } from "../styles/Welcome.styles";
 
 export default function Welcome() {
   const navigation = useNavigation();
@@ -100,53 +101,3 @@ export default function Welcome() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingBottom: 60,
-  },
-  illustrationWrapper: {
-    width: 220,
-    height: 220,
-    position: "relative",
-    marginBottom: 40,
-  },
-  tag: {
-    position: "absolute",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "black",
-    borderRadius: 20,
-    backgroundColor: "white",
-  },
-  tagText: {
-    fontSize: 11,
-    fontWeight: "500",
-  },
-  title: {
-    fontSize: 40,
-    fontWeight: "700",
-  },
-  subtitle: {
-    fontSize: 12,
-    color: "gray",
-    marginTop: 5,
-  },
-  button: {
-    marginTop: 40,
-    backgroundColor: "black",
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 30,
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "600",
-    fontSize: 14,
-  },
-});

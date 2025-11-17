@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import Modal from "react-native-modal";
+import { styles } from "../styles/WOrkoutDayActionSheet.styles";
 
 interface WorkoutDayActionSheetProps {
   visible: boolean;
@@ -8,6 +9,8 @@ interface WorkoutDayActionSheetProps {
   onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onToggleRestDay: () => void;
+  isRestDay?: boolean;
 }
 
 const WorkoutDayActionSheet = ({
@@ -16,19 +19,9 @@ const WorkoutDayActionSheet = ({
   onEdit,
   onDuplicate,
   onDelete,
+  onToggleRestDay,
+  isRestDay,
 }: WorkoutDayActionSheetProps) => {
-  const [render, setRender] = React.useState(visible);
-
-  React.useEffect(() => {
-    if (visible) {
-      setRender(true);
-    } else {
-      setTimeout(() => setRender(false), 200); // match exit animation
-    }
-  }, [visible]);
-
-  if (!render) return null;
-
 
   return (
     <Modal
@@ -50,6 +43,12 @@ const WorkoutDayActionSheet = ({
           {/* Edit */}
           <TouchableOpacity style={styles.actionRow} activeOpacity={0.65} onPress={onEdit}>
             <Text style={styles.actionText}>Edit Day</Text>
+          </TouchableOpacity>
+          <View style={styles.divider} />
+
+          {/* Toggle Rest Day */}
+          <TouchableOpacity style={styles.actionRow} activeOpacity={0.65} onPress={onToggleRestDay}>
+            <Text style={styles.actionText}>{isRestDay ? 'Convert to Workout Day' : 'Convert to Rest Day'}</Text>
           </TouchableOpacity>
           <View style={styles.divider} />
 
@@ -76,60 +75,3 @@ const WorkoutDayActionSheet = ({
 };
 
 export default React.memo(WorkoutDayActionSheet);
-
-const styles = StyleSheet.create({
-  modal: {
-    justifyContent: "flex-end",
-    margin: 0,
-  },
-
-  sheetWrapper: {
-    paddingBottom: 25,
-    paddingHorizontal: 20,
-  },
-
-  sheet: {
-    backgroundColor: "#fff",
-    borderRadius: 15,
-    overflow: "hidden",
-  },
-
-  actionRow: {
-    height: 46,               // reduced height
-    paddingHorizontal: 20,    // reduced padding
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  actionText: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#111",
-  },
-
-  deleteText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#DC2626",
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: "#e5e5e5",
-    marginLeft: 20,
-  },
-
-  cancelRow: {
-    height: 46,
-    justifyContent: "center",
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
-  },
-
-  cancelText: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#666",
-  },
-});

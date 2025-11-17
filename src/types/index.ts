@@ -1,6 +1,6 @@
 // Type definitions for the entire app
 
-export type EntryType = 'meal' | 'workout';
+export type EntryType = "meal" | "workout";
 
 export interface Entry {
   id: number;
@@ -17,13 +17,13 @@ export interface ChartDataPoint {
   value: number;
 }
 
-export type Period = 'today' | 'week' | 'month';
+export type Period = "today" | "week" | "month";
 
-export type Mode = 'calories' | 'workout';
+export type Mode = "calories" | "workout";
 
 export interface DateItem {
   day: number;
-  label: string;
+  label:string;
 }
 
 export interface NavItem {
@@ -40,16 +40,53 @@ export interface Stat {
   color: string;
 }
 
-// Navigation types
+// Food Logging
+export interface FoodEntry {
+  id: number;
+  name: string;
+  timestamp: string; // ISO 8601 format
+  calories: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+}
+
+export type MealCategory = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
+
+export type DailyFoodLog = {
+  [key in MealCategory]: FoodEntry[];
+};
+
+// Workouts
+export interface Exercise {
+  id: number;
+  name: string;
+  sets: string;
+  reps: string;
+  weight: string;
+}
+
+export interface WorkoutDay {
+  id: number;
+  name: string;
+  exercises: Exercise[];
+  isRest?: boolean;
+}
+
+export interface WorkoutTemplate {
+  id: number;
+  name: string;
+  days: WorkoutDay[];
+}
+
 // Navigation types
 export type RootStackParamList = {
   Welcome: undefined;
   Dashboard: undefined;
-  AddEntry: undefined;
-  FoodLog: undefined;      
-  Workout: undefined; 
-  Settings: undefined;     
+  Heart: undefined;
+  FoodLog: undefined;
+  Workout: undefined;
+  More: undefined;
 };
-
 
 export type ScreenName = keyof RootStackParamList;

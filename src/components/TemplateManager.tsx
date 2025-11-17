@@ -13,27 +13,8 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { MoreHorizontal, X } from "lucide-react-native";
+import { WorkoutTemplate } from "../types";
 import { defaultTemplates } from "../data/defaultTemplates";
-
-interface Exercise {
-  id: number;
-  name: string;
-  sets: string;
-  reps: string;
-  weight: string;
-}
-
-interface WorkoutDay {
-  id: number;
-  name: string;
-  exercises: Exercise[];
-}
-
-interface WorkoutTemplate {
-  id: number;
-  name: string;
-  days: WorkoutDay[];
-}
 
 interface TemplateManagerProps {
   isVisible: boolean;

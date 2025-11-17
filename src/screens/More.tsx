@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, Linking, TouchableOpacity } from "react-native";
 
-import BottomNav from "../components/BottonNav";
+import BottomNav from "../components/BottomNav";
 
 export default function Settings() {
   const handleEmailPress = () => {
