@@ -5,12 +5,12 @@ import {
   StyleSheet,
   Modal,
   TextInput,
-  KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
   Alert,
 } from "react-native";
 import { X } from "lucide-react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { FoodEntry } from "../../types";
 
 interface AddFoodModalProps {
@@ -27,6 +27,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
   const [timestamp, setTimestamp] = useState(new Date());
   const [carbs, setCarbs] = useState("");
   const [fat, setFat] = useState("");
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   useEffect(() => {
     if (editingFood) {
@@ -45,6 +46,15 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
       setFat("");
     }
   }, [editingFood, isVisible]);
+
+  const handleTimeChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowTimePicker(false);
+    }
+    if (selectedDate) {
+      setTimestamp(selectedDate);
+    }
+  };
 
   const handleSave = () => {
     if (!name || !calories) {
@@ -65,10 +75,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
 
   return (
     <Modal visible={isVisible} animationType="slide" transparent>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.modalBackdrop}
-      >
+      <View style={styles.modalBackdrop}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{editingFood ? "Edit Food" : "Add Food"}</Text>
@@ -84,11 +91,12 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
             onChangeText={setName}
           />
 
-          <TouchableOpacity onPress={() => Alert.alert("Time", "Time editing coming soon!")}>
+          <TouchableOpacity onPress={() => setShowTimePicker(!showTimePicker)}>
             <Text style={styles.input}>
               Time: {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </Text>
           </TouchableOpacity>
+
           <View style={styles.inputRow}>
             <TextInput
               style={styles.inputFlex}
@@ -127,21 +135,61 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
             <Text style={styles.saveButtonText}>Save</Text>
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
+      </View>
+
+      {showTimePicker && (
+        <Modal visible={showTimePicker} transparent animationType="fade">
+          <TouchableOpacity
+            style={styles.timePickerBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowTimePicker(false)}
+          >
+            <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+              <View style={styles.timePickerContainer}>
+                <DateTimePicker
+                  value={timestamp}
+                  mode="time"
+                  is24Hour={false}
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={handleTimeChange}
+                />
+                {Platform.OS === 'ios' && (
+                  <TouchableOpacity
+                    style={styles.doneButton}
+                    onPress={() => setShowTimePicker(false)}
+                  >
+                    <Text style={styles.doneButtonText}>Done</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+      )}
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  modalBackdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.4)" },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    paddingBottom: 120,
+  },
   modalContent: {
     backgroundColor: "#fff",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderRadius: 16,
     padding: 24,
+    width: "100%",
     gap: 16,
   },
-  modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   modalTitle: { fontSize: 20, fontWeight: "700" },
 
   input: { backgroundColor: "#f8f8f8", padding: 12, borderRadius: 8, fontSize: 16 },
@@ -150,6 +198,22 @@ const styles = StyleSheet.create({
 
   saveButton: { backgroundColor: "#000", paddingVertical: 16, borderRadius: 12, alignItems: "center" },
   saveButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+
+  timePickerBackdrop: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  timePickerContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    width: "80%",
+    maxWidth: 400,
+  },
+  doneButton: { backgroundColor: "#000", paddingVertical: 12, borderRadius: 8, alignItems: "center", marginTop: 16 },
+  doneButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
 
 export default AddFoodModal;
