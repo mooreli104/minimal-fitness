@@ -190,7 +190,7 @@ export default function Workout() {
                 ]
               );
             }}
-          ><Text style={styles.restToggleText}>Make Rest Day</Text></TouchableOpacity>
+          ><Text style={styles.restToggleText}>Rest Day</Text></TouchableOpacity>
         </View>
         <WorkoutTable
           exercises={workoutLog.exercises}

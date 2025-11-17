@@ -172,7 +172,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
               />
 
               {/* Time display */}
-              <Text key={remainingSeconds} style={styles.timeText}>{formatTime(remainingSeconds)}</Text>
+              <Text style={styles.timeText}>{formatTime(remainingSeconds)}</Text>
             </View>
           </View>
 
