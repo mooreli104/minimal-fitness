@@ -142,6 +142,7 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e5e5e5',
     backgroundColor: 'white',
+    minHeight: 48,
   },
   tableHeader: {
     backgroundColor: '#f8f8f8',
@@ -151,7 +152,7 @@ export const styles = StyleSheet.create({
   headerText: { padding: 12, fontWeight: '600', fontSize: 12, color: '#999', textTransform: 'uppercase', letterSpacing: 0.5 },
   exerciseCol: { flex: 12 },
   numberCol: { flex: 1, textAlign: 'center', minWidth: 70 },
-  cell: { padding: 12, fontSize: 16, alignSelf: 'center' },
+  cell: { padding: 12, fontSize: 16, alignSelf: 'center', minHeight: 48 },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',

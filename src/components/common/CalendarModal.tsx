@@ -32,35 +32,34 @@ const CalendarModal = ({ isVisible, onClose, onDateSelect, selectedDate: initial
   const renderCalendar = () => {
     const year = displayDate.getFullYear();
     const month = displayDate.getMonth();
-    const firstDayOfMonth = new Date(year, month, 1);
-    const startingDayOfWeek = firstDayOfMonth.getDay();
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const calendarDays = [];
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const selectedDay = new Date(initialSelectedDate);
-    selectedDay.setHours(0, 0, 0, 0);
-
-    // Add empty views for days before the first day of the month
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      calendarDays.push(<View key={`empty-${i}`} style={styles.calendarDay} />);
+    for (let i = 0; i < firstDayOfMonth; i++) {
+      calendarDays.push(<View key={`blank-${i}`} style={styles.calendarDay} />);
     }
 
-    // Add the days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const currentDate = new Date(year, month, day);
-      currentDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    const todayDate = today.getDate();
+    const todayMonth = today.getMonth();
+    const todayYear = today.getFullYear();
 
-      const isToday = currentDate.getTime() === today.getTime();
-      const isSelected = currentDate.getTime() === selectedDay.getTime();
-      const isFuture = currentDate > today;
+    const selectedDay = initialSelectedDate.getDate();
+    const selectedMonth = initialSelectedDate.getMonth();
+    const selectedYear = initialSelectedDate.getFullYear();
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const isToday = day === todayDate && month === todayMonth && year === todayYear;
+      const isSelected = day === selectedDay && month === selectedMonth && year === selectedYear;
+      const isFuture = new Date(year, month, day) > todayStart;
 
       calendarDays.push(
         <TouchableOpacity
-          key={currentDate.toISOString()}
+          key={day}
           style={[styles.calendarDay, isSelected && styles.calendarDaySelected]}
           onPress={() => handleSelectDate(day)}
           disabled={isFuture}
@@ -76,13 +75,6 @@ const CalendarModal = ({ isVisible, onClose, onDateSelect, selectedDate: initial
         </TouchableOpacity>
       );
     }
-
-    // Add empty views for days after the last day of the month to fill the grid
-    const remainingDays = 42 - (startingDayOfWeek + daysInMonth);
-    for (let i = 0; i < remainingDays; i++) {
-      calendarDays.push(<View key={`empty-end-${i}`} style={styles.calendarDay} />);
-    }
-
     return calendarDays;
   };
 

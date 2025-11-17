@@ -48,25 +48,31 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
             style={[styles.cell, styles.exerciseCol]}
             value={item.name}
             placeholder="Exercise Name"
+            scrollEnabled={false}
             multiline
+            numberOfLines={2}
+            textAlignVertical="center"
             onChangeText={(text) => onExerciseChange(item.id, 'name', text)}
           />
           <TextInput
             style={[styles.cell, styles.numberCol]}
             value={item.sets}
             keyboardType="number-pad"
+            scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'sets', text)}
           />
           <TextInput
             style={[styles.cell, styles.numberCol]}
             value={item.reps}
             keyboardType="default"
+            scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'reps', text)}
           />
           <TextInput
             style={[styles.cell, styles.numberCol]}
             value={item.weight}
             keyboardType="number-pad"
+            scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'weight', text)}
           />
         </Reanimated.View>
