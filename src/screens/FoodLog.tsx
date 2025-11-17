@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -7,7 +7,7 @@ import { Copy } from "lucide-react-native";
 import { useDateManager } from "../hooks/useDateManager";
 import { useFoodLog } from "../hooks/useFoodLog";
 import BottomNav from "../components/BottomNav";
-import { FoodEntry, MealCategory } from "../types";
+import { MealCategory } from "../types";
 import DateHeader from "../components/common/DateHeader";
 import CalendarModal from "../components/common/CalendarModal";
 import FoodSection from "../components/food/FoodSection";
@@ -15,6 +15,8 @@ import AddFoodModal from "../components/food/AddFoodModal";
 import CalorieSummaryBar from "../components/food/CalorieSummaryBar";
 import MacroSummary from "../components/food/MacroSummary";
 import { styles } from "../styles/FoodLog.styles";
+
+import { useFoodModal } from "../hooks/useFoodModal";
 
 export default function FoodLog() {
   const {
@@ -42,41 +44,21 @@ export default function FoodLog() {
     copyYesterdayLog,
   } = useFoodLog(selectedDate);
 
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [editingFood, setEditingFood] = useState<FoodEntry | null>(null);
-  const [activeMeal, setActiveMeal] = useState<MealCategory | null>(null);
-
-  const handleAddFood = (meal: MealCategory) => {
-    setActiveMeal(meal);
-    setEditingFood(null);
-    setModalVisible(true);
-  };
-
-  const handleEditFood = (food: FoodEntry, meal: MealCategory) => {
-    setActiveMeal(meal);
-    setEditingFood(food);
-    setModalVisible(true);
-  };
-
-  const handleSaveFood = (food: FoodEntry) => {
-    if (!activeMeal) return;
-
-    if (editingFood) {
-      updateFood(food, activeMeal);
-    } else {
-      addFood(food, activeMeal);
-    }
-    setModalVisible(false);
-    setEditingFood(null);
-    setActiveMeal(null);
-  };
+  const {
+    isModalVisible,
+    editingFood,
+    handleAddFood,
+    handleEditFood,
+    handleSaveFood,
+    closeModal,
+  } = useFoodModal(addFood, updateFood);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         <AddFoodModal
           isVisible={isModalVisible}
-          onClose={() => setModalVisible(false)}
+          onClose={closeModal}
           onSave={handleSaveFood}
           editingFood={editingFood}
         />

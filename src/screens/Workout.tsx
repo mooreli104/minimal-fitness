@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, Dimensions } from 'react-native';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Reanimated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Dimensions } from 'react-native';
+import {  GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
-import { Plus, Trash2 } from 'lucide-react-native';
 import BottomNav from '../components/BottomNav';
 import TemplateManager from '../components/TemplateManager';
 import WorkoutDayActionSheet from '../components/WorkoutDayActionSheet';
@@ -15,69 +13,10 @@ import CalendarModal from '../components/common/CalendarModal';
 import { ChangeDayModal } from '../components/workout/ChangeDayModal';
 import { RenameDayModal } from '../components/workout/RenameDayModal';
 import { styles } from '../styles/Workout.styles';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: { item: Exercise, onExerciseChange: (id: number, field: keyof Exercise, value: string) => void, onDeleteExercise: (id: number) => void }) => {
-  const translateX = useSharedValue(0);
-  const SWIPE_THRESHOLD = -SCREEN_WIDTH * 0.2;
-
-  const panGesture = Gesture.Pan()
-    .activeOffsetX([-10, 10])
-    .onUpdate((event) => {
-      translateX.value = Math.max(-100, Math.min(0, event.translationX));
-    })
-    .onEnd((event) => {
-      if (event.translationX < SWIPE_THRESHOLD) {
-        translateX.value = withTiming(-100);
-      } else {
-        translateX.value = withTiming(0);
-      }
-    });
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
-
-  return (
-    <View style={styles.exerciseRowContainer}>
-      <View style={styles.exerciseDeleteActionContainer}>
-        <TouchableOpacity style={styles.exerciseDeleteButton} onPress={() => onDeleteExercise(item.id)}>
-          <Trash2 size={20} color="white" />
-        </TouchableOpacity>
-      </View>
-      <GestureDetector gesture={panGesture}>
-        <Reanimated.View style={[styles.row, animatedStyle]}>
-          <TextInput
-            style={[styles.cell, styles.exerciseCol]}
-            value={item.name}
-            placeholder="Exercise Name"
-            multiline
-            onChangeText={(text) => onExerciseChange(item.id, 'name', text)}
-          />
-          <TextInput
-            style={[styles.cell, styles.numberCol]}
-            value={item.sets}
-            keyboardType="number-pad"
-            onChangeText={(text) => onExerciseChange(item.id, 'sets', text)}
-          />
-          <TextInput
-            style={[styles.cell, styles.numberCol]}
-            value={item.reps}
-            keyboardType="default"
-            onChangeText={(text) => onExerciseChange(item.id, 'reps', text)}
-          />
-          <TextInput
-            style={[styles.cell, styles.numberCol]}
-            value={item.weight}
-            keyboardType="number-pad"
-            onChangeText={(text) => onExerciseChange(item.id, 'weight', text)}
-          />
-        </Reanimated.View>
-      </GestureDetector>
-    </View>
-  );
-};
+import WorkoutHeader from '../components/workout/WorkoutHeader';
+import DaySelector from '../components/workout/DaySelector';
+import WorkoutTable from '../components/workout/WorkoutTable';
+import WorkoutEmptyState from '../components/workout/WorkoutEmptyState';
 
 export default function Workout() {
   const {
@@ -197,6 +136,64 @@ export default function Workout() {
     );
   };
 
+  const renderWorkoutContent = () => {
+    if (isLoading) {
+      return <Text style={styles.loadingText}>Loading workouts...</Text>;
+    }
+
+    if (!workoutLog) {
+      return <WorkoutEmptyState text="Today is a rest day." />;
+    }
+
+    if (workoutLog.isRest) {
+      return <WorkoutEmptyState text="Today is a rest day." />;
+    }
+
+    return (
+      <>
+        <View style={styles.workoutDayHeader}>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <TouchableOpacity
+              onPress={() => setChangeDayModalVisible(true)}
+              onLongPress={() => {
+                setNewDayName(workoutLog.name);
+                setRenameModalVisible(true);
+              }}
+            >
+              <Text style={styles.workoutDayHeaderText}>{workoutLog.name}</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            style={styles.restToggle}
+            onPress={() => {
+              Alert.alert(
+                'Make Rest Day',
+                'Are you sure you want to make this a rest day? Your logged exercises for today will be saved but hidden.',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Confirm',
+                    onPress: () => {
+                      const updatedLog = { ...workoutLog, isRest: true };
+                      setWorkoutLog(updatedLog);
+                      saveWorkoutLog(updatedLog);
+                    },
+                  },
+                ]
+              );
+            }}
+          ><Text style={styles.restToggleText}>Make Rest Day</Text></TouchableOpacity>
+        </View>
+        <WorkoutTable
+          exercises={workoutLog.exercises}
+          onExerciseChange={updateExerciseInLog}
+          onDeleteExercise={deleteExerciseFromLog}
+          onAddExercise={addExerciseToLog}
+        />
+      </>
+    );
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -253,32 +250,13 @@ export default function Workout() {
         />
 
         <ScrollView contentContainerStyle={styles.content}>
-          <View style={styles.headerRow}>
-            <Text style={styles.header}>Log Workout</Text>
-            <TouchableOpacity onPress={() => setTemplateManagerVisible(true)}>
-              <Text style={styles.templateButton}>Templates</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.daySelectorContainer}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 8 }}>
-              {program.map((day) => (
-                <TouchableOpacity
-                  key={day.id}
-                  style={[styles.dayButton, day.isRest && styles.restDayButton]}
-                  onPress={() => !day.isRest && selectDayToLog(day)}
-                  onLongPress={() => openDayActionSheet(day)}
-                >
-                  <Text style={[styles.dayButtonText, day.isRest && styles.restDayButtonText]}>{day.name}</Text>
-                  {day.isRest && <Text style={styles.restDayBadge}>REST</Text>}
-                </TouchableOpacity>
-              ))}
-              <TouchableOpacity style={styles.addDayButton} onPress={handleAddDay}>
-                <Plus size={16} color="#999" />
-                <Text style={styles.addDayButtonText}>Add Day</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
+          <WorkoutHeader onOpenTemplateManager={() => setTemplateManagerVisible(true)} />
+          <DaySelector
+            program={program}
+            onSelectDay={selectDayToLog}
+            onLongPressDay={openDayActionSheet}
+            onAddDay={handleAddDay}
+          />
 
           <DateHeader
             date={selectedDate}
@@ -296,80 +274,15 @@ export default function Workout() {
             ) : yesterdaysWorkoutName === 'REST_DAY' ? (
               <Text style={styles.yesterdayText}>Yesterday: Rest Day</Text>
             ) : yesterdaysWorkoutName ? (
-              <Text style={styles.yesterdayText}>Yesterday: {yesterdaysWorkoutName}</Text> 
+              <Text style={styles.yesterdayText}>Yesterday: {yesterdaysWorkoutName}</Text>
             ) : null}
           </View>
 
-          {isLoading ? (
-            <Text style={styles.loadingText}>Loading workouts...</Text>
-          ) : workoutLog ? (
-            workoutLog.isRest ? (
-              <View style={styles.emptyStateContainer}>
-                <Text style={styles.emptyStateText}>Today is a rest day.</Text>
-              </View>
-            ) : (
-              <>
-                <View style={styles.workoutDayHeader}>
-                  <View style={{ flex: 1, alignItems: 'center' }}>
-                    <TouchableOpacity
-                      onPress={() => setChangeDayModalVisible(true)}
-                      onLongPress={() => {
-                        setNewDayName(workoutLog.name);
-                        setRenameModalVisible(true);
-                      }}
-                    >
-                      <Text style={styles.workoutDayHeaderText}>{workoutLog.name}</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.restToggle}
-                    onPress={() => {
-                      Alert.alert(
-                        'Make Rest Day',
-                        'Are you sure you want to make this a rest day? Your logged exercises for today will be saved but hidden.',
-                        [
-                          { text: 'Cancel', style: 'cancel' },
-                          {
-                            text: 'Confirm',
-                            onPress: () => {
-                              const updatedLog = { ...workoutLog, isRest: true };
-                              setWorkoutLog(updatedLog);
-                              saveWorkoutLog(updatedLog);
-                            },
-                          },
-                        ]
-                      );
-                    }}
-                  ><Text style={styles.restToggleText}>Make Rest Day</Text></TouchableOpacity>
-                </View>
-                <View style={[styles.row, styles.tableHeader]}>
-                  <Text style={[styles.headerText, styles.exerciseCol]}>Exercise</Text>
-                  <Text style={[styles.headerText, styles.numberCol]}>Sets</Text>
-                  <Text style={[styles.headerText, styles.numberCol]}>Reps</Text>
-                  <Text style={[styles.headerText, styles.numberCol]}>Weight</Text>
-                </View>
-                {workoutLog.exercises.map((item) => (
-                  <ExerciseRow
-                    key={item.id}
-                    item={item}
-                    onExerciseChange={updateExerciseInLog}
-                    onDeleteExercise={deleteExerciseFromLog}
-                  />
-                ))}
-                <TouchableOpacity style={styles.addButton} onPress={addExerciseToLog}>
-                  <Plus size={16} color="#000" strokeWidth={2} />
-                  <Text style={styles.addButtonText}>Add exercise</Text>
-                </TouchableOpacity>
-              </>
-            )
-          ) : (
-            <View style={styles.emptyStateContainer}>
-              <Text style={styles.emptyStateText}>Today is a rest day.</Text>
-            </View>
-          )}
+          {renderWorkoutContent()}
         </ScrollView>
         <BottomNav />
       </View>
     </GestureHandlerRootView>
   );
 }
+
