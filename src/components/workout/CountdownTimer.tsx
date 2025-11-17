@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   Modal,
   StyleSheet,
-  TextInput,
-  Alert,
+  ScrollView,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from 'react-native';
 import { Play, Pause, RotateCcw, X } from 'lucide-react-native';
 import { useCountdownTimer } from '../../hooks/useCountdownTimer';
@@ -16,12 +17,9 @@ interface CountdownTimerProps {
   onClose: () => void;
 }
 
-const PRESETS = [
-  { label: '30s', seconds: 30 },
-  { label: '60s', seconds: 60 },
-  { label: '90s', seconds: 90 },
-  { label: '2m', seconds: 120 },
-];
+const ITEM_HEIGHT = 40;
+const VISIBLE_ITEMS = 5;
+const PICKER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 
 export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClose }) => {
   const {
@@ -36,46 +34,112 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
     getProgress,
   } = useCountdownTimer();
 
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editMinutes, setEditMinutes] = useState('');
-  const [editSeconds, setEditSeconds] = useState('');
+  const [selectedHours, setSelectedHours] = useState(0);
+  const [selectedMinutes, setSelectedMinutes] = useState(1);
+  const [selectedSeconds, setSelectedSeconds] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const handleEdit = () => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    setEditMinutes(mins.toString());
-    setEditSeconds(secs.toString());
-    setIsEditMode(true);
+  const hoursScrollRef = useRef<ScrollView>(null);
+  const minutesScrollRef = useRef<ScrollView>(null);
+  const secondsScrollRef = useRef<ScrollView>(null);
+
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const minutes = Array.from({ length: 60 }, (_, i) => i);
+  const seconds = Array.from({ length: 60 }, (_, i) => i);
+
+  const handleStart = () => {
+    start();
+    setIsPaused(false);
   };
 
-  const handleSaveEdit = () => {
-    const mins = parseInt(editMinutes || '0', 10);
-    const secs = parseInt(editSeconds || '0', 10);
+  const handlePause = () => {
+    pause();
+    setIsPaused(true);
+  };
 
-    if (isNaN(mins) || isNaN(secs) || mins < 0 || secs < 0 || secs >= 60) {
-      Alert.alert('Invalid Time', 'Please enter valid minutes (0+) and seconds (0-59).');
-      return;
+  const handleReset = () => {
+    reset();
+    setIsPaused(false);
+  };
+  // Initialize picker values when modal opens
+  useEffect(() => {
+    if (isVisible && !isRunning) {
+      const hrs = Math.floor(totalSeconds / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
+      const secs = totalSeconds % 60;
+
+      setSelectedHours(hrs);
+      setSelectedMinutes(mins);
+      setSelectedSeconds(secs);
+
+      // Scroll to current values
+      setTimeout(() => {
+        hoursScrollRef.current?.scrollTo({ y: hrs * ITEM_HEIGHT, animated: false });
+        minutesScrollRef.current?.scrollTo({ y: mins * ITEM_HEIGHT, animated: false });
+        secondsScrollRef.current?.scrollTo({ y: secs * ITEM_HEIGHT, animated: false });
+      }, 100);
+      setIsPaused(false);
     }
+  }, [isVisible]);
 
-    const totalSecs = mins * 60 + secs;
-
-    if (totalSecs === 0) {
-      Alert.alert('Invalid Time', 'Timer must be at least 1 second.');
-      return;
+  // Update timer in real-time as user scrolls
+  useEffect(() => {
+    if (!isRunning) {
+      const totalSecs = selectedHours * 3600 + selectedMinutes * 60 + selectedSeconds;
+      if (totalSecs > 0) {
+        setTime(totalSecs);
+      }
     }
+  }, [selectedHours, selectedMinutes, selectedSeconds, isRunning]);
 
-    setTime(totalSecs);
-    setIsEditMode(false);
+  const handleScroll = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+    setter: (value: number) => void,
+    maxValue: number
+  ) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    const index = Math.round(offsetY / ITEM_HEIGHT);
+    const clampedIndex = Math.max(0, Math.min(index, maxValue - 1));
+    setter(clampedIndex);
   };
 
-  const handleCancelEdit = () => {
-    setIsEditMode(false);
-    setEditMinutes('');
-    setEditSeconds('');
-  };
-
-  const handlePreset = (seconds: number) => {
-    setTime(seconds);
+  const renderPickerColumn = (
+    data: number[],
+    selectedValue: number,
+    onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void,
+    scrollRef: React.RefObject<ScrollView | null>,
+    label: string
+  ) => {
+    return (
+      <View style={styles.pickerColumn}>
+        <ScrollView
+          ref={scrollRef}
+          showsVerticalScrollIndicator={false}
+          snapToInterval={ITEM_HEIGHT}
+          snapToAlignment="start"
+          decelerationRate="fast"
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          onMomentumScrollEnd={onScroll}
+          scrollEnabled={!isRunning}
+          nestedScrollEnabled={true}
+          contentContainerStyle={{
+            paddingVertical: ITEM_HEIGHT * 2,
+          }}
+        >
+          {data.map((value) => (
+            <View key={value} style={styles.pickerItem}>
+              <Text
+                style={[
+                  styles.pickerItemText,
+                  value === selectedValue && styles.pickerItemTextSelected,
+                ]}
+              >{value}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
   };
 
   const progress = getProgress();
@@ -83,8 +147,10 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
 
   return (
     <Modal visible={isVisible} animationType="fade" transparent onRequestClose={onClose}>
-      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
-        <View style={styles.container} onStartShouldSetResponder={() => true}>
+      <View style={styles.backdrop}>
+        {/* This TouchableOpacity will now only handle closing the modal when the area outside the container is pressed */}
+        <TouchableOpacity style={StyleSheet.absoluteFill} onPress={onClose} testID="modal-backdrop" />
+        <View style={styles.container}>
           {/* Close button */}
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <X size={24} color="#000" />
@@ -106,71 +172,55 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
               />
 
               {/* Time display */}
-              {isEditMode ? (
-                <View style={styles.editContainer}>
-                  <View style={styles.editInputRow}>
-                    <TextInput
-                      style={styles.editInput}
-                      value={editMinutes}
-                      onChangeText={setEditMinutes}
-                      keyboardType="number-pad"
-                      maxLength={3}
-                      placeholder="0"
-                      placeholderTextColor="#ccc"
-                    />
-                    <Text style={styles.editColon}>:</Text>
-                    <TextInput
-                      style={styles.editInput}
-                      value={editSeconds}
-                      onChangeText={setEditSeconds}
-                      keyboardType="number-pad"
-                      maxLength={2}
-                      placeholder="00"
-                      placeholderTextColor="#ccc"
-                    />
-                  </View>
-                  <View style={styles.editButtonRow}>
-                    <TouchableOpacity style={styles.editButton} onPress={handleCancelEdit}>
-                      <Text style={styles.editButtonTextCancel}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.editButton} onPress={handleSaveEdit}>
-                      <Text style={styles.editButtonTextSave}>Save</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ) : (
-                <TouchableOpacity onPress={handleEdit} disabled={isRunning}>
-                  <Text key={remainingSeconds} style={styles.timeText}>{formatTime(remainingSeconds)}</Text>
-                </TouchableOpacity>
-              )}
+              <Text key={remainingSeconds} style={styles.timeText}>{formatTime(remainingSeconds)}</Text>
             </View>
           </View>
 
-          {/* Preset buttons */}
-          {!isEditMode && !isRunning && remainingSeconds === totalSeconds && (
-            <View style={styles.presetsContainer}>
-              {PRESETS.map((preset) => (
-                <TouchableOpacity
-                  key={preset.label}
-                  style={styles.presetButton}
-                  onPress={() => handlePreset(preset.seconds)}
-                >
-                  <Text style={styles.presetButtonText}>{preset.label}</Text>
-                </TouchableOpacity>
-              ))}
+          {/* Scrolling time picker - visible when not running and not paused */}
+          {!isRunning && !isPaused && (
+            <View style={styles.pickerContainer}>
+              <View style={styles.pickerHighlight} />
+              <View style={styles.pickerRow}>
+                <View style={styles.pickerGroup}>
+                  {renderPickerColumn(
+                    hours,
+                    selectedHours,
+                    (e) => handleScroll(e, setSelectedHours, 24),
+                    hoursScrollRef,
+                    'hours'
+                  )}<Text style={styles.pickerUnitLabel}>h</Text>
+                </View>
+                <View style={styles.pickerGroup}>
+                  {renderPickerColumn(
+                    minutes,
+                    selectedMinutes,
+                    (e) => handleScroll(e, setSelectedMinutes, 60),
+                    minutesScrollRef,
+                    'min'
+                  )}<Text style={styles.pickerUnitLabel}>m</Text>
+                </View>
+                <View style={styles.pickerGroup}>
+                  {renderPickerColumn(
+                    seconds,
+                    selectedSeconds,
+                    (e) => handleScroll(e, setSelectedSeconds, 60),
+                    secondsScrollRef,
+                    'sec'
+                  )}<Text style={styles.pickerUnitLabel}>s</Text>
+                </View>
+              </View>
             </View>
           )}
 
           {/* Control buttons */}
-          {!isEditMode && (
-            <View style={styles.controlsContainer}>
-              <TouchableOpacity style={styles.controlButton} onPress={reset}>
+          <View style={styles.controlsContainer}>
+              <TouchableOpacity style={styles.controlButton} onPress={handleReset}>
                 <RotateCcw size={28} color="#000" />
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.controlButton, styles.playButton]}
-                onPress={isRunning ? pause : start}
+                onPress={isRunning ? handlePause : handleStart}
                 disabled={remainingSeconds === 0}
               >
                 {isRunning ? (
@@ -181,10 +231,9 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
               </TouchableOpacity>
 
               <View style={styles.controlButton} />
-            </View>
-          )}
+          </View> 
         </View>
-      </TouchableOpacity>
+      </View>
     </Modal>
   );
 };
@@ -241,66 +290,64 @@ const styles = StyleSheet.create({
     color: '#000',
     letterSpacing: -2,
   },
-  editContainer: {
-    alignItems: 'center',
+  pickerContainer: {
+    width: '100%',
+    height: PICKER_HEIGHT,
+    position: 'relative',
+    marginBottom: 24,
+    marginTop: 20,
   },
-  editInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
+  pickerHighlight: {
+    position: 'absolute',
+    top: ITEM_HEIGHT * 2,
+    left: 20,
+    right: 20,
+    height: ITEM_HEIGHT,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#ddd',
+    zIndex: -1,
+    pointerEvents: 'none',
   },
-  editInput: {
-    fontSize: 48,
-    fontWeight: '300',
-    borderBottomWidth: 2,
-    borderBottomColor: '#000',
-    textAlign: 'center',
-    minWidth: 80,
-    paddingHorizontal: 8,
-    color: '#000',
-  },
-  editColon: {
-    fontSize: 48,
-    fontWeight: '300',
-    marginHorizontal: 8,
-    color: '#000',
-  },
-  editButtonRow: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  editButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-  },
-  editButtonTextCancel: {
-    fontSize: 16,
-    color: '#999',
-    fontWeight: '500',
-  },
-  editButtonTextSave: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  presetsContainer: {
+  pickerRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
-    marginBottom: 32,
+    alignItems: 'center',
+    height: PICKER_HEIGHT,
   },
-  presetButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#000',
-    backgroundColor: '#fff',
+  pickerGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 15,
   },
-  presetButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
+  pickerColumn: {
+    width: 70,
+    height: PICKER_HEIGHT,
+    position: 'relative',
+  },
+  pickerItem: {
+    height: ITEM_HEIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  pickerItemText: {
+    fontSize: 20,
+    color: '#999',
+    fontWeight: '400',
+  },
+  pickerItemTextSelected: {
+    fontSize: 24,
     color: '#000',
+    fontWeight: '500',
+  },
+  pickerUnitLabel: {
+    fontSize: 20,
+    color: '#000',
+    fontWeight: '400',
+    alignSelf: 'center',
+    marginLeft: -15,
   },
   controlsContainer: {
     flexDirection: 'row',
