@@ -6,7 +6,7 @@ import Heart from '../screens/Heart';
 import FoodLog from '../screens/FoodLog';
 import Welcome from '../screens/Welcome';
 import Workout from '../screens/Workout';
-import Settings from '../screens/Settings';
+import More from '../screens/More';
 
 const Tab = createBottomTabNavigator<RootStackParamList>();
 
@@ -24,7 +24,7 @@ const TabNavigator: React.FC = () => {
       <Tab.Screen name="Heart" component={Heart} />
       <Tab.Screen name="FoodLog" component={FoodLog} />
       <Tab.Screen name="Workout" component={Workout} />
-      <Tab.Screen name="Settings" component={Settings} />
+      <Tab.Screen name="More" component={More} />
     </Tab.Navigator>
   );
 };

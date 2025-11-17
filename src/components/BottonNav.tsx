@@ -1,6 +1,6 @@
 import React from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
-import { Home, TrendingUp, Plus, Dumbbell, Settings, ForkKnifeCrossed, Heart } from "lucide-react-native";
+import { Home, Menu, Dumbbell, ForkKnifeCrossed, Heart } from "lucide-react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
 export default function BottomNav() {
@@ -12,7 +12,7 @@ export default function BottomNav() {
     { icon: Dumbbell, route: "Workout", name: "workout" },
     { icon: Heart, route: "Heart", name: "add", isCenter: true },
     { icon: ForkKnifeCrossed, route: "FoodLog", name: "foodlog" },
-    { icon: Settings, route: "Settings", name: "settings" },
+    { icon: Menu, route: "More", name: "More" },
   ];
 
   const isActive = (r: string) => route.name === r;
