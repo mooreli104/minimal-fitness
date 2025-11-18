@@ -1,20 +1,19 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import BottomNav from "../components/BottomNav";
 import CalorieChart from "../components/CalorieChart";
 import { useDateManager } from "../hooks/useDateManager";
+import { useDashboardData } from "../hooks/useDashboardData";
 import DateHeader from "../components/common/DateHeader";
 import CalendarModal from "../components/common/CalendarModal";
-import { FoodEntry, DailyFoodLog } from "../types";
 import { useTheme } from "../context/ThemeContext";
-
-const LOG_KEY_PREFIX = "@foodlog_";
+import { formatNumber } from "../utils/formatters";
 
 export default function Dashboard() {
   const { colors } = useTheme();
+  const isFocused = useIsFocused();
 
   const {
     selectedDate,
@@ -26,82 +25,13 @@ export default function Dashboard() {
     isToday,
   } = useDateManager();
 
-  const [chartData, setChartData] = useState<any>({ today: [], week: [], month: [] });
-  const [displayedEntries, setDisplayedEntries] = useState<FoodEntry[]>([]);
-  const [totalCalories, setTotalCalories] = useState(0);
-  const isFocused = useIsFocused();
-
-  const getDayOfWeek = (date: Date) => {
-    return date.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
-  }
-
-  const loadDashboardData = useCallback(async () => {
-    const weeklyData = [];
-    let dayCalories = 0;
-    let allDayEntries: FoodEntry[] = [];
-
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(selectedDate);
-      date.setDate(selectedDate.getDate() - i);
-      const dateKey = date.toISOString().split("T")[0];
-      const storageKey = `${LOG_KEY_PREFIX}${dateKey}`;
-
-      try {
-        const storedLog = await AsyncStorage.getItem(storageKey);
-        let dailyTotalCalories = 0;
-        if (storedLog) {
-          const parsedLog: DailyFoodLog = JSON.parse(storedLog);
-          const allEntries = Object.values(parsedLog).flat();
-          dailyTotalCalories = allEntries.reduce((sum, entry) => sum + entry.calories, 0);
-
-          if (i === 0) {
-            dayCalories = dailyTotalCalories;
-            allDayEntries = allEntries;
-          }
-        }
-        weeklyData.push({ label: getDayOfWeek(date), value: dailyTotalCalories });
-      } catch (error) {
-        console.error("Failed to load log for", dateKey, error);
-        weeklyData.push({ label: getDayOfWeek(date), value: 0 });
-      }
-    }
-
-    const dayChartData = [];
-    if (allDayEntries.length > 0) {
-      const sortedDayEntries = [...allDayEntries].sort(
-        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      );
-
-      let cumulativeCalories = 0;
-      for (const entry of sortedDayEntries) {
-        cumulativeCalories += entry.calories;
-        dayChartData.push({
-          label: new Date(entry.timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-          value: cumulativeCalories,
-        });
-      }
-      if (dayChartData.length === 1) {
-        dayChartData.push({ ...dayChartData[0] });
-      }
-    }
-
-    setTotalCalories(dayCalories);
-    const topEntries = allDayEntries
-      .sort((a, b) => b.calories - a.calories)
-      .slice(0, 5);
-    setDisplayedEntries(topEntries);
-    setChartData({
-      today: dayChartData,
-      week: weeklyData,
-      month: [],
-    });
-  }, [selectedDate]);
+  const { data, loadDashboardData } = useDashboardData();
 
   useEffect(() => {
     if (isFocused) {
-      loadDashboardData();
+      loadDashboardData(selectedDate);
     }
-  }, [isFocused, loadDashboardData]);
+  }, [isFocused, selectedDate, loadDashboardData]);
 
   const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
@@ -200,11 +130,11 @@ export default function Dashboard() {
           <View style={styles.topSection}>
             <View style={styles.totalWrapper}>
               <Text style={styles.totalCalories}>
-                {totalCalories.toLocaleString()}
+                {formatNumber(data.totalCalories)}
               </Text>
               <Text style={styles.kcalText}>kcal</Text>
             </View>
-            <CalorieChart data={chartData.today} />
+            <CalorieChart data={data.chartData.today} />
           </View>
 
           <View style={styles.entriesWrapper}>
@@ -213,8 +143,8 @@ export default function Dashboard() {
               <View style={styles.sectionLine} />
             </View>
 
-            {displayedEntries.length > 0 ? (
-              displayedEntries.map((entry) => (
+            {data.displayedEntries.length > 0 ? (
+              data.displayedEntries.map((entry) => (
                 <View key={entry.id} style={styles.entryRow}>
                   <Text style={styles.entryText}>{entry.name} — {entry.calories} calories</Text>
                 </View>

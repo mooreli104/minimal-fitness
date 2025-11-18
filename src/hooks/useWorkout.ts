@@ -1,40 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Exercise, WorkoutDay, WorkoutTemplate } from '../types';
 import { useIsFocused } from '@react-navigation/native';
+import { Exercise, WorkoutDay, WorkoutTemplate } from '../types';
+import { generateId } from '../utils/generators';
+import { DEFAULTS } from '../utils/constants';
+import { getYesterday } from '../utils/formatters';
+import {
+  loadWorkoutLog,
+  saveWorkoutLog as saveWorkoutLogService,
+  deleteWorkoutLog,
+  loadWorkoutProgram,
+  saveWorkoutProgram,
+  loadWorkoutTemplates,
+  saveWorkoutTemplates,
+} from '../services/workoutStorage.service';
 
-const WORKOUT_LOG_PREFIX = '@workoutlog_';
-const WORKOUT_PROGRAM_KEY = '@workoutProgram';
-const WORKOUT_TEMPLATES_KEY = '@workoutTemplates';
-
-// Helper function to migrate old exercise format to new format
-const migrateExercise = (exercise: Exercise): Exercise => {
-  // If already has target/actual, return as-is
-  if (exercise.target !== undefined && exercise.actual !== undefined) {
-    return exercise;
-  }
-
-  // Migrate from old sets/reps format to new target/actual format
-  const sets = exercise.sets || '';
-  const reps = exercise.reps || '';
-  const targetActual = sets && reps ? `${sets}x${reps}` : '';
-
-  return {
-    ...exercise,
-    target: targetActual,
-    actual: targetActual,
-  };
-};
-
-// Helper function to migrate workout day exercises
-const migrateWorkoutDay = (day: WorkoutDay): WorkoutDay => {
-  return {
-    ...day,
-    exercises: day.exercises.map(migrateExercise),
-  };
-};
-
+/**
+ * Hook for managing workout logs, programs, and templates
+ * Handles all workout-related state and AsyncStorage operations
+ */
 export const useWorkout = (selectedDate: Date) => {
   const [workoutLog, setWorkoutLog] = useState<WorkoutDay | null>(null);
   const [program, setProgram] = useState<WorkoutDay[]>([]);
@@ -44,254 +28,232 @@ export const useWorkout = (selectedDate: Date) => {
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   const isFocused = useIsFocused();
 
-  const dateKey = selectedDate.toISOString().split('T')[0];
-  const storageKey = `${WORKOUT_LOG_PREFIX}${dateKey}`;
-
+  /**
+   * Loads all workout data (log, program, templates)
+   */
   const loadData = useCallback(async (showLoading = false) => {
     if (showLoading) {
       setIsLoading(true);
     }
+
     try {
-      const storedLog = await AsyncStorage.getItem(storageKey);
-      const storedProgram = await AsyncStorage.getItem(WORKOUT_PROGRAM_KEY);
-      const storedTemplates = await AsyncStorage.getItem(WORKOUT_TEMPLATES_KEY);
+      // Load current day's workout log
+      const log = await loadWorkoutLog(selectedDate);
+      setWorkoutLog(log);
 
-      if (storedLog) {
-        const parsedLog = JSON.parse(storedLog);
-        const migratedLog = migrateWorkoutDay(parsedLog);
-        setWorkoutLog(migratedLog);
-        // Save migrated data back to storage
-        if (JSON.stringify(parsedLog) !== JSON.stringify(migratedLog)) {
-          await AsyncStorage.setItem(storageKey, JSON.stringify(migratedLog));
-        }
-      } else {
-        setWorkoutLog(null);
-      }
-
-      const yesterday = new Date(selectedDate);
-      yesterday.setDate(selectedDate.getDate() - 1);
-      const yesterdayStorageKey = `${WORKOUT_LOG_PREFIX}${yesterday.toISOString().split('T')[0]}`;
-      const storedYesterdayLog = await AsyncStorage.getItem(yesterdayStorageKey);
-      if (storedYesterdayLog) {
-        const yLog: WorkoutDay = JSON.parse(storedYesterdayLog);
-
-        if (yLog.isRest) {
-          setYesterdaysWorkoutName("REST_DAY");
-        } else {
-          setYesterdaysWorkoutName(yLog.name ?? null);
-        }
+      // Load yesterday's workout name
+      const yesterdayLog = await loadWorkoutLog(getYesterday(selectedDate));
+      if (yesterdayLog) {
+        setYesterdaysWorkoutName(yesterdayLog.isRest ? 'REST_DAY' : yesterdayLog.name ?? null);
       } else {
         setYesterdaysWorkoutName(null);
       }
 
-      if (storedProgram) {
-        const parsedProgram = JSON.parse(storedProgram);
-        const migratedProgram = parsedProgram.map(migrateWorkoutDay);
-        setProgram(migratedProgram);
-        // Save migrated data back to storage
-        if (JSON.stringify(parsedProgram) !== JSON.stringify(migratedProgram)) {
-          await AsyncStorage.setItem(WORKOUT_PROGRAM_KEY, JSON.stringify(migratedProgram));
-        }
-      }
+      // Load program and templates
+      const [loadedProgram, loadedTemplates] = await Promise.all([
+        loadWorkoutProgram(),
+        loadWorkoutTemplates(),
+      ]);
 
-      if (storedTemplates) {
-        const parsedTemplates = JSON.parse(storedTemplates);
-        const migratedTemplates = parsedTemplates.map((template: WorkoutTemplate) => ({
-          ...template,
-          days: template.days.map(migrateWorkoutDay),
-        }));
-        setTemplates(migratedTemplates);
-        // Save migrated data back to storage
-        if (JSON.stringify(parsedTemplates) !== JSON.stringify(migratedTemplates)) {
-          await AsyncStorage.setItem(WORKOUT_TEMPLATES_KEY, JSON.stringify(migratedTemplates));
-        }
-      }
-    } catch (e) {
+      setProgram(loadedProgram);
+      setTemplates(loadedTemplates);
+    } catch (error) {
       Alert.alert('Error', 'Failed to load workout data.');
+      console.error('Workout data load error:', error);
     } finally {
       if (showLoading) {
         setIsLoading(false);
       }
       setHasInitiallyLoaded(true);
     }
-  }, [storageKey, selectedDate]);
+  }, [selectedDate]);
 
+  /**
+   * Saves the current workout log
+   */
   const saveWorkoutLog = useCallback(async (log: WorkoutDay | null) => {
     try {
       if (log) {
-        await AsyncStorage.setItem(storageKey, JSON.stringify(log));
+        await saveWorkoutLogService(selectedDate, log);
       } else {
-        await AsyncStorage.removeItem(storageKey);
+        await deleteWorkoutLog(selectedDate);
       }
-    } catch (e) {
+    } catch (error) {
       Alert.alert('Error', 'Failed to save workout log.');
+      console.error('Workout log save error:', error);
     }
-  }, [storageKey]);
-
-  const saveProgram = useCallback(async (newProgram: WorkoutDay[]) => {
-    try {
-      await AsyncStorage.setItem(WORKOUT_PROGRAM_KEY, JSON.stringify(newProgram));
-    } catch (e) {
-      Alert.alert('Error', 'Failed to save program.');
-    }
-  }, []);
-
-  const saveTemplates = useCallback(async (newTemplates: WorkoutTemplate[]) => {
-    try {
-      await AsyncStorage.setItem(WORKOUT_TEMPLATES_KEY, JSON.stringify(newTemplates));
-    } catch (e) {
-      Alert.alert('Error', 'Failed to save templates.');
-    }
-  }, []);
+  }, [selectedDate]);
 
   // Initial load on mount
   useEffect(() => {
     loadData(true);
   }, [loadData]);
 
-  // Reload data when screen regains focus (but without showing loading state)
+  // Reload data when screen regains focus (without loading state)
   useEffect(() => {
     if (isFocused && hasInitiallyLoaded) {
       loadData(false);
     }
   }, [isFocused, hasInitiallyLoaded, loadData]);
 
-  const addDayToProgram = (newDayName: string) => {
+  // ========== Program Management ==========
+
+  const addDayToProgram = useCallback(async (newDayName: string) => {
     const newDay: WorkoutDay = {
-      id: Date.now(),
+      id: generateId(),
       name: newDayName,
-      exercises: [{ id: Date.now() + 1, name: '', target: '', actual: '', weight: '' }],
+      exercises: [{ id: generateId() + 1, ...DEFAULTS.NEW_EXERCISE_TEMPLATE }],
       isRest: false,
     };
     const newProgram = [...program, newDay];
     setProgram(newProgram);
-    saveProgram(newProgram);
-  };
+    await saveWorkoutProgram(newProgram);
+  }, [program]);
 
-  const renameProgramDay = (dayId: number, newName: string) => {
-    const newProgram = program.map((day) => (day.id === dayId ? { ...day, name: newName } : day));
+  const renameProgramDay = useCallback(async (dayId: number, newName: string) => {
+    const newProgram = program.map((day) =>
+      day.id === dayId ? { ...day, name: newName } : day
+    );
     setProgram(newProgram);
-    saveProgram(newProgram);
+    await saveWorkoutProgram(newProgram);
 
+    // Update current log if it matches
     if (workoutLog && workoutLog.id === dayId) {
       const updatedLog = { ...workoutLog, name: newName };
       setWorkoutLog(updatedLog);
-      saveWorkoutLog(updatedLog);
+      await saveWorkoutLog(updatedLog);
     }
-  };
+  }, [program, workoutLog, saveWorkoutLog]);
 
-  const duplicateProgramDay = (dayId: number) => {
-    const dayToDuplicate = program.find(d => d.id === dayId);
+  const duplicateProgramDay = useCallback(async (dayId: number) => {
+    const dayToDuplicate = program.find((d) => d.id === dayId);
     if (!dayToDuplicate) return;
+
     const newDay: WorkoutDay = {
       ...dayToDuplicate,
-      id: Date.now(),
+      id: generateId(),
       name: `${dayToDuplicate.name} (Copy)`,
       isRest: dayToDuplicate.isRest,
     };
+
     const dayIndex = program.findIndex((d) => d.id === dayId);
     const newProgram = [...program];
     newProgram.splice(dayIndex + 1, 0, newDay);
-    setProgram(newProgram);
-    saveProgram(newProgram);
-  };
 
-  const deleteProgramDay = (dayId: number) => {
+    setProgram(newProgram);
+    await saveWorkoutProgram(newProgram);
+  }, [program]);
+
+  const deleteProgramDay = useCallback(async (dayId: number) => {
     const newProgram = program.filter((day) => day.id !== dayId);
     setProgram(newProgram);
-    saveProgram(newProgram);
-  };
+    await saveWorkoutProgram(newProgram);
+  }, [program]);
 
-  const toggleRestDay = (dayId: number) => {
+  const toggleRestDay = useCallback(async (dayId: number) => {
     const newProgram = program.map((day) => {
       if (day.id === dayId) {
         const isRest = !day.isRest;
         return {
           ...day,
           isRest,
-          exercises: isRest ? [] : [{ id: Date.now(), name: '', target: '', actual: '', weight: '' }],
+          exercises: isRest ? [] : [{ id: generateId(), ...DEFAULTS.NEW_EXERCISE_TEMPLATE }],
         };
       }
       return day;
     });
-    setProgram(newProgram);
-    saveProgram(newProgram);
-  };
 
-  const addExerciseToLog = () => {
+    setProgram(newProgram);
+    await saveWorkoutProgram(newProgram);
+  }, [program]);
+
+  // ========== Exercise Management ==========
+
+  const addExerciseToLog = useCallback(() => {
     if (!workoutLog) {
-      const newWorkout: WorkoutDay = { id: Date.now(), name: 'Workout', exercises: [{ id: Date.now(), name: '', target: '', actual: '', weight: '' }] };
+      const newWorkout: WorkoutDay = {
+        id: generateId(),
+        name: 'Workout',
+        exercises: [{ id: generateId(), ...DEFAULTS.NEW_EXERCISE_TEMPLATE }],
+      };
       setWorkoutLog(newWorkout);
       saveWorkoutLog(newWorkout);
       return;
     }
-    const newExercise: Exercise = { id: Date.now(), name: '', target: '', actual: '', weight: '' };
+
+    const newExercise: Exercise = { id: generateId(), ...DEFAULTS.NEW_EXERCISE_TEMPLATE };
     const updatedLog = { ...workoutLog, exercises: [...workoutLog.exercises, newExercise] };
     setWorkoutLog(updatedLog);
     saveWorkoutLog(updatedLog);
-  };
+  }, [workoutLog, saveWorkoutLog]);
 
-  const updateExerciseInLog = (exerciseId: number, field: keyof Exercise, value: string) => {
+  const updateExerciseInLog = useCallback((exerciseId: number, field: keyof Exercise, value: string) => {
     if (!workoutLog) return;
+
     const updatedExercises = workoutLog.exercises.map((ex) =>
       ex.id === exerciseId ? { ...ex, [field]: value } : ex
     );
     const updatedLog = { ...workoutLog, exercises: updatedExercises };
     setWorkoutLog(updatedLog);
     saveWorkoutLog(updatedLog);
-  };
+  }, [workoutLog, saveWorkoutLog]);
 
-  const deleteExerciseFromLog = (exerciseId: number) => {
+  const deleteExerciseFromLog = useCallback((exerciseId: number) => {
     if (!workoutLog) return;
+
     const updatedExercises = workoutLog.exercises.filter((ex) => ex.id !== exerciseId);
     const updatedLog = { ...workoutLog, exercises: updatedExercises };
     setWorkoutLog(updatedLog);
     saveWorkoutLog(updatedLog);
-  };
+  }, [workoutLog, saveWorkoutLog]);
 
-  const selectDayToLog = (dayToLog: WorkoutDay) => {
+  const selectDayToLog = useCallback((dayToLog: WorkoutDay) => {
     const newLog = JSON.parse(JSON.stringify(dayToLog));
-    newLog.id = Date.now();
+    newLog.id = generateId();
     if (dayToLog.isRest) {
       newLog.exercises = [];
     }
     setWorkoutLog(newLog);
     saveWorkoutLog(newLog);
-  };
+  }, [saveWorkoutLog]);
 
-  const saveCurrentAsTemplate = (templateName: string) => {
+  // ========== Template Management ==========
+
+  const saveCurrentAsTemplate = useCallback(async (templateName: string) => {
     const newTemplate: WorkoutTemplate = {
-      id: Date.now(),
+      id: generateId(),
       name: templateName,
       days: program,
     };
     const newTemplates = [...templates, newTemplate];
     setTemplates(newTemplates);
-    saveTemplates(newTemplates);
+    await saveWorkoutTemplates(newTemplates);
     Alert.alert('Success', `Template "${templateName}" saved.`);
-  };
+  }, [program, templates]);
 
-  const loadTemplate = (template: WorkoutTemplate) => {
-    const newProgram = template.days.map(day => ({
+  const loadTemplate = useCallback(async (template: WorkoutTemplate) => {
+    const newProgram = template.days.map((day) => ({
       ...day,
       isRest: day.isRest ?? false,
     }));
     setProgram(newProgram);
-    saveProgram(newProgram);
+    await saveWorkoutProgram(newProgram);
     setWorkoutLog(null);
-  };
+  }, []);
 
-  const renameTemplate = (templateId: number, newName: string) => {
-    const newTemplates = templates.map((t) => (t.id === templateId ? { ...t, name: newName } : t));
+  const renameTemplate = useCallback(async (templateId: number, newName: string) => {
+    const newTemplates = templates.map((t) =>
+      t.id === templateId ? { ...t, name: newName } : t
+    );
     setTemplates(newTemplates);
-    saveTemplates(newTemplates);
-  };
+    await saveWorkoutTemplates(newTemplates);
+  }, [templates]);
 
-  const deleteTemplate = (templateId: number) => {
+  const deleteTemplate = useCallback(async (templateId: number) => {
     const newTemplates = templates.filter((t) => t.id !== templateId);
     setTemplates(newTemplates);
-    saveTemplates(newTemplates);
-  };
+    await saveWorkoutTemplates(newTemplates);
+  }, [templates]);
 
   return {
     workoutLog,

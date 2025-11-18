@@ -7,6 +7,8 @@ const createExercise = (name: string, sets: string, reps: string): Exercise => (
   sets,
   reps,
   weight: '',
+  target: '',
+  actual: ''
 });
 
 export const defaultTemplates: WorkoutTemplate[] = [
