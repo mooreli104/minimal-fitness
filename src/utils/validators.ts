@@ -2,17 +2,6 @@
  * Validation utilities for input data
  */
 
-import { DailyFoodLog } from '../types';
-
-/**
- * Validates that a string is not empty or only whitespace
- * @param value String to validate
- * @returns True if valid, false otherwise
- */
-export const isValidName = (value: string): boolean => {
-  return value != null && value.trim().length > 0;
-};
-
 /**
  * Validates that a number is positive
  * @param value Number to validate
@@ -30,15 +19,6 @@ export const isPositiveNumber = (value: number): boolean => {
 export const parsePositiveInt = (value: string): number | null => {
   const parsed = parseInt(value, 10);
   return isPositiveNumber(parsed) ? parsed : null;
-};
-
-/**
- * Checks if a food log is empty (no foods in any meal)
- * @param log Daily food log object
- * @returns True if empty, false otherwise
- */
-export const isFoodLogEmpty = (log: DailyFoodLog): boolean => {
-  return Object.values(log).every(meal => meal.length === 0);
 };
 
 /**

@@ -47,27 +47,6 @@ export const calculateTotalCalories = (entries: FoodEntry[]): number => {
 };
 
 /**
- * Calculates timer progress as a percentage
- * @param remainingSeconds Seconds remaining
- * @param totalSeconds Total seconds
- * @returns Progress value between 0 and 1
- */
-export const calculateTimerProgress = (remainingSeconds: number, totalSeconds: number): number => {
-  if (totalSeconds === 0) return 0;
-  return remainingSeconds / totalSeconds;
-};
-
-/**
- * Calculates calorie remaining towards target
- * @param consumed Calories consumed
- * @param target Target calories
- * @returns Remaining calories (negative if over target)
- */
-export const calculateCaloriesRemaining = (consumed: number, target: number): number => {
-  return target - consumed;
-};
-
-/**
  * Sorts food entries by calories in descending order
  * @param entries Array of food entries
  * @param limit Optional limit on number of results

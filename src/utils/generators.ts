@@ -18,13 +18,3 @@ export const generateId = (): number => {
 export const generateUniqueId = (): number => {
   return Date.now() + Math.random();
 };
-
-/**
- * Generates multiple unique IDs in sequence
- * @param count Number of IDs to generate
- * @returns Array of unique IDs
- */
-export const generateSequentialIds = (count: number): number[] => {
-  const baseId = Date.now();
-  return Array.from({ length: count }, (_, index) => baseId + index);
-};
