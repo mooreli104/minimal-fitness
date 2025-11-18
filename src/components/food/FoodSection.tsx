@@ -37,7 +37,13 @@ const FoodSection = ({ title, foods, onAdd, onEdit, onDelete }: FoodSectionProps
           />
         ))}
 
-        <TouchableOpacity style={styles.addButton} onPress={onAdd}>
+        <TouchableOpacity
+          style={[
+            styles.addButton,
+            foods.length === 0 && { borderTopWidth: 0, marginTop: 0 }
+          ]}
+          onPress={onAdd}
+        >
           <Plus size={16} color={colors.textPrimary} />
           <Text style={styles.addButtonText}>Add Food</Text>
         </TouchableOpacity>

@@ -85,7 +85,7 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   dayButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
     color: colors.accent,
   },
   restDayButton: {
@@ -217,6 +217,9 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    marginTop: 8,
   },
   addButtonText: { fontSize: 16, fontWeight: '500', color: colors.textPrimary },
   emptyStateContainer: {

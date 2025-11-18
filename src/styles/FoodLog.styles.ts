@@ -38,6 +38,9 @@ export const getFoodLogStyles = (colors: ThemeColors) => StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    marginTop: 8,
   },
   addButtonText: {
     fontSize: 16,
@@ -47,10 +50,8 @@ export const getFoodLogStyles = (colors: ThemeColors) => StyleSheet.create({
   foodRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 14,
+    paddingVertical: 8,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
     backgroundColor: colors.cardBackground,
   },
   foodName: {
