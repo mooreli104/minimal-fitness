@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Modal } from "react-native";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { useTheme } from "../../context/ThemeContext";
 
 interface CalendarModalProps {
   isVisible: boolean;
@@ -10,6 +11,7 @@ interface CalendarModalProps {
 }
 
 const CalendarModal = ({ isVisible, onClose, onDateSelect, selectedDate: initialSelectedDate }: CalendarModalProps) => {
+  const { colors } = useTheme();
   const [displayDate, setDisplayDate] = useState(new Date(initialSelectedDate));
 
   useEffect(() => {
@@ -60,15 +62,16 @@ const CalendarModal = ({ isVisible, onClose, onDateSelect, selectedDate: initial
       calendarDays.push(
         <TouchableOpacity
           key={day}
-          style={[styles.calendarDay, isSelected && styles.calendarDaySelected]}
+          style={[styles.calendarDay, isSelected && { backgroundColor: colors.accent, borderRadius: 20 }]}
           onPress={() => handleSelectDate(day)}
           disabled={isFuture}
         >
           <Text style={[
             styles.calendarDayText,
+            { color: colors.textPrimary },
             isToday && styles.calendarDayTextToday,
-            isSelected && styles.calendarDayTextSelected,
-            isFuture && styles.calendarDayTextFuture,
+            isSelected && { color: colors.background, fontWeight: '600' },
+            isFuture && { color: colors.textTertiary },
           ]}>
             {day}
           </Text>
@@ -88,20 +91,20 @@ const CalendarModal = ({ isVisible, onClose, onDateSelect, selectedDate: initial
   return (
     <Modal visible={isVisible} animationType="fade" transparent onRequestClose={onClose}>
       <TouchableOpacity style={styles.calendarBackdrop} activeOpacity={1} onPress={onClose}>
-        <View style={styles.calendarContainer} onStartShouldSetResponder={() => true}>
+        <View style={[styles.calendarContainer, { backgroundColor: colors.cardBackground }]} onStartShouldSetResponder={() => true}>
           <View style={styles.calendarHeader}>
             <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.calendarNav}>
-              <ChevronLeft size={20} color="#000" />
+              <ChevronLeft size={20} color={colors.textPrimary} />
             </TouchableOpacity>
-            <Text style={styles.calendarMonthText}>
+            <Text style={[styles.calendarMonthText, { color: colors.textPrimary }]}>
               {displayDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
             </Text>
             <TouchableOpacity onPress={() => changeMonth(1)} style={styles.calendarNav} disabled={isFutureMonth}>
-              <ChevronRight size={20} color={isFutureMonth ? "#ccc" : "#000"} />
+              <ChevronRight size={20} color={isFutureMonth ? colors.textTertiary : colors.textPrimary} />
             </TouchableOpacity>
           </View>
           <View style={styles.calendarWeekDays}>
-            {weekDays.map((day, index) => <Text key={index} style={styles.calendarWeekDayText}>{day}</Text>)}
+            {weekDays.map((day, index) => <Text key={index} style={[styles.calendarWeekDayText, { color: colors.textTertiary }]}>{day}</Text>)}
           </View>
           <View style={styles.calendarGrid}>{renderCalendar()}</View>
         </View>
@@ -119,7 +122,6 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   calendarContainer: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     width: '100%',
@@ -149,7 +151,6 @@ const styles = StyleSheet.create({
   },
   calendarWeekDayText: {
     fontSize: 12,
-    color: '#999',
     fontWeight: '500',
     width: 32,
     textAlign: 'center',
@@ -166,14 +167,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 2,
   },
-  calendarDaySelected: {
-    backgroundColor: '#000',
-    borderRadius: 20,
-  },
   calendarDayText: { fontSize: 16 },
   calendarDayTextToday: { fontWeight: 'bold', color: '#007AFF' },
-  calendarDayTextSelected: { color: '#fff', fontWeight: '600' },
-  calendarDayTextFuture: { color: '#ccc' },
 });
 
 export default CalendarModal;

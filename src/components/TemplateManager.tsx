@@ -15,6 +15,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { MoreHorizontal, X } from "lucide-react-native";
 import { WorkoutTemplate } from "../types";
 import { defaultTemplates } from "../data/defaultTemplates";
+import { useTheme } from "../context/ThemeContext";
 
 interface TemplateManagerProps {
   isVisible: boolean;
@@ -35,19 +36,20 @@ const TemplateCard = ({
   onSelect: () => void;
   onShowOptions: () => void;
 }) => {
+  const { colors } = useTheme();
   const dayNames = template.days.map((d) => d.name).join(", ");
   const dayCount = template.days.length;
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onSelect}>
+    <TouchableOpacity style={[styles.card, { backgroundColor: colors.surface }]} onPress={onSelect}>
       <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{template.name}</Text>
-        <Text style={styles.cardSubtitle} numberOfLines={1}>
+        <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>{template.name}</Text>
+        <Text style={[styles.cardSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
           {dayCount} {dayCount === 1 ? "day" : "days"}: {dayNames}
         </Text>
       </View>
       <TouchableOpacity style={styles.optionsButton} onPress={onShowOptions}>
-        <MoreHorizontal size={20} color="#999" />
+        <MoreHorizontal size={20} color={colors.textSecondary} />
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -62,6 +64,7 @@ export default function TemplateManager({
   onRenameTemplate,
   onDeleteTemplate,
 }: TemplateManagerProps) {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
   const handleShowOptions = (template: WorkoutTemplate) => {
@@ -95,20 +98,20 @@ export default function TemplateManager({
 
   return (
     <Modal visible={isVisible} animationType="slide" transparent={false}>
-      <SafeAreaView style={styles.modalContainer} edges={["left", "right", "bottom"]}>
+      <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]} edges={["left", "right", "bottom"]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{ flex: 1 }}
         >
-          <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-            <Text style={styles.headerTitle}>Templates</Text>
+          <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
+            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Templates</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <X size={24} color="#000" />
+              <X size={24} color={colors.textPrimary} />
             </TouchableOpacity>
           </View>
 
           <ScrollView contentContainerStyle={styles.content}>
-            <Text style={styles.sectionHeader}>Default Templates</Text>
+            <Text style={[styles.sectionHeader, { color: colors.textTertiary }]}>Default Templates</Text>
             {defaultTemplates.map((template) => (
               <TemplateCard
                 key={template.id}
@@ -118,7 +121,7 @@ export default function TemplateManager({
               />
             ))}
 
-            <Text style={styles.sectionHeader}>My Templates</Text>
+            <Text style={[styles.sectionHeader, { color: colors.textTertiary }]}>My Templates</Text>
             {templates.map((template) => (
               <TemplateCard
                 key={template.id}
@@ -128,15 +131,15 @@ export default function TemplateManager({
               />
             ))}
             {templates.length === 0 && (
-              <View style={styles.emptyStateContainer}>
-                <Text style={styles.emptyStateText}>Your saved templates will appear here.</Text>
+              <View style={[styles.emptyStateContainer, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>Your saved templates will appear here.</Text>
               </View>
             )}
           </ScrollView>
 
-          <View style={styles.footer}>
-            <TouchableOpacity style={styles.saveButton} onPress={onSaveCurrent}>
-              <Text style={styles.saveButtonText}>Save Current as Template</Text>
+          <View style={[styles.footer, { borderTopColor: colors.border }]}>
+            <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.accent }]} onPress={onSaveCurrent}>
+              <Text style={[styles.saveButtonText, { color: colors.background }]}>Save Current as Template</Text>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -146,7 +149,7 @@ export default function TemplateManager({
 }
 
 const styles = StyleSheet.create({
-  modalContainer: { flex: 1, backgroundColor: "#ffffff" },
+  modalContainer: { flex: 1 },
 
   header: {
     flexDirection: "row",
@@ -155,7 +158,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e5e5",
   },
   headerTitle: { fontSize: 17, fontWeight: "600" },
   closeButton: { padding: 8 },
@@ -165,14 +167,12 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#999',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 8,
     marginTop: 16,
   },
   card: {
-    backgroundColor: "#f8f8f8",
     borderRadius: 12,
     padding: 16,
     flexDirection: "row",
@@ -181,31 +181,27 @@ const styles = StyleSheet.create({
   },
   cardContent: { flex: 1 },
   cardTitle: { fontSize: 17, fontWeight: "600", marginBottom: 4 },
-  cardSubtitle: { fontSize: 14, color: "#999" },
+  cardSubtitle: { fontSize: 14 },
   optionsButton: { padding: 8, marginLeft: 12, opacity: 0 }, // Hide options for default templates
 
   emptyStateContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 32,
-    backgroundColor: '#f8f8f8',
     borderRadius: 12,
   },
   emptyStateText: {
     fontSize: 15,
-    color: '#999',
   },
 
   footer: {
     padding: 24,
     borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
   },
   saveButton: {
-    backgroundColor: "#000",
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
   },
-  saveButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  saveButtonText: { fontSize: 16, fontWeight: "600" },
 });
