@@ -41,13 +41,16 @@ export const useWorkout = (selectedDate: Date) => {
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [yesterdaysWorkoutName, setYesterdaysWorkoutName] = useState<string | null>(null);
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   const isFocused = useIsFocused();
 
   const dateKey = selectedDate.toISOString().split('T')[0];
   const storageKey = `${WORKOUT_LOG_PREFIX}${dateKey}`;
 
-  const loadData = useCallback(async () => {
-    setIsLoading(true);
+  const loadData = useCallback(async (showLoading = false) => {
+    if (showLoading) {
+      setIsLoading(true);
+    }
     try {
       const storedLog = await AsyncStorage.getItem(storageKey);
       const storedProgram = await AsyncStorage.getItem(WORKOUT_PROGRAM_KEY);
@@ -106,7 +109,10 @@ export const useWorkout = (selectedDate: Date) => {
     } catch (e) {
       Alert.alert('Error', 'Failed to load workout data.');
     } finally {
-      setIsLoading(false);
+      if (showLoading) {
+        setIsLoading(false);
+      }
+      setHasInitiallyLoaded(true);
     }
   }, [storageKey, selectedDate]);
 
@@ -138,11 +144,17 @@ export const useWorkout = (selectedDate: Date) => {
     }
   }, []);
 
+  // Initial load on mount
   useEffect(() => {
-    if (isFocused) {
-      loadData();
+    loadData(true);
+  }, [loadData]);
+
+  // Reload data when screen regains focus (but without showing loading state)
+  useEffect(() => {
+    if (isFocused && hasInitiallyLoaded) {
+      loadData(false);
     }
-  }, [isFocused, loadData]);
+  }, [isFocused, hasInitiallyLoaded, loadData]);
 
   const addDayToProgram = (newDayName: string) => {
     const newDay: WorkoutDay = {
