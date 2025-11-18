@@ -21,25 +21,27 @@ const FoodSection = ({ title, foods, onAdd, onEdit, onDelete }: FoodSectionProps
 
   return (
     <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{title}</Text>
-        <Text style={styles.sectionCalories}>{totalCalories} kcal</Text>
+      <View style={styles.sectionInner}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{title}</Text>
+          <Text style={styles.sectionCalories}>{totalCalories} kcal</Text>
+        </View>
+
+        {(foods ?? []).map((food, index) => (
+          <FoodRowItem
+            key={food.id}
+            food={food}
+            onPress={() => onEdit(food)}
+            onDelete={() => onDelete(food.id)}
+            isLastItem={index === foods.length - 1}
+          />
+        ))}
+
+        <TouchableOpacity style={styles.addButton} onPress={onAdd}>
+          <Plus size={16} color={colors.textPrimary} />
+          <Text style={styles.addButtonText}>Add Food</Text>
+        </TouchableOpacity>
       </View>
-
-      {(foods ?? []).map((food, index) => (
-        <FoodRowItem
-          key={food.id}
-          food={food}
-          onPress={() => onEdit(food)}
-          onDelete={() => onDelete(food.id)}
-          isLastItem={index === foods.length - 1}
-        />
-      ))}
-
-      <TouchableOpacity style={styles.addButton} onPress={onAdd}>
-        <Plus size={16} color={colors.textPrimary} />
-        <Text style={styles.addButtonText}>Add Food</Text>
-      </TouchableOpacity>
     </View>
   );
 };

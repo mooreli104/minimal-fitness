@@ -5,7 +5,15 @@ export const getFoodLogStyles = (colors: ThemeColors) => StyleSheet.create({
   section: {
     backgroundColor: colors.surface,
     borderRadius: 12,
-    overflow: "hidden"
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  sectionInner: {
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   sectionHeader: {
     flexDirection: "row",
@@ -73,6 +81,11 @@ export const getFoodLogStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   summaryItem: {
     alignItems: "center",
@@ -96,6 +109,11 @@ export const getFoodLogStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   macroItem: {
     alignItems: "center"

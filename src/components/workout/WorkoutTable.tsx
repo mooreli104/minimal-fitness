@@ -22,7 +22,7 @@ const WorkoutTable = ({
   const { colors } = useTheme();
   const styles = getWorkoutStyles(colors);
   return (
-    <>
+    <View style={styles.tableContainer}>
       <View style={[styles.row, styles.tableHeader]}>
         <Text style={[styles.headerText, styles.exerciseCol]}>Exercise</Text>
         <Text style={[styles.headerText, styles.targetActualCol]}>Target</Text>
@@ -41,7 +41,7 @@ const WorkoutTable = ({
         <Plus size={16} color={colors.textPrimary} strokeWidth={2} />
         <Text style={styles.addButtonText}>Add exercise</Text>
       </TouchableOpacity>
-    </>
+    </View>
   );
 };
 
