@@ -16,6 +16,7 @@ import AddFoodModal from "../components/food/AddFoodModal";
 import CalorieSummaryBar from "../components/food/CalorieSummaryBar";
 import MacroSummary from "../components/food/MacroSummary";
 import DietTemplateManager from "../components/DietTemplateManager";
+import { BackgroundPattern } from "../components/common/BackgroundPattern";
 import { useTheme } from "../context/ThemeContext";
 
 import { useFoodModal } from "../hooks/useFoodModal";
@@ -147,6 +148,7 @@ export default function FoodLog() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
+        <BackgroundPattern />
         <AddFoodModal
           isVisible={isModalVisible}
           onClose={closeModal}

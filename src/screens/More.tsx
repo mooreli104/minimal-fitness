@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Linking, TouchableOpacity, Switch } from "react
 import { Moon, Sun } from "lucide-react-native";
 
 import BottomNav from "../components/BottomNav";
+import { BackgroundPattern } from "../components/common/BackgroundPattern";
 import { useTheme } from "../context/ThemeContext";
 
 export default function Settings() {
@@ -14,6 +15,7 @@ export default function Settings() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <BackgroundPattern />
       <View style={styles.mainContent}>
         {/* Dark Mode Toggle */}
         <View style={[styles.themeToggleContainer, { borderColor: colors.border }]}>

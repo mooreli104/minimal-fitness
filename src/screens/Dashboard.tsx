@@ -8,6 +8,7 @@ import { useDateManager } from "../hooks/useDateManager";
 import { useDashboardData } from "../hooks/useDashboardData";
 import DateHeader from "../components/common/DateHeader";
 import CalendarModal from "../components/common/CalendarModal";
+import { BackgroundPattern } from "../components/common/BackgroundPattern";
 import { useTheme } from "../context/ThemeContext";
 import { formatNumber } from "../utils/formatters";
 
@@ -104,6 +105,7 @@ export default function Dashboard() {
 
   return (
     <View style={styles.container}>
+      <BackgroundPattern />
       <CalendarModal
         isVisible={isCalendarVisible}
         onClose={closeCalendar}

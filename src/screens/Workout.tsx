@@ -19,6 +19,7 @@ import WorkoutHeader from '../components/workout/WorkoutHeader';
 import DaySelector from '../components/workout/DaySelector';
 import WorkoutTable from '../components/workout/WorkoutTable';
 import WorkoutEmptyState from '../components/workout/WorkoutEmptyState';
+import { BackgroundPattern } from '../components/common/BackgroundPattern';
 
 import { getWorkoutStyles } from '../styles/Workout.styles';
 
@@ -220,6 +221,7 @@ export default function Workout() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <View style={styles.container}>
+          <BackgroundPattern />
           <TemplateManager
             isVisible={isTemplateManagerVisible}
             templates={templates}
