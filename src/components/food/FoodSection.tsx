@@ -4,7 +4,7 @@ import { Plus } from "lucide-react-native";
 import { FoodEntry } from "../../types";
 import FoodRowItem from "./FoodRowItem";
 import { useTheme } from "../../context/ThemeContext";
-import { getFoodLogStyles } from "../../styles/FoodLog.styles";
+import { getFoodSectionStyles } from './FoodSection.styles';
 
 interface FoodSectionProps {
   title: string;
@@ -16,7 +16,7 @@ interface FoodSectionProps {
 
 const FoodSection = ({ title, foods, onAdd, onEdit, onDelete }: FoodSectionProps) => {
   const { colors } = useTheme();
-  const styles = getFoodLogStyles(colors);
+  const styles = getFoodSectionStyles(colors);
   const totalCalories = (foods ?? []).reduce((sum, item) => sum + item.calories, 0);
 
   return (

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "../../context/ThemeContext";
-import { getFoodLogStyles } from "../../styles/FoodLog.styles";
+import { getMacroSummaryStyles } from './MacroSummary.styles';
 
 interface MacroSummaryProps {
   protein: number;
@@ -11,7 +11,7 @@ interface MacroSummaryProps {
 
 const MacroSummary = ({ protein, carbs, fat }: MacroSummaryProps) => {
   const { colors } = useTheme();
-  const styles = getFoodLogStyles(colors);
+  const styles = getMacroSummaryStyles(colors);
   return (
     <View style={styles.macroContainer}>
       <View style={styles.macroItem}>

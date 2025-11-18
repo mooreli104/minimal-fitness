@@ -1,31 +1,28 @@
-import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet } from "react-native";
+import React from "react";
+import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Copy, BookOpen } from "lucide-react-native";
 
 import { useDateManager } from "../hooks/useDateManager";
 import { useFoodLog } from "../hooks/useFoodLog";
 import { useDietTemplates } from "../hooks/useDietTemplates";
 import BottomNav from "../components/BottomNav";
-import { MealCategory } from "../types";
 import DateHeader from "../components/common/DateHeader";
 import CalendarModal from "../components/common/CalendarModal";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
-import FoodSection from "../components/food/FoodSection";
 import AddFoodModal from "../components/food/AddFoodModal";
-import CalorieSummaryBar from "../components/food/CalorieSummaryBar";
-import MacroSummary from "../components/food/MacroSummary";
 import DietTemplateManager from "../components/DietTemplateManager";
 import { BackgroundPattern } from "../components/common/BackgroundPattern";
 import { useTheme } from "../context/ThemeContext";
-
 import { useFoodModal } from "../hooks/useFoodModal";
+import { useFoodLogModals } from "../hooks/useFoodLogModals";
+import { FoodLogContent } from "../components/food/FoodLogContent";
+import { getFoodLogStyles } from "../styles/FoodLog.styles";
 
 export default function FoodLog() {
   const { colors } = useTheme();
-  const [isTemplateManagerVisible, setTemplateManagerVisible] = useState(false);
-  const [isCopyConfirmVisible, setCopyConfirmVisible] = useState(false);
+  const styles = getFoodLogStyles(colors);
+  const modals = useFoodLogModals();
 
   const {
     selectedDate,
@@ -86,7 +83,7 @@ export default function FoodLog() {
       (templateName) => {
         if (templateName && templateName.trim()) {
           saveCurrentAsTemplate(templateName.trim(), log);
-          setTemplateManagerVisible(false);
+          modals.templateManager.close();
         }
       }
     );
@@ -94,58 +91,8 @@ export default function FoodLog() {
 
   const handleLoadTemplate = (template: any) => {
     loadDietTemplate(template.meals);
-    setTemplateManagerVisible(false);
+    modals.templateManager.close();
   };
-
-  const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
-    content: { paddingHorizontal: 24, paddingTop: 12, paddingBottom: 120, gap: 24 },
-    yesterdayIndicator: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: 32,
-      marginTop: -30,
-      marginBottom: -10,
-    },
-    yesterdayText: {
-      fontSize: 13,
-      color: colors.textTertiary,
-      fontStyle: 'italic',
-    },
-    actionButtons: {
-      gap: 12,
-    },
-    copyButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-      paddingVertical: 16,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      borderStyle: "dashed",
-    },
-    copyButtonText: { fontSize: 16, color: colors.textSecondary, fontWeight: "500" },
-    templateButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-      paddingVertical: 16,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      borderStyle: "dashed",
-    },
-    templateButtonText: { fontSize: 16, color: colors.textSecondary, fontWeight: "500" },
-    loadingContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      height: 200,
-    },
-  });
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -164,8 +111,8 @@ export default function FoodLog() {
           selectedDate={selectedDate}
         />
         <ConfirmDialog
-          isVisible={isCopyConfirmVisible}
-          onClose={() => setCopyConfirmVisible(false)}
+          isVisible={modals.copyConfirm.isVisible}
+          onClose={modals.copyConfirm.close}
           onConfirm={copyYesterdayLog}
           title="Copy from Yesterday?"
           message="This will replace your current log with yesterday's entries. Are you sure?"
@@ -173,9 +120,9 @@ export default function FoodLog() {
           cancelText="Cancel"
         />
         <DietTemplateManager
-          isVisible={isTemplateManagerVisible}
+          isVisible={modals.templateManager.isVisible}
           templates={templates}
-          onClose={() => setTemplateManagerVisible(false)}
+          onClose={modals.templateManager.close}
           onLoadTemplate={handleLoadTemplate}
           onSaveCurrent={handleSaveAsTemplate}
           onRenameTemplate={renameTemplate}
@@ -199,49 +146,21 @@ export default function FoodLog() {
             )}
           </View>
 
-          <CalorieSummaryBar
-            consumed={totalCalories}
-            target={calorieTarget}
-            onPressTarget={handleSetCalorieTarget}
+          <FoodLogContent
+            log={log}
+            isLoading={isLoading}
+            totalCalories={totalCalories}
+            totalProtein={totalProtein}
+            totalCarbs={totalCarbs}
+            totalFat={totalFat}
+            calorieTarget={calorieTarget}
+            onAddFood={handleAddFood}
+            onEditFood={handleEditFood}
+            onDeleteFood={deleteFood}
+            onSetCalorieTarget={handleSetCalorieTarget}
+            onCopyYesterday={modals.copyConfirm.open}
+            onOpenTemplateManager={modals.templateManager.open}
           />
-          <MacroSummary
-            protein={totalProtein}
-            carbs={totalCarbs}
-            fat={totalFat}
-          />
-
-          {isLoading ? (
-            <View style={styles.loadingContainer}>
-              <Text>Loading...</Text>
-            </View>
-          ) : (
-            <>
-              {(Object.keys(log) as MealCategory[]).map((meal) => (
-                <FoodSection
-                  key={meal}
-                  title={meal}
-                  foods={log[meal]}
-                  onAdd={() => handleAddFood(meal)}
-                  onEdit={(food) => handleEditFood(food, meal)}
-                  onDelete={(id) => deleteFood(id, meal)}
-                />
-              ))}
-            </>
-          )}
-
-          <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.copyButton} onPress={() => setCopyConfirmVisible(true)}>
-              <Copy size={16} color={colors.textSecondary} />
-              <Text style={styles.copyButtonText}>Copy from yesterday</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.templateButton}
-              onPress={() => setTemplateManagerVisible(true)}
-            >
-              <BookOpen size={16} color={colors.textSecondary} />
-              <Text style={styles.templateButtonText}>Diet Templates</Text>
-            </TouchableOpacity>
-          </View>
         </ScrollView>
 
         <BottomNav />

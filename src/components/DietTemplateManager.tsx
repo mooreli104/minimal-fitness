@@ -15,7 +15,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { MoreHorizontal, X } from "lucide-react-native";
 import { DietTemplate, MealCategory } from "../types";
 import { useTheme } from "../context/ThemeContext";
-import { getFoodLogStyles } from "../styles/FoodLog.styles";
+import { getDietTemplateManagerStyles } from './DietTemplateManager.styles';
 
 interface DietTemplateManagerProps {
   isVisible: boolean;
@@ -37,7 +37,7 @@ const TemplateCard = ({
   onShowOptions: () => void;
 }) => {
   const { colors } = useTheme();
-  const styles = getFoodLogStyles(colors);
+  const styles = getDietTemplateManagerStyles(colors);
   // Calculate total calories in template
   const totalCalories = Object.values(template.meals)
     .flat()
@@ -82,7 +82,7 @@ export default function DietTemplateManager({
   onDeleteTemplate,
 }: DietTemplateManagerProps) {
   const { colors, theme } = useTheme();
-  const styles = getFoodLogStyles(colors);
+  const styles = getDietTemplateManagerStyles(colors);
   const insets = useSafeAreaInsets();
 
   const handleShowOptions = (template: DietTemplate) => {

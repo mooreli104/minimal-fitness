@@ -1,25 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Dimensions, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import {  GestureHandlerRootView } from 'react-native-gesture-handler';
+import { View, ScrollView, Alert, KeyboardAvoidingView, Platform, Text, TouchableOpacity } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import BottomNav from '../components/BottomNav';
 import TemplateManager from '../components/TemplateManager';
 import WorkoutDayActionSheet from '../components/WorkoutDayActionSheet';
 import { useDateManager } from '../hooks/useDateManager';
 import { useWorkout } from '../hooks/useWorkout';
-import { Exercise, WorkoutDay, WorkoutTemplate } from '../types';
+import { WorkoutDay, WorkoutTemplate } from '../types';
 import DateHeader from '../components/common/DateHeader';
 import CalendarModal from '../components/common/CalendarModal';
 import { ChangeDayModal } from '../components/workout/ChangeDayModal';
 import { RenameDayModal } from '../components/workout/RenameDayModal';
 import { CountdownTimer } from '../components/workout/CountdownTimer';
-import { useTimer } from '../context/TimerContext';
 import { useTheme } from '../context/ThemeContext';
 import WorkoutHeader from '../components/workout/WorkoutHeader';
 import DaySelector from '../components/workout/DaySelector';
-import WorkoutTable from '../components/workout/WorkoutTable';
-import WorkoutEmptyState from '../components/workout/WorkoutEmptyState';
 import { BackgroundPattern } from '../components/common/BackgroundPattern';
+import { useWorkoutModals } from '../hooks/useWorkoutModals';
+import { WorkoutContent } from '../components/workout/WorkoutContent';
 
 import { getWorkoutStyles } from '../styles/Workout.styles';
 
@@ -60,25 +59,19 @@ export default function Workout() {
     saveWorkoutLog,
   } = useWorkout(selectedDate);
 
-  const [isTemplateManagerVisible, setTemplateManagerVisible] = useState(false);
-  const [isActionSheetVisible, setIsActionSheetVisible] = useState(false);
+  const modals = useWorkoutModals();
   const [selectedDay, setSelectedDay] = useState<WorkoutDay | null>(null);
-  const [isChangeDayModalVisible, setChangeDayModalVisible] = useState(false);
-  const [isRenameModalVisible, setRenameModalVisible] = useState(false);
   const [newDayName, setNewDayName] = useState('');
-  const [isTimerVisible, setTimerVisible] = useState(false);
 
-  const { remainingSeconds, isRunning, formatTime } = useTimer();
-
-  const openDayActionSheet = (day: WorkoutDay) => {
+  const handleOpenDayActionSheet = (day: WorkoutDay) => {
     setSelectedDay(day);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsActionSheetVisible(true);
+    modals.actionSheet.open();
   };
 
   const handleEditDay = () => {
     if (!selectedDay || selectedDay.isRest) return;
-    setIsActionSheetVisible(false);
+    modals.actionSheet.close();
     Alert.prompt('Rename Day', 'Enter the new name:', (newName) => {
       if (newName) {
         renameProgramDay(selectedDay.id, newName);
@@ -89,12 +82,12 @@ export default function Workout() {
   const handleDuplicateDay = () => {
     if (!selectedDay) return;
     duplicateProgramDay(selectedDay.id);
-    setIsActionSheetVisible(false);
+    modals.actionSheet.close();
   };
 
   const handleDeleteDay = () => {
     if (!selectedDay) return;
-    setIsActionSheetVisible(false);
+    modals.actionSheet.close();
     Alert.alert('Delete Day', `Are you sure you want to delete "${selectedDay.name}"?`, [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: () => deleteProgramDay(selectedDay.id) },
@@ -119,7 +112,7 @@ export default function Workout() {
       setWorkoutLog(updatedLog);
       saveWorkoutLog(updatedLog);
     }
-    setRenameModalVisible(false);
+    modals.renameModal.close();
   };
 
   const handleSaveTemplate = () => {
@@ -140,77 +133,31 @@ export default function Workout() {
           text: 'Load',
           onPress: () => {
             loadTemplate(template);
-            setTemplateManagerVisible(false);
+            modals.templateManager.close();
           },
         },
       ]
     );
   };
-  
-  const renderWorkoutContent = () => {
-    if (isLoading) {
-      return <Text style={styles.loadingText}>Loading workouts...</Text>;
-    }
 
-    if (!workoutLog) {
-      return <WorkoutEmptyState text="Today is a rest day." />;
+  const handleToggleRestDay = () => {
+    if (workoutLog) {
+      Alert.alert(
+        'Make Rest Day',
+        'Are you sure you want to make this a rest day? Your logged exercises for today will be saved but hidden.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Confirm',
+            onPress: () => {
+              const updatedLog = { ...workoutLog, isRest: true };
+              setWorkoutLog(updatedLog);
+              saveWorkoutLog(updatedLog);
+            },
+          },
+        ]
+      );
     }
-
-    if (workoutLog.isRest) {
-      return <WorkoutEmptyState text="Today is a rest day." />;
-    }
-
-    return (
-      <>
-        <View style={styles.workoutDayHeader}>
-          <TouchableOpacity
-            style={styles.timerToggle}
-            onPress={() => setTimerVisible(true)}
-          >
-            <Text style={styles.timerToggleText}>
-              {isRunning ? formatTime(remainingSeconds) : 'Start Timer'}
-            </Text>
-          </TouchableOpacity>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <TouchableOpacity
-              onPress={() => setChangeDayModalVisible(true)}
-              onLongPress={() => {
-                setNewDayName(workoutLog.name);
-                setRenameModalVisible(true);
-              }}
-            >
-              <Text style={styles.workoutDayHeaderText}>{workoutLog.name}</Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity
-            style={styles.restToggle}
-            onPress={() => {
-              Alert.alert(
-                'Make Rest Day',
-                'Are you sure you want to make this a rest day? Your logged exercises for today will be saved but hidden.',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  {
-                    text: 'Confirm',
-                    onPress: () => {
-                      const updatedLog = { ...workoutLog, isRest: true };
-                      setWorkoutLog(updatedLog);
-                      saveWorkoutLog(updatedLog);
-                    },
-                  },
-                ]
-              );
-            }}
-          ><Text style={styles.restToggleText}>Rest Day</Text></TouchableOpacity>
-        </View>
-        <WorkoutTable
-          exercises={workoutLog.exercises}
-          onExerciseChange={updateExerciseInLog}
-          onDeleteExercise={deleteExerciseFromLog}
-          onAddExercise={addExerciseToLog}
-        />
-      </>
-    );
   };
 
   return (
@@ -223,17 +170,17 @@ export default function Workout() {
         <View style={styles.container}>
           <BackgroundPattern />
           <TemplateManager
-            isVisible={isTemplateManagerVisible}
+            isVisible={modals.templateManager.isVisible}
             templates={templates}
-            onClose={() => setTemplateManagerVisible(false)}
+            onClose={modals.templateManager.close}
             onLoadTemplate={handleLoadTemplate}
             onSaveCurrent={handleSaveTemplate}
             onRenameTemplate={renameTemplate}
             onDeleteTemplate={deleteTemplate}
           />
           <WorkoutDayActionSheet
-            visible={isActionSheetVisible}
-            onClose={() => setIsActionSheetVisible(false)}
+            visible={modals.actionSheet.isVisible}
+            onClose={modals.actionSheet.close}
             onEdit={handleEditDay}
             onDuplicate={handleDuplicateDay}
             onDelete={handleDeleteDay}
@@ -241,7 +188,7 @@ export default function Workout() {
               if (selectedDay) {
                 toggleRestDay(selectedDay.id);
               }
-              setIsActionSheetVisible(false);
+              modals.actionSheet.close();
             }}
             isRestDay={selectedDay?.isRest}
           />
@@ -252,38 +199,38 @@ export default function Workout() {
             selectedDate={selectedDate}
           />
           <ChangeDayModal
-            isVisible={isChangeDayModalVisible}
-            onClose={() => setChangeDayModalVisible(false)}
+            isVisible={modals.changeDayModal.isVisible}
+            onClose={modals.changeDayModal.close}
             onSelect={(name) => {
               if (workoutLog) {
                 const updatedLog = { ...workoutLog, name };
                 setWorkoutLog(updatedLog);
                 saveWorkoutLog(updatedLog);
               }
-              setChangeDayModalVisible(false);
+              modals.changeDayModal.close();
             }}
             programDays={program}
             onAdd={handleAddDay}
             onDelete={deleteProgramDay}
           />
           <RenameDayModal
-            isVisible={isRenameModalVisible}
-            onClose={() => setRenameModalVisible(false)}
+            isVisible={modals.renameModal.isVisible}
+            onClose={modals.renameModal.close}
             onSave={handleSaveRename}
             newDayName={newDayName}
             setNewDayName={setNewDayName}
           />
           <CountdownTimer
-            isVisible={isTimerVisible}
-            onClose={() => setTimerVisible(false)}
+            isVisible={modals.timer.isVisible}
+            onClose={modals.timer.close}
           />
 
           <ScrollView contentContainerStyle={styles.content}>
-            <WorkoutHeader onOpenTemplateManager={() => setTemplateManagerVisible(true)} />
+            <WorkoutHeader onOpenTemplateManager={modals.templateManager.open} />
             <DaySelector
               program={program}
               onSelectDay={selectDayToLog}
-              onLongPressDay={openDayActionSheet}
+              onLongPressDay={handleOpenDayActionSheet}
               onAddDay={handleAddDay}
             />
 
@@ -307,7 +254,22 @@ export default function Workout() {
               ) : null}
             </View>
 
-            {renderWorkoutContent()}
+            <WorkoutContent
+              workoutLog={workoutLog}
+              isLoading={isLoading}
+              onOpenTimer={modals.timer.open}
+              onOpenChangeDayModal={modals.changeDayModal.open}
+              onOpenRenameModal={() => {
+                if (workoutLog) {
+                  setNewDayName(workoutLog.name);
+                  modals.renameModal.open();
+                }
+              }}
+              onToggleRestDay={handleToggleRestDay}
+              onUpdateExercise={updateExerciseInLog}
+              onDeleteExercise={deleteExerciseFromLog}
+              onAddExercise={addExerciseToLog}
+            />
           </ScrollView>
           <BottomNav />
         </View>
@@ -315,4 +277,3 @@ export default function Workout() {
     </GestureHandlerRootView>
   );
 }
-

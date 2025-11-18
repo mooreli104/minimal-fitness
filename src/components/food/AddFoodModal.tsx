@@ -13,7 +13,7 @@ import { X } from "lucide-react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { FoodEntry } from "../../types";
 import { useTheme } from "../../context/ThemeContext";
-import { getFoodLogStyles } from "../../styles/FoodLog.styles";
+import { getAddFoodModalStyles } from './AddFoodModal.styles';
 
 interface AddFoodModalProps {
   isVisible: boolean;
@@ -24,7 +24,7 @@ interface AddFoodModalProps {
 
 const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalProps) => {
   const { colors, theme } = useTheme();
-  const styles = getFoodLogStyles(colors);
+  const styles = getAddFoodModalStyles(colors);
   const [name, setName] = useState("");
   const [calories, setCalories] = useState("");
   const [protein, setProtein] = useState("");

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTheme } from "../../context/ThemeContext";
-import { getFoodLogStyles } from "../../styles/FoodLog.styles";
+import { getCalorieSummaryBarStyles } from './CalorieSummaryBar.styles';
 
 interface CalorieSummaryBarProps {
   consumed: number;
@@ -11,7 +11,7 @@ interface CalorieSummaryBarProps {
 
 const CalorieSummaryBar = ({ consumed, target, onPressTarget }: CalorieSummaryBarProps) => {
   const { colors } = useTheme();
-  const styles = getFoodLogStyles(colors);
+  const styles = getCalorieSummaryBarStyles(colors);
   return (
     <View style={styles.summaryBar}>
       <View style={styles.summaryItem}>

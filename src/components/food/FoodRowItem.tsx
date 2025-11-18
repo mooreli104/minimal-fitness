@@ -5,7 +5,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Reanimated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from "react-native-reanimated";
 import { FoodEntry } from "../../types";
 import { useTheme } from "../../context/ThemeContext";
-import { getFoodLogStyles } from "../../styles/FoodLog.styles";
+import { getFoodRowStyles } from './FoodRow.styles';
 
 interface FoodRowItemProps {
   food: FoodEntry;
@@ -19,7 +19,7 @@ const SWIPE_THRESHOLD = -SCREEN_WIDTH * 0.2;
 
 const FoodRowItem = ({ food, onPress, onDelete, isLastItem }: FoodRowItemProps) => {
   const { colors } = useTheme();
-  const styles = getFoodLogStyles(colors);
+  const styles = getFoodRowStyles(colors);
   const macroParts: string[] = [];
   if (food.protein != null) macroParts.push(`P ${food.protein}g`);
   if (food.carbs != null) macroParts.push(`C ${food.carbs}g`);
