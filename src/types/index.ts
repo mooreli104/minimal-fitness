@@ -57,6 +57,12 @@ export type DailyFoodLog = {
   [key in MealCategory]: FoodEntry[];
 };
 
+export interface DietTemplate {
+  id: number;
+  name: string;
+  meals: DailyFoodLog;
+}
+
 // Workouts
 export interface Exercise {
   id: number;

@@ -15,6 +15,9 @@ export const styles = StyleSheet.create({
     color: '#aaa',
     fontStyle: 'italic',
   },
+  actionButtons: {
+    gap: 12,
+  },
   copyButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -27,6 +30,18 @@ export const styles = StyleSheet.create({
     borderStyle: "dashed",
   },
   copyButtonText: { fontSize: 16, color: "#999", fontWeight: "500" },
+  templateButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 16,
+    borderWidth: 1,
+    borderColor: "#e5e5e5",
+    borderRadius: 12,
+    borderStyle: "dashed",
+  },
+  templateButtonText: { fontSize: 16, color: "#999", fontWeight: "500" },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",

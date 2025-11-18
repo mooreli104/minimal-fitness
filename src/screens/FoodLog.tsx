@@ -1,11 +1,12 @@
-import React from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Copy } from "lucide-react-native";
+import { Copy, BookOpen } from "lucide-react-native";
 
 import { useDateManager } from "../hooks/useDateManager";
 import { useFoodLog } from "../hooks/useFoodLog";
+import { useDietTemplates } from "../hooks/useDietTemplates";
 import BottomNav from "../components/BottomNav";
 import { MealCategory } from "../types";
 import DateHeader from "../components/common/DateHeader";
@@ -14,11 +15,14 @@ import FoodSection from "../components/food/FoodSection";
 import AddFoodModal from "../components/food/AddFoodModal";
 import CalorieSummaryBar from "../components/food/CalorieSummaryBar";
 import MacroSummary from "../components/food/MacroSummary";
+import DietTemplateManager from "../components/DietTemplateManager";
 import { styles } from "../styles/FoodLog.styles";
 
 import { useFoodModal } from "../hooks/useFoodModal";
 
 export default function FoodLog() {
+  const [isTemplateManagerVisible, setTemplateManagerVisible] = useState(false);
+
   const {
     selectedDate,
     isCalendarVisible,
@@ -42,7 +46,15 @@ export default function FoodLog() {
     deleteFood,
     handleSetCalorieTarget,
     copyYesterdayLog,
+    loadDietTemplate,
   } = useFoodLog(selectedDate);
+
+  const {
+    templates,
+    saveCurrentAsTemplate,
+    renameTemplate,
+    deleteTemplate,
+  } = useDietTemplates();
 
   const {
     isModalVisible,
@@ -52,6 +64,34 @@ export default function FoodLog() {
     handleSaveFood,
     closeModal,
   } = useFoodModal(addFood, updateFood);
+
+  const handleSaveAsTemplate = () => {
+    const isLogEmpty = Object.values(log).every(meal => meal.length === 0);
+
+    if (isLogEmpty) {
+      Alert.alert(
+        'Empty Log',
+        'Please add some foods before saving as a template.'
+      );
+      return;
+    }
+
+    Alert.prompt(
+      'Save as Template',
+      'Enter a name for this diet template:',
+      (templateName) => {
+        if (templateName && templateName.trim()) {
+          saveCurrentAsTemplate(templateName.trim(), log);
+          setTemplateManagerVisible(false);
+        }
+      }
+    );
+  };
+
+  const handleLoadTemplate = (template: any) => {
+    loadDietTemplate(template.meals);
+    setTemplateManagerVisible(false);
+  };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -67,6 +107,15 @@ export default function FoodLog() {
           onClose={closeCalendar}
           onDateSelect={handleDateSelectFromCalendar}
           selectedDate={selectedDate}
+        />
+        <DietTemplateManager
+          isVisible={isTemplateManagerVisible}
+          templates={templates}
+          onClose={() => setTemplateManagerVisible(false)}
+          onLoadTemplate={handleLoadTemplate}
+          onSaveCurrent={handleSaveAsTemplate}
+          onRenameTemplate={renameTemplate}
+          onDeleteTemplate={deleteTemplate}
         />
 
         <ScrollView contentContainerStyle={styles.content}>
@@ -116,10 +165,19 @@ export default function FoodLog() {
             </>
           )}
 
-          <TouchableOpacity style={styles.copyButton} onPress={copyYesterdayLog}>
-            <Copy size={16} color="#999" />
-            <Text style={styles.copyButtonText}>Copy foods from yesterday</Text>
-          </TouchableOpacity>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.copyButton} onPress={copyYesterdayLog}>
+              <Copy size={16} color="#999" />
+              <Text style={styles.copyButtonText}>Copy from yesterday</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.templateButton}
+              onPress={() => setTemplateManagerVisible(true)}
+            >
+              <BookOpen size={16} color="#999" />
+              <Text style={styles.templateButtonText}>Diet Templates</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
 
         <BottomNav />

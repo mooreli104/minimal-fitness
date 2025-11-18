@@ -160,6 +160,28 @@ export const useFoodLog = (date: Date) => {
     }
   };
 
+  const loadDietTemplate = useCallback((templateMeals: DailyFoodLog) => {
+    const newLog: DailyFoodLog = {
+      Breakfast: [],
+      Lunch: [],
+      Dinner: [],
+      Snacks: [],
+    };
+
+    const currentTimestamp = new Date(date).toISOString();
+
+    for (const meal of Object.keys(templateMeals) as MealCategory[]) {
+      newLog[meal] = templateMeals[meal].map(food => ({
+        ...food,
+        id: Date.now() + Math.random(), // Generate new unique ID
+        timestamp: currentTimestamp, // Set to current date
+      }));
+    }
+
+    setLog(newLog);
+    saveLog(newLog);
+  }, [date, saveLog]);
+
   return {
     log,
     isLoading,
@@ -174,5 +196,6 @@ export const useFoodLog = (date: Date) => {
     deleteFood,
     handleSetCalorieTarget,
     copyYesterdayLog,
+    loadDietTemplate,
   };
 };
