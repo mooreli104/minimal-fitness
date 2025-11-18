@@ -23,24 +23,26 @@ const WorkoutTable = ({
   const styles = getWorkoutStyles(colors);
   return (
     <View style={styles.tableContainer}>
-      <View style={[styles.row, styles.tableHeader]}>
-        <Text style={[styles.headerText, styles.exerciseCol]}>Exercise</Text>
-        <Text style={[styles.headerText, styles.targetActualCol]}>Target</Text>
-        <Text style={[styles.headerText, styles.targetActualCol]}>Actual</Text>
-        <Text style={[styles.headerText, styles.numberCol]}>Weight</Text>
+      <View style={styles.tableInner}>
+        <View style={[styles.row, styles.tableHeader]}>
+          <Text style={[styles.headerText, styles.exerciseCol]}>Exercise</Text>
+          <Text style={[styles.headerText, styles.targetActualCol]}>Target</Text>
+          <Text style={[styles.headerText, styles.targetActualCol]}>Actual</Text>
+          <Text style={[styles.headerText, styles.numberCol]}>Weight</Text>
+        </View>
+        {exercises.map((item) => (
+          <ExerciseRow
+            key={item.id}
+            item={item}
+            onExerciseChange={onExerciseChange}
+            onDeleteExercise={onDeleteExercise}
+          />
+        ))}
+        <TouchableOpacity style={styles.addButton} onPress={onAddExercise}>
+          <Plus size={16} color={colors.textPrimary} strokeWidth={2} />
+          <Text style={styles.addButtonText}>Add exercise</Text>
+        </TouchableOpacity>
       </View>
-      {exercises.map((item) => (
-        <ExerciseRow
-          key={item.id}
-          item={item}
-          onExerciseChange={onExerciseChange}
-          onDeleteExercise={onDeleteExercise}
-        />
-      ))}
-      <TouchableOpacity style={styles.addButton} onPress={onAddExercise}>
-        <Plus size={16} color={colors.textPrimary} strokeWidth={2} />
-        <Text style={styles.addButtonText}>Add exercise</Text>
-      </TouchableOpacity>
     </View>
   );
 };

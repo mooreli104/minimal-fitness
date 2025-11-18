@@ -22,7 +22,12 @@ const DaySelector = ({
   const styles = getWorkoutStyles(colors);
   return (
     <View style={styles.daySelectorContainer}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 8 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 8, paddingVertical: 4 }}
+        style={{ overflow: 'visible' }}
+      >
         {program.map((day) => (
           <TouchableOpacity
             key={day.id}
