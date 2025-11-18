@@ -34,10 +34,10 @@ export interface ThemeColors {
 }
 
 const lightColors: ThemeColors = {
-  background: '#FFFFFF',
-  surface: '#F9FAFB',
+  background: '#FCFCFC',
+  surface: '#FFFFFF',
   surfaceAlt: '#F3F4F6',
-  border: '#D1D5DB',
+  border: '#E8E8E8',
   textPrimary: '#111827',
   textSecondary: '#4B5563',
   textTertiary: '#9CA3AF',

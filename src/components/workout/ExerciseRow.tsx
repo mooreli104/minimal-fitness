@@ -16,7 +16,7 @@ interface ExerciseRowProps {
 }
 
 const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowProps) => {
-  const { colors } = useTheme();
+  const { colors, theme } = useTheme();
   const styles = getWorkoutStyles(colors);
   const translateX = useSharedValue(0);
   const SWIPE_THRESHOLD = -SCREEN_WIDTH * 0.2;
@@ -57,6 +57,7 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
             numberOfLines={2}
             textAlignVertical="center"
             onChangeText={(text) => onExerciseChange(item.id, 'name', text)}
+            keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
           />
           <TextInput
             style={[styles.cell, styles.targetActualCol]}
@@ -65,6 +66,7 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
             placeholderTextColor={colors.textSecondary}
             scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'target', text)}
+            keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
           />
           <TextInput
             style={[styles.cell, styles.targetActualCol]}
@@ -73,6 +75,7 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
             placeholderTextColor={colors.textSecondary}
             scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'actual', text)}
+            keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
           />
           <TextInput
             style={[styles.cell, styles.numberCol]}
@@ -81,6 +84,7 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
             placeholderTextColor={colors.textSecondary}
             scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'weight', text)}
+            keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
           />
         </Reanimated.View>
       </GestureDetector>

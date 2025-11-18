@@ -1,51 +1,70 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import Svg, { Rect, Defs, Pattern, Path, G, Circle } from 'react-native-svg';
+import Svg, { Rect, Defs, Pattern, Circle, Path, G } from 'react-native-svg';
 import { useTheme } from '../../context/ThemeContext';
 
-// Grid spacing for seamless tiling - matches Figma's dotted grid aesthetic
+// Texture pattern settings for subtle noise effect
+const TEXTURE_SIZE = 4;
 const GRID_SIZE = 24;
-const STAR_SIZE = 1.5; // 2px stars for ultra-minimal feel
 
 export const BackgroundPattern = () => {
   const { theme } = useTheme();
 
   /**
    * Curved 4-point star path - soft, rounded, symmetrical
-   * Inspired by Figma's minimal dotted grid
    * Shape: soft star/flower hybrid with rounded points
    */
   const curvedStarPath =
     "M0,-1.5 Q-0.4,-1 -0.7,-0.7 Q-1,-0.4 -1.5,0 Q-1,0.4 -0.7,0.7 Q-0.4,1 0,1.5 Q0.4,1 0.7,0.7 Q1,0.4 1.5,0 Q1,-0.4 0.7,-0.7 Q0.4,-1 0,-1.5 Z";
 
-  /** 🌤 LIGHT MODE - Figma-inspired minimal dotted grid */
+  /** 🌤 LIGHT MODE - Subtle textured grain pattern with curved stars */
   const renderLightPattern = () => {
-    // Light mode: #D1D5DB stars on #FFFFFF background
-    const starColor = "#D1D5DB";
+    // Light mode: subtle gray stars on white background
+    const textureColor1 = "rgba(0,0,0,0.08)";
+    const textureColor2 = "rgba(0,0,0,0.06)";
+    const textureColor3 = "rgba(0,0,0,0.10)";
 
     return (
       <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
         <Defs>
-          {/* Seamless repeating pattern with curved 4-point stars */}
+          {/* Organic noise texture pattern with curved stars */}
           <Pattern
-            id="lightStarGrid"
+            id="lightTexture"
             patternUnits="userSpaceOnUse"
-            width={GRID_SIZE}
-            height={GRID_SIZE}
+            width={TEXTURE_SIZE}
+            height={TEXTURE_SIZE}
           >
-            {/* Center the star for perfect tiling */}
-            <G transform={`translate(${GRID_SIZE / 2}, ${GRID_SIZE / 2}) scale(${STAR_SIZE})`}>
-              <Path d={curvedStarPath} fill={starColor} />
+            {/* Random scattered texture stars for organic grain effect */}
+            <G transform="translate(0.5, 0.8) scale(0.25)">
+              <Path d={curvedStarPath} fill={textureColor1} />
+            </G>
+            <G transform="translate(2.1, 1.5) scale(0.22)">
+              <Path d={curvedStarPath} fill={textureColor2} />
+            </G>
+            <G transform="translate(3.2, 0.3) scale(0.20)">
+              <Path d={curvedStarPath} fill={textureColor3} />
+            </G>
+            <G transform="translate(1.5, 2.9) scale(0.28)">
+              <Path d={curvedStarPath} fill={textureColor1} />
+            </G>
+            <G transform="translate(3.7, 2.2) scale(0.25)">
+              <Path d={curvedStarPath} fill={textureColor2} />
+            </G>
+            <G transform="translate(0.2, 3.5) scale(0.22)">
+              <Path d={curvedStarPath} fill={textureColor3} />
+            </G>
+            <G transform="translate(2.8, 3.8) scale(0.20)">
+              <Path d={curvedStarPath} fill={textureColor1} />
             </G>
           </Pattern>
         </Defs>
 
-        <Rect width="100%" height="100%" fill="url(#lightStarGrid)" />
+        <Rect width="100%" height="100%" fill="url(#lightTexture)" />
       </Svg>
     );
   };
 
-  /** DARK MODE - Celestial stars only (no grid) */
+  /** 🌙 DARK MODE - Celestial stars only (no grid) */
   const renderDarkPattern = () => {
     // Dark mode: Scattered celestial stars on #0B0B0C background
     const starBright = "rgba(255,255,255,0.35)"; // Bright accent stars

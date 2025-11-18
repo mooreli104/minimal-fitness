@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Modal, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 
 interface RenameDayModalProps {
   isVisible: boolean;
@@ -10,6 +11,8 @@ interface RenameDayModalProps {
 }
 
 export const RenameDayModal = ({ isVisible, onClose, onSave, newDayName, setNewDayName }: RenameDayModalProps) => {
+  const { theme } = useTheme();
+
   return (
     <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onClose}>
       <TouchableOpacity style={styles.renameModalBackdrop} activeOpacity={1} onPress={onClose}>
@@ -21,6 +24,7 @@ export const RenameDayModal = ({ isVisible, onClose, onSave, newDayName, setNewD
             onChangeText={setNewDayName}
             autoFocus
             placeholder="Enter new name"
+            keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
           />
           <View style={styles.renameActions}>
             <TouchableOpacity style={[styles.renameButton, styles.renameCancelButton]} onPress={onClose}>

@@ -23,7 +23,7 @@ interface AddFoodModalProps {
 }
 
 const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalProps) => {
-  const { colors } = useTheme();
+  const { colors, theme } = useTheme();
   const styles = getFoodLogStyles(colors);
   const [name, setName] = useState("");
   const [calories, setCalories] = useState("");
@@ -94,6 +94,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
             placeholderTextColor={colors.textSecondary}
             value={name}
             onChangeText={setName}
+            keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
           />
 
           <TouchableOpacity onPress={() => setShowTimePicker(!showTimePicker)}>
@@ -110,6 +111,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
               value={calories}
               onChangeText={setCalories}
               keyboardType="number-pad"
+              keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
             />
           </View>
 
@@ -121,6 +123,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
               value={protein}
               onChangeText={setProtein}
               keyboardType="number-pad"
+              keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
             />
             <TextInput
               style={styles.inputFlex}
@@ -129,6 +132,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
               value={carbs}
               onChangeText={setCarbs}
               keyboardType="number-pad"
+              keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
             />
             <TextInput
               style={styles.inputFlex}
@@ -137,6 +141,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
               value={fat}
               onChangeText={setFat}
               keyboardType="number-pad"
+              keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
             />
           </View>
 
