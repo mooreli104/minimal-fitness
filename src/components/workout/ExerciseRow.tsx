@@ -71,7 +71,7 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
           <TextInput
             style={[styles.cell, styles.targetActualCol]}
             value={item.actual}
-            placeholder="3x8"
+            placeholder="SetxRep"
             placeholderTextColor={colors.textSecondary}
             scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'actual', text)}

@@ -7,7 +7,7 @@ const createExercise = (name: string, sets: string, reps: string): Exercise => (
   sets,
   reps,
   weight: '',
-  target: '',
+  target: `${sets}x${reps}`,
   actual: ''
 });
 
