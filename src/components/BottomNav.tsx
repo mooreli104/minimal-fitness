@@ -1,6 +1,6 @@
 import React from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
-import { Home, Menu, Dumbbell, ForkKnifeCrossed, Heart } from "lucide-react-native";
+import { Home, Menu, Dumbbell, ForkKnifeCrossed, ChartColumnIncreasing } from "lucide-react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTheme } from "../context/ThemeContext";
 
@@ -12,8 +12,8 @@ export default function BottomNav() {
   const navItems = [
     { icon: Home, route: "Dashboard", name: "home" },
     { icon: Dumbbell, route: "Workout", name: "workout" },
-    { icon: Heart, route: "Heart", name: "add", isCenter: true },
     { icon: ForkKnifeCrossed, route: "FoodLog", name: "foodlog" },
+    { icon: ChartColumnIncreasing, route: "Heart", name: "add" },
     { icon: Menu, route: "More", name: "More" },
   ];
 
@@ -33,22 +33,16 @@ export default function BottomNav() {
               style={styles.navButton}
               activeOpacity={0.7}
             >
-              <View
-                style={[
-                  styles.iconWrapper,
-                  item.isCenter ? styles.centerButton : styles.sideButton,
-                  item.isCenter && { backgroundColor: colors.accent },
-                ]}
-              >
+              <View style={styles.iconWrapper}>
                 <Icon
                   size={26}
                   strokeWidth={1.5}
-                  color={item.isCenter ? colors.background : colors.textPrimary}
+                  color={colors.textPrimary}
                 />
               </View>
 
               {/* Active Indicator */}
-              {!item.isCenter && active && (
+              {active && (
                 <View style={[styles.activeDot, { backgroundColor: colors.textPrimary }]} />
               )}
             </TouchableOpacity>
@@ -85,15 +79,8 @@ const styles = StyleSheet.create({
   iconWrapper: {
     alignItems: "center",
     justifyContent: "center",
-  },
-  sideButton: {
     width: 48,
     height: 48,
-  },
-  centerButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 999,
   },
   activeDot: {
     width: 6,
