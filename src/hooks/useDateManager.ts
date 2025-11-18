@@ -6,15 +6,21 @@ export const useDateManager = () => {
   const [isCalendarVisible, setCalendarVisible] = useState(false);
 
   const handleDateChange = useCallback((direction: 'prev' | 'next' | 'today') => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (direction === 'today') {
+      setSelectedDate(today);
+      return;
+    }
+
     const newDate = new Date(selectedDate);
     if (direction === 'prev') {
       newDate.setDate(newDate.getDate() - 1);
     } else if (direction === 'next') {
-      if (selectedDate.toDateString() === new Date().toDateString()) return;
+      // Prevent going past today
+      if (selectedDate.getTime() >= today.getTime()) return;
       newDate.setDate(newDate.getDate() + 1);
-    } else {
-      setSelectedDate(new Date());
-      return;
     }
     setSelectedDate(newDate);
   }, [selectedDate, setSelectedDate]);
