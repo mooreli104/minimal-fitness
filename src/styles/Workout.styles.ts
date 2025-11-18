@@ -28,7 +28,8 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     height: 32,
-    marginBottom: 8,
+    margin: -5,
+    marginTop: -12,
   },
   yesterdayText: {
     fontSize: 13,
@@ -38,17 +39,13 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
   workoutDayHeader: {
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background,
     borderRadius: 12,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
     position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
+ 
   },
   workoutDayHeaderText: {
     fontSize: 18,
@@ -77,11 +74,11 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
     marginHorizontal: 4,
     marginVertical: 4,
     backgroundColor: colors.surface,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
+    shadowColor: colors.textPrimary,
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowRadius: 6,
+    elevation: 3,
   },
   dayButtonText: {
     fontSize: 14,
@@ -174,7 +171,7 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   tableContainer: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
+    borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
@@ -182,7 +179,7 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
     elevation: 4,
   },
   tableInner: {
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   row: {
@@ -192,8 +189,6 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   tableHeader: {
     backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },

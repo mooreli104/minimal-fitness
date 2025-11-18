@@ -4,7 +4,7 @@ import { ThemeColors } from '../context/ThemeContext';
 export const getFoodLogStyles = (colors: ThemeColors) => StyleSheet.create({
   section: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
+    borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
@@ -12,7 +12,7 @@ export const getFoodLogStyles = (colors: ThemeColors) => StyleSheet.create({
     elevation: 4,
   },
   sectionInner: {
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   sectionHeader: {
