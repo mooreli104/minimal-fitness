@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 
@@ -8,7 +9,8 @@ interface TimerState {
   totalSeconds: number;
   remainingSeconds: number;
   isRunning: boolean;
-  lastUpdateTime: number | null;
+  startTime: number | null; // When the timer was started
+  targetEndTime: number | null; // When the timer should end
 }
 
 export const useCountdownTimer = () => {
@@ -16,7 +18,27 @@ export const useCountdownTimer = () => {
   const [remainingSeconds, setRemainingSeconds] = useState(60);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const lastUpdateTimeRef = useRef<number | null>(null);
+  const targetEndTimeRef = useRef<number | null>(null);
+  const appStateRef = useRef(AppState.currentState);
+
+  // Calculate remaining time based on target end time
+  const updateRemainingTime = () => {
+    if (targetEndTimeRef.current !== null) {
+      const now = Date.now();
+      const remaining = Math.max(0, Math.ceil((targetEndTimeRef.current - now) / 1000));
+
+      setRemainingSeconds(remaining);
+
+      if (remaining === 0) {
+        setIsRunning(false);
+        targetEndTimeRef.current = null;
+        handleTimerComplete();
+      }
+
+      return remaining;
+    }
+    return remainingSeconds;
+  };
 
   // Load persisted state on mount
   useEffect(() => {
@@ -25,6 +47,23 @@ export const useCountdownTimer = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+    };
+  }, []);
+
+  // Handle app state changes (background/foreground)
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      if (appStateRef.current.match(/inactive|background/) && nextAppState === 'active') {
+        // App has come to the foreground
+        if (targetEndTimeRef.current !== null) {
+          updateRemainingTime();
+        }
+      }
+      appStateRef.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
     };
   }, []);
 
@@ -37,21 +76,9 @@ export const useCountdownTimer = () => {
 
   // Handle timer countdown
   useEffect(() => {
-    if (isRunning) {
-      lastUpdateTimeRef.current = Date.now();
-
+    if (isRunning && targetEndTimeRef.current !== null) {
       intervalRef.current = setInterval(() => {
-        setRemainingSeconds((prev) => {
-          const newValue = prev - 1;
-
-          if (newValue <= 0) {
-            setIsRunning(false);
-            handleTimerComplete();
-            return 0;
-          }
-
-          return newValue;
-        });
+        updateRemainingTime();
       }, 1000);
     } else {
       if (intervalRef.current) {
@@ -67,56 +94,33 @@ export const useCountdownTimer = () => {
     };
   }, [isRunning]);
 
-  // Handle background recovery
-  useEffect(() => {
-    const handleAppStateChange = () => {
-      if (isRunning && lastUpdateTimeRef.current) {
-        const now = Date.now();
-        const elapsedSeconds = Math.floor((now - lastUpdateTimeRef.current) / 1000);
-
-        setRemainingSeconds((prev) => {
-          const newValue = prev - elapsedSeconds;
-          if (newValue <= 0) {
-            setIsRunning(false);
-            handleTimerComplete();
-            return 0;
-          }
-          return newValue;
-        });
-
-        lastUpdateTimeRef.current = now;
-      }
-    };
-
-    // This will be called when the component regains focus
-    handleAppStateChange();
-  }, [isRunning]);
-
   const loadTimerState = async () => {
     try {
       const stateJson = await AsyncStorage.getItem(TIMER_STORAGE_KEY);
       if (stateJson) {
         const state: TimerState = JSON.parse(stateJson);
 
-        // If timer was running, calculate elapsed time
-        if (state.isRunning && state.lastUpdateTime) {
-          const now = Date.now();
-          const elapsedSeconds = Math.floor((now - state.lastUpdateTime) / 1000);
-          const newRemaining = Math.max(0, state.remainingSeconds - elapsedSeconds);
+        setTotalSeconds(state.totalSeconds);
 
-          setTotalSeconds(state.totalSeconds);
+        // If timer was running, calculate remaining time from target end time
+        if (state.isRunning && state.targetEndTime) {
+          const now = Date.now();
+          const newRemaining = Math.max(0, Math.ceil((state.targetEndTime - now) / 1000));
+
+          targetEndTimeRef.current = state.targetEndTime;
           setRemainingSeconds(newRemaining);
 
           if (newRemaining > 0) {
             setIsRunning(true);
           } else {
             setIsRunning(false);
+            targetEndTimeRef.current = null;
             handleTimerComplete();
           }
         } else {
-          setTotalSeconds(state.totalSeconds);
           setRemainingSeconds(state.remainingSeconds);
           setIsRunning(false);
+          targetEndTimeRef.current = null;
         }
       }
     } catch (error) {
@@ -130,7 +134,8 @@ export const useCountdownTimer = () => {
         totalSeconds,
         remainingSeconds,
         isRunning,
-        lastUpdateTime: isRunning ? Date.now() : null,
+        startTime: isRunning ? Date.now() - (totalSeconds - remainingSeconds) * 1000 : null,
+        targetEndTime: targetEndTimeRef.current,
       };
       await AsyncStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(state));
     } catch (error) {
@@ -149,6 +154,8 @@ export const useCountdownTimer = () => {
 
   const start = () => {
     if (remainingSeconds > 0) {
+      const now = Date.now();
+      targetEndTimeRef.current = now + remainingSeconds * 1000;
       setIsRunning(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
@@ -156,11 +163,13 @@ export const useCountdownTimer = () => {
 
   const pause = () => {
     setIsRunning(false);
+    targetEndTimeRef.current = null;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   const reset = () => {
     setIsRunning(false);
+    targetEndTimeRef.current = null;
     setRemainingSeconds(totalSeconds);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
@@ -169,6 +178,7 @@ export const useCountdownTimer = () => {
     setTotalSeconds(seconds);
     setRemainingSeconds(seconds);
     setIsRunning(false);
+    targetEndTimeRef.current = null;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 

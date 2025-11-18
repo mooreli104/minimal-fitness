@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
 import {  GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import BottomNav from '../components/BottomNav';
@@ -13,6 +13,7 @@ import CalendarModal from '../components/common/CalendarModal';
 import { ChangeDayModal } from '../components/workout/ChangeDayModal';
 import { RenameDayModal } from '../components/workout/RenameDayModal';
 import { CountdownTimer } from '../components/workout/CountdownTimer';
+import { useTimer } from '../contexts/TimerContext';
 import { styles } from '../styles/Workout.styles';
 import WorkoutHeader from '../components/workout/WorkoutHeader';
 import DaySelector from '../components/workout/DaySelector';
@@ -60,6 +61,8 @@ export default function Workout() {
   const [isRenameModalVisible, setRenameModalVisible] = useState(false);
   const [newDayName, setNewDayName] = useState('');
   const [isTimerVisible, setTimerVisible] = useState(false);
+
+  const { remainingSeconds, isRunning, formatTime } = useTimer();
 
   const openDayActionSheet = (day: WorkoutDay) => {
     setSelectedDay(day);
@@ -158,7 +161,9 @@ export default function Workout() {
             style={styles.timerToggle}
             onPress={() => setTimerVisible(true)}
           >
-            <Text style={styles.timerToggleText}>Timer</Text>
+            <Text style={styles.timerToggleText}>
+              {isRunning ? formatTime(remainingSeconds) : 'Start Timer'}
+            </Text>
           </TouchableOpacity>
           <View style={{ flex: 1, alignItems: 'center' }}>
             <TouchableOpacity
@@ -204,96 +209,102 @@ export default function Workout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <View style={styles.container}>
-        <TemplateManager
-          isVisible={isTemplateManagerVisible}
-          templates={templates}
-          onClose={() => setTemplateManagerVisible(false)}
-          onLoadTemplate={handleLoadTemplate}
-          onSaveCurrent={handleSaveTemplate}
-          onRenameTemplate={renameTemplate}
-          onDeleteTemplate={deleteTemplate}
-        />
-        <WorkoutDayActionSheet
-          visible={isActionSheetVisible}
-          onClose={() => setIsActionSheetVisible(false)}
-          onEdit={handleEditDay}
-          onDuplicate={handleDuplicateDay}
-          onDelete={handleDeleteDay}
-          onToggleRestDay={() => {
-            if (selectedDay) {
-              toggleRestDay(selectedDay.id);
-            }
-            setIsActionSheetVisible(false);
-          }}
-          isRestDay={selectedDay?.isRest}
-        />
-        <CalendarModal
-          isVisible={isCalendarVisible}
-          onClose={closeCalendar}
-          onDateSelect={handleDateSelectFromCalendar}
-          selectedDate={selectedDate}
-        />
-        <ChangeDayModal
-          isVisible={isChangeDayModalVisible}
-          onClose={() => setChangeDayModalVisible(false)}
-          onSelect={(name) => {
-            if (workoutLog) {
-              const updatedLog = { ...workoutLog, name };
-              setWorkoutLog(updatedLog);
-              saveWorkoutLog(updatedLog);
-            }
-            setChangeDayModalVisible(false);
-          }}
-          programDays={program}
-          onAdd={handleAddDay}
-          onDelete={deleteProgramDay}
-        />
-        <RenameDayModal
-          isVisible={isRenameModalVisible}
-          onClose={() => setRenameModalVisible(false)}
-          onSave={handleSaveRename}
-          newDayName={newDayName}
-          setNewDayName={setNewDayName}
-        />
-        <CountdownTimer
-          isVisible={isTimerVisible}
-          onClose={() => setTimerVisible(false)}
-        />
-
-        <ScrollView contentContainerStyle={styles.content}>
-          <WorkoutHeader onOpenTemplateManager={() => setTemplateManagerVisible(true)} />
-          <DaySelector
-            program={program}
-            onSelectDay={selectDayToLog}
-            onLongPressDay={openDayActionSheet}
-            onAddDay={handleAddDay}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
+        <View style={styles.container}>
+          <TemplateManager
+            isVisible={isTemplateManagerVisible}
+            templates={templates}
+            onClose={() => setTemplateManagerVisible(false)}
+            onLoadTemplate={handleLoadTemplate}
+            onSaveCurrent={handleSaveTemplate}
+            onRenameTemplate={renameTemplate}
+            onDeleteTemplate={deleteTemplate}
+          />
+          <WorkoutDayActionSheet
+            visible={isActionSheetVisible}
+            onClose={() => setIsActionSheetVisible(false)}
+            onEdit={handleEditDay}
+            onDuplicate={handleDuplicateDay}
+            onDelete={handleDeleteDay}
+            onToggleRestDay={() => {
+              if (selectedDay) {
+                toggleRestDay(selectedDay.id);
+              }
+              setIsActionSheetVisible(false);
+            }}
+            isRestDay={selectedDay?.isRest}
+          />
+          <CalendarModal
+            isVisible={isCalendarVisible}
+            onClose={closeCalendar}
+            onDateSelect={handleDateSelectFromCalendar}
+            selectedDate={selectedDate}
+          />
+          <ChangeDayModal
+            isVisible={isChangeDayModalVisible}
+            onClose={() => setChangeDayModalVisible(false)}
+            onSelect={(name) => {
+              if (workoutLog) {
+                const updatedLog = { ...workoutLog, name };
+                setWorkoutLog(updatedLog);
+                saveWorkoutLog(updatedLog);
+              }
+              setChangeDayModalVisible(false);
+            }}
+            programDays={program}
+            onAdd={handleAddDay}
+            onDelete={deleteProgramDay}
+          />
+          <RenameDayModal
+            isVisible={isRenameModalVisible}
+            onClose={() => setRenameModalVisible(false)}
+            onSave={handleSaveRename}
+            newDayName={newDayName}
+            setNewDayName={setNewDayName}
+          />
+          <CountdownTimer
+            isVisible={isTimerVisible}
+            onClose={() => setTimerVisible(false)}
           />
 
-          <DateHeader
-            date={selectedDate}
-            onPrev={() => handleDateChange('prev')}
-            onNext={() => handleDateChange('next')}
-            onToday={() => handleDateChange('today')}
-            onPressDate={openCalendar}
-          />
+          <ScrollView contentContainerStyle={styles.content}>
+            <WorkoutHeader onOpenTemplateManager={() => setTemplateManagerVisible(true)} />
+            <DaySelector
+              program={program}
+              onSelectDay={selectDayToLog}
+              onLongPressDay={openDayActionSheet}
+              onAddDay={handleAddDay}
+            />
 
-          <View style={styles.yesterdayIndicator}>
-            {!isToday ? (
-              <TouchableOpacity onPress={() => handleDateChange('today')}>
-                <Text style={styles.yesterdayText}>Jump to Today</Text>
-              </TouchableOpacity>
-            ) : yesterdaysWorkoutName === 'REST_DAY' ? (
-              <Text style={styles.yesterdayText}>Yesterday: Rest Day</Text>
-            ) : yesterdaysWorkoutName ? (
-              <Text style={styles.yesterdayText}>Yesterday: {yesterdaysWorkoutName}</Text>
-            ) : null}
-          </View>
+            <DateHeader
+              date={selectedDate}
+              onPrev={() => handleDateChange('prev')}
+              onNext={() => handleDateChange('next')}
+              onToday={() => handleDateChange('today')}
+              onPressDate={openCalendar}
+            />
 
-          {renderWorkoutContent()}
-        </ScrollView>
-        <BottomNav />
-      </View>
+            <View style={styles.yesterdayIndicator}>
+              {!isToday ? (
+                <TouchableOpacity onPress={() => handleDateChange('today')}>
+                  <Text style={styles.yesterdayText}>Jump to Today</Text>
+                </TouchableOpacity>
+              ) : yesterdaysWorkoutName === 'REST_DAY' ? (
+                <Text style={styles.yesterdayText}>Yesterday: Rest Day</Text>
+              ) : yesterdaysWorkoutName ? (
+                <Text style={styles.yesterdayText}>Yesterday: {yesterdaysWorkoutName}</Text>
+              ) : null}
+            </View>
+
+            {renderWorkoutContent()}
+          </ScrollView>
+          <BottomNav />
+        </View>
+      </KeyboardAvoidingView>
     </GestureHandlerRootView>
   );
 }

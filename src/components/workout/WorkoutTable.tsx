@@ -22,8 +22,8 @@ const WorkoutTable = ({
     <>
       <View style={[styles.row, styles.tableHeader]}>
         <Text style={[styles.headerText, styles.exerciseCol]}>Exercise</Text>
-        <Text style={[styles.headerText, styles.numberCol]}>Sets</Text>
-        <Text style={[styles.headerText, styles.numberCol]}>Reps</Text>
+        <Text style={[styles.headerText, styles.targetActualCol]}>Target</Text>
+        <Text style={[styles.headerText, styles.targetActualCol]}>Actual</Text>
         <Text style={[styles.headerText, styles.numberCol]}>Weight</Text>
       </View>
       {exercises.map((item) => (

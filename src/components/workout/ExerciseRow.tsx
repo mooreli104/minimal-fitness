@@ -55,23 +55,22 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
             onChangeText={(text) => onExerciseChange(item.id, 'name', text)}
           />
           <TextInput
-            style={[styles.cell, styles.numberCol]}
-            value={item.sets}
-            keyboardType="number-pad"
+            style={[styles.cell, styles.targetActualCol]}
+            value={item.target}
+            placeholder="3x8"
             scrollEnabled={false}
-            onChangeText={(text) => onExerciseChange(item.id, 'sets', text)}
+            onChangeText={(text) => onExerciseChange(item.id, 'target', text)}
           />
           <TextInput
-            style={[styles.cell, styles.numberCol]}
-            value={item.reps}
-            keyboardType="default"
+            style={[styles.cell, styles.targetActualCol]}
+            value={item.actual}
+            placeholder="3x8"
             scrollEnabled={false}
-            onChangeText={(text) => onExerciseChange(item.id, 'reps', text)}
+            onChangeText={(text) => onExerciseChange(item.id, 'actual', text)}
           />
           <TextInput
             style={[styles.cell, styles.numberCol]}
             value={item.weight}
-            keyboardType="number-pad"
             scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'weight', text)}
           />

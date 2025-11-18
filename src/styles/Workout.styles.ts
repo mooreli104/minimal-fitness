@@ -165,6 +165,7 @@ export const styles = StyleSheet.create({
   headerText: { padding: 12, fontWeight: '600', fontSize: 12, color: '#999', textTransform: 'uppercase', letterSpacing: 0.5 },
   exerciseCol: { flex: 12 },
   numberCol: { flex: 1, textAlign: 'center', minWidth: 70 },
+  targetActualCol: { flex: 1.2, textAlign: 'center', minWidth: 80 },
   cell: { padding: 12, fontSize: 16, alignSelf: 'center', minHeight: 48 },
   addButton: {
     flexDirection: 'row',

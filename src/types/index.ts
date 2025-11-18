@@ -61,9 +61,12 @@ export type DailyFoodLog = {
 export interface Exercise {
   id: number;
   name: string;
-  sets: string;
-  reps: string;
+  target: string; // Format: "3x8", "5x5", etc.
+  actual: string; // Format: "3x8", "5x5", etc.
   weight: string;
+  // Legacy fields for backwards compatibility
+  sets?: string;
+  reps?: string;
 }
 
 export interface WorkoutDay {

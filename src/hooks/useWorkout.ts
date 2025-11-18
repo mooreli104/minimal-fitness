@@ -8,6 +8,33 @@ const WORKOUT_LOG_PREFIX = '@workoutlog_';
 const WORKOUT_PROGRAM_KEY = '@workoutProgram';
 const WORKOUT_TEMPLATES_KEY = '@workoutTemplates';
 
+// Helper function to migrate old exercise format to new format
+const migrateExercise = (exercise: Exercise): Exercise => {
+  // If already has target/actual, return as-is
+  if (exercise.target !== undefined && exercise.actual !== undefined) {
+    return exercise;
+  }
+
+  // Migrate from old sets/reps format to new target/actual format
+  const sets = exercise.sets || '';
+  const reps = exercise.reps || '';
+  const targetActual = sets && reps ? `${sets}x${reps}` : '';
+
+  return {
+    ...exercise,
+    target: targetActual,
+    actual: targetActual,
+  };
+};
+
+// Helper function to migrate workout day exercises
+const migrateWorkoutDay = (day: WorkoutDay): WorkoutDay => {
+  return {
+    ...day,
+    exercises: day.exercises.map(migrateExercise),
+  };
+};
+
 export const useWorkout = (selectedDate: Date) => {
   const [workoutLog, setWorkoutLog] = useState<WorkoutDay | null>(null);
   const [program, setProgram] = useState<WorkoutDay[]>([]);
@@ -27,7 +54,13 @@ export const useWorkout = (selectedDate: Date) => {
       const storedTemplates = await AsyncStorage.getItem(WORKOUT_TEMPLATES_KEY);
 
       if (storedLog) {
-        setWorkoutLog(JSON.parse(storedLog));
+        const parsedLog = JSON.parse(storedLog);
+        const migratedLog = migrateWorkoutDay(parsedLog);
+        setWorkoutLog(migratedLog);
+        // Save migrated data back to storage
+        if (JSON.stringify(parsedLog) !== JSON.stringify(migratedLog)) {
+          await AsyncStorage.setItem(storageKey, JSON.stringify(migratedLog));
+        }
       } else {
         setWorkoutLog(null);
       }
@@ -49,11 +82,26 @@ export const useWorkout = (selectedDate: Date) => {
       }
 
       if (storedProgram) {
-        setProgram(JSON.parse(storedProgram));
+        const parsedProgram = JSON.parse(storedProgram);
+        const migratedProgram = parsedProgram.map(migrateWorkoutDay);
+        setProgram(migratedProgram);
+        // Save migrated data back to storage
+        if (JSON.stringify(parsedProgram) !== JSON.stringify(migratedProgram)) {
+          await AsyncStorage.setItem(WORKOUT_PROGRAM_KEY, JSON.stringify(migratedProgram));
+        }
       }
 
       if (storedTemplates) {
-        setTemplates(JSON.parse(storedTemplates));
+        const parsedTemplates = JSON.parse(storedTemplates);
+        const migratedTemplates = parsedTemplates.map((template: WorkoutTemplate) => ({
+          ...template,
+          days: template.days.map(migrateWorkoutDay),
+        }));
+        setTemplates(migratedTemplates);
+        // Save migrated data back to storage
+        if (JSON.stringify(parsedTemplates) !== JSON.stringify(migratedTemplates)) {
+          await AsyncStorage.setItem(WORKOUT_TEMPLATES_KEY, JSON.stringify(migratedTemplates));
+        }
       }
     } catch (e) {
       Alert.alert('Error', 'Failed to load workout data.');
@@ -100,7 +148,7 @@ export const useWorkout = (selectedDate: Date) => {
     const newDay: WorkoutDay = {
       id: Date.now(),
       name: newDayName,
-      exercises: [{ id: Date.now() + 1, name: '', sets: '', reps: '', weight: '' }],
+      exercises: [{ id: Date.now() + 1, name: '', target: '', actual: '', weight: '' }],
       isRest: false,
     };
     const newProgram = [...program, newDay];
@@ -149,7 +197,7 @@ export const useWorkout = (selectedDate: Date) => {
         return {
           ...day,
           isRest,
-          exercises: isRest ? [] : [{ id: Date.now(), name: '', sets: '', reps: '', weight: '' }],
+          exercises: isRest ? [] : [{ id: Date.now(), name: '', target: '', actual: '', weight: '' }],
         };
       }
       return day;
@@ -160,12 +208,12 @@ export const useWorkout = (selectedDate: Date) => {
 
   const addExerciseToLog = () => {
     if (!workoutLog) {
-      const newWorkout: WorkoutDay = { id: Date.now(), name: 'Workout', exercises: [{ id: Date.now(), name: '', sets: '', reps: '', weight: '' }] };
+      const newWorkout: WorkoutDay = { id: Date.now(), name: 'Workout', exercises: [{ id: Date.now(), name: '', target: '', actual: '', weight: '' }] };
       setWorkoutLog(newWorkout);
       saveWorkoutLog(newWorkout);
       return;
     }
-    const newExercise: Exercise = { id: Date.now(), name: '', sets: '', reps: '', weight: '' };
+    const newExercise: Exercise = { id: Date.now(), name: '', target: '', actual: '', weight: '' };
     const updatedLog = { ...workoutLog, exercises: [...workoutLog.exercises, newExercise] };
     setWorkoutLog(updatedLog);
     saveWorkoutLog(updatedLog);

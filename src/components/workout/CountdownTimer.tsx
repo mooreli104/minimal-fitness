@@ -10,7 +10,7 @@ import {
   NativeSyntheticEvent,
 } from 'react-native';
 import { Play, Pause, RotateCcw, X } from 'lucide-react-native';
-import { useCountdownTimer } from '../../hooks/useCountdownTimer';
+import { useTimer } from '../../contexts/TimerContext';
 
 interface CountdownTimerProps {
   isVisible: boolean;
@@ -32,7 +32,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
     setTime,
     formatTime,
     getProgress,
-  } = useCountdownTimer();
+  } = useTimer();
 
   const [selectedHours, setSelectedHours] = useState(0);
   const [selectedMinutes, setSelectedMinutes] = useState(1);
@@ -82,15 +82,15 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
     }
   }, [isVisible]);
 
-  // Update timer in real-time as user scrolls
+  // Update timer in real-time as user scrolls (but don't start it yet)
   useEffect(() => {
-    if (!isRunning) {
+    if (!isRunning && !isPaused) {
       const totalSecs = selectedHours * 3600 + selectedMinutes * 60 + selectedSeconds;
       if (totalSecs > 0) {
         setTime(totalSecs);
       }
     }
-  }, [selectedHours, selectedMinutes, selectedSeconds, isRunning]);
+  }, [selectedHours, selectedMinutes, selectedSeconds, isRunning, isPaused]);
 
   const handleScroll = (
     event: NativeSyntheticEvent<NativeScrollEvent>,
@@ -218,17 +218,30 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
                 <RotateCcw size={28} color="#000" />
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.controlButton, styles.playButton]}
-                onPress={isRunning ? handlePause : handleStart}
-                disabled={remainingSeconds === 0}
-              >
-                {isRunning ? (
-                  <Pause size={36} color="#fff" fill="#fff" />
-                ) : (
+              {!isRunning && !isPaused ? (
+                <TouchableOpacity
+                  style={[styles.controlButton, styles.playButton]}
+                  onPress={() => {
+                    handleStart();
+                    onClose();
+                  }}
+                  disabled={remainingSeconds === 0}
+                >
                   <Play size={36} color="#fff" fill="#fff" />
-                )}
-              </TouchableOpacity>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={[styles.controlButton, styles.playButton]}
+                  onPress={isRunning ? handlePause : handleStart}
+                  disabled={remainingSeconds === 0}
+                >
+                  {isRunning ? (
+                    <Pause size={36} color="#fff" fill="#fff" />
+                  ) : (
+                    <Play size={36} color="#fff" fill="#fff" />
+                  )}
+                </TouchableOpacity>
+              )}
 
               <View style={styles.controlButton} />
           </View> 
