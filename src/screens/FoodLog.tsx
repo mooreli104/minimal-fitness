@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Copy, BookOpen } from "lucide-react-native";
@@ -16,11 +16,12 @@ import AddFoodModal from "../components/food/AddFoodModal";
 import CalorieSummaryBar from "../components/food/CalorieSummaryBar";
 import MacroSummary from "../components/food/MacroSummary";
 import DietTemplateManager from "../components/DietTemplateManager";
-import { styles } from "../styles/FoodLog.styles";
+import { useTheme } from "../context/ThemeContext";
 
 import { useFoodModal } from "../hooks/useFoodModal";
 
 export default function FoodLog() {
+  const { colors } = useTheme();
   const [isTemplateManagerVisible, setTemplateManagerVisible] = useState(false);
 
   const {
@@ -92,6 +93,56 @@ export default function FoodLog() {
     loadDietTemplate(template.meals);
     setTemplateManagerVisible(false);
   };
+
+  const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    content: { paddingHorizontal: 24, paddingTop: 12, paddingBottom: 120, gap: 24 },
+    yesterdayIndicator: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: 32,
+      marginTop: -30,
+      marginBottom: -10,
+    },
+    yesterdayText: {
+      fontSize: 13,
+      color: colors.textTertiary,
+      fontStyle: 'italic',
+    },
+    actionButtons: {
+      gap: 12,
+    },
+    copyButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      paddingVertical: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      borderStyle: "dashed",
+    },
+    copyButtonText: { fontSize: 16, color: colors.textSecondary, fontWeight: "500" },
+    templateButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      paddingVertical: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      borderStyle: "dashed",
+    },
+    templateButtonText: { fontSize: 16, color: colors.textSecondary, fontWeight: "500" },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      height: 200,
+    },
+  });
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -167,14 +218,14 @@ export default function FoodLog() {
 
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.copyButton} onPress={copyYesterdayLog}>
-              <Copy size={16} color="#999" />
+              <Copy size={16} color={colors.textSecondary} />
               <Text style={styles.copyButtonText}>Copy from yesterday</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.templateButton}
               onPress={() => setTemplateManagerVisible(true)}
             >
-              <BookOpen size={16} color="#999" />
+              <BookOpen size={16} color={colors.textSecondary} />
               <Text style={styles.templateButtonText}>Diet Templates</Text>
             </TouchableOpacity>
           </View>

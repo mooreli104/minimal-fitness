@@ -10,7 +10,7 @@ import {
   NativeSyntheticEvent,
 } from 'react-native';
 import { Play, Pause, RotateCcw, X } from 'lucide-react-native';
-import { useTimer } from '../../contexts/TimerContext';
+import { useTimer } from '../../context/TimerContext';
 
 interface CountdownTimerProps {
   isVisible: boolean;

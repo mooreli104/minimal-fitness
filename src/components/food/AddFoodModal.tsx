@@ -12,6 +12,8 @@ import {
 import { X } from "lucide-react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { FoodEntry } from "../../types";
+import { useTheme } from "../../context/ThemeContext";
+import { getFoodLogStyles } from "../../styles/FoodLog.styles";
 
 interface AddFoodModalProps {
   isVisible: boolean;
@@ -21,6 +23,8 @@ interface AddFoodModalProps {
 }
 
 const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalProps) => {
+  const { colors } = useTheme();
+  const styles = getFoodLogStyles(colors);
   const [name, setName] = useState("");
   const [calories, setCalories] = useState("");
   const [protein, setProtein] = useState("");
@@ -80,13 +84,14 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{editingFood ? "Edit Food" : "Add Food"}</Text>
             <TouchableOpacity onPress={onClose}>
-              <X size={24} color="#999" />
+              <X size={24} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
           <TextInput
             style={styles.input}
             placeholder="Food Name"
+            placeholderTextColor={colors.textSecondary}
             value={name}
             onChangeText={setName}
           />
@@ -101,6 +106,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
             <TextInput
               style={styles.inputFlex}
               placeholder="Calories"
+              placeholderTextColor={colors.textSecondary}
               value={calories}
               onChangeText={setCalories}
               keyboardType="number-pad"
@@ -111,6 +117,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
             <TextInput
               style={styles.inputFlex}
               placeholder="Protein (g)"
+              placeholderTextColor={colors.textSecondary}
               value={protein}
               onChangeText={setProtein}
               keyboardType="number-pad"
@@ -118,6 +125,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
             <TextInput
               style={styles.inputFlex}
               placeholder="Carbs (g)"
+              placeholderTextColor={colors.textSecondary}
               value={carbs}
               onChangeText={setCarbs}
               keyboardType="number-pad"
@@ -125,6 +133,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
             <TextInput
               style={styles.inputFlex}
               placeholder="Fat (g)"
+              placeholderTextColor={colors.textSecondary}
               value={fat}
               onChangeText={setFat}
               keyboardType="number-pad"
@@ -152,6 +161,7 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
                   is24Hour={false}
                   display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                   onChange={handleTimeChange}
+                  textColor={colors.textPrimary}
                 />
                 {Platform.OS === 'ios' && (
                   <TouchableOpacity
@@ -169,52 +179,5 @@ const AddFoodModal = ({ isVisible, onClose, onSave, editingFood }: AddFoodModalP
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.4)",
-    paddingBottom: 120,
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 24,
-    width: "100%",
-    gap: 16,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  modalTitle: { fontSize: 20, fontWeight: "700" },
-
-  input: { backgroundColor: "#f8f8f8", padding: 12, borderRadius: 8, fontSize: 16 },
-  inputRow: { flexDirection: "row", gap: 8 },
-  inputFlex: { flex: 1, backgroundColor: "#f8f8f8", padding: 12, borderRadius: 8, fontSize: 16 },
-
-  saveButton: { backgroundColor: "#000", paddingVertical: 16, borderRadius: 12, alignItems: "center" },
-  saveButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-
-  timePickerBackdrop: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-    paddingBottom: 120,
-  },
-  timePickerContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    width: "80%",
-    maxWidth: 400,
-  },
-  doneButton: { backgroundColor: "#000", paddingVertical: 12, borderRadius: 8, alignItems: "center", marginTop: 16 },
-  doneButtonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-});
 
 export default AddFoodModal;

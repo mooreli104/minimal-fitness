@@ -1,12 +1,15 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { styles } from '../../styles/Workout.styles';
+import { getWorkoutStyles } from '../../styles/Workout.styles';
+import { useTheme } from '../../context/ThemeContext';
 
 interface WorkoutHeaderProps {
   onOpenTemplateManager: () => void;
 }
 
 const WorkoutHeader = ({ onOpenTemplateManager }: WorkoutHeaderProps) => {
+  const { colors } = useTheme();
+  const styles = getWorkoutStyles(colors);
   return (
     <View style={styles.headerRow}>
       <Text style={styles.header}>Log Workout</Text>

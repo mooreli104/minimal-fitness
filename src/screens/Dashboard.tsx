@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -9,11 +9,13 @@ import { useDateManager } from "../hooks/useDateManager";
 import DateHeader from "../components/common/DateHeader";
 import CalendarModal from "../components/common/CalendarModal";
 import { FoodEntry, DailyFoodLog } from "../types";
-import { styles } from "../styles/Dashboard.styles";
+import { useTheme } from "../context/ThemeContext";
 
 const LOG_KEY_PREFIX = "@foodlog_";
 
 export default function Dashboard() {
+  const { colors } = useTheme();
+
   const {
     selectedDate,
     isCalendarVisible,
@@ -100,6 +102,75 @@ export default function Dashboard() {
       loadDashboardData();
     }
   }, [isFocused, loadDashboardData]);
+
+  const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    content: { paddingHorizontal: 24, paddingTop: 59, paddingBottom: 120, gap: 24 },
+    topSection: {
+      paddingTop: 24,
+    },
+    totalWrapper: {
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    totalCalories: {
+      fontSize: 48,
+      fontWeight: "700",
+      color: colors.textPrimary,
+    },
+    kcalText: {
+      color: colors.textSecondary,
+      fontSize: 14,
+      marginTop: 4,
+    },
+    entriesWrapper: {
+      marginTop: 16,
+    },
+    sectionHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 12,
+    },
+    sectionLabel: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      fontWeight: "600",
+      textTransform: "uppercase",
+      letterSpacing: 1,
+    },
+    sectionLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.border,
+      marginLeft: 12,
+    },
+    entryRow: {
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    entryText: {
+      fontSize: 16,
+      color: colors.textPrimary,
+    },
+    placeholderText: {
+      textAlign: "center",
+      color: colors.textSecondary,
+      marginTop: 20,
+      fontSize: 16,
+    },
+    yesterdayIndicator: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: 32,
+      marginBottom: -16,
+    },
+    yesterdayText: {
+      fontSize: 13,
+      color: colors.textTertiary,
+      fontStyle: 'italic',
+    },
+  });
 
   return (
     <View style={styles.container}>

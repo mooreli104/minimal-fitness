@@ -4,7 +4,8 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { Trash2 } from 'lucide-react-native';
 import { Exercise } from '../../types';
-import { styles } from '../../styles/Workout.styles';
+import { getWorkoutStyles } from '../../styles/Workout.styles';
+import { useTheme } from '../../context/ThemeContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -15,6 +16,8 @@ interface ExerciseRowProps {
 }
 
 const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowProps) => {
+  const { colors } = useTheme();
+  const styles = getWorkoutStyles(colors);
   const translateX = useSharedValue(0);
   const SWIPE_THRESHOLD = -SCREEN_WIDTH * 0.2;
 
@@ -48,6 +51,7 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
             style={[styles.cell, styles.exerciseCol]}
             value={item.name}
             placeholder="Exercise Name"
+            placeholderTextColor={colors.textSecondary}
             scrollEnabled={false}
             multiline
             numberOfLines={2}
@@ -58,6 +62,7 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
             style={[styles.cell, styles.targetActualCol]}
             value={item.target}
             placeholder="3x8"
+            placeholderTextColor={colors.textSecondary}
             scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'target', text)}
           />
@@ -65,12 +70,15 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
             style={[styles.cell, styles.targetActualCol]}
             value={item.actual}
             placeholder="3x8"
+            placeholderTextColor={colors.textSecondary}
             scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'actual', text)}
           />
           <TextInput
             style={[styles.cell, styles.numberCol]}
             value={item.weight}
+            placeholder="-"
+            placeholderTextColor={colors.textSecondary}
             scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'weight', text)}
           />

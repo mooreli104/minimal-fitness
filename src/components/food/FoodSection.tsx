@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Plus } from "lucide-react-native";
 import { FoodEntry } from "../../types";
 import FoodRowItem from "./FoodRowItem";
+import { useTheme } from "../../context/ThemeContext";
+import { getFoodLogStyles } from "../../styles/FoodLog.styles";
 
 interface FoodSectionProps {
   title: string;
@@ -13,6 +15,8 @@ interface FoodSectionProps {
 }
 
 const FoodSection = ({ title, foods, onAdd, onEdit, onDelete }: FoodSectionProps) => {
+  const { colors } = useTheme();
+  const styles = getFoodLogStyles(colors);
   const totalCalories = (foods ?? []).reduce((sum, item) => sum + item.calories, 0);
 
   return (
@@ -33,33 +37,11 @@ const FoodSection = ({ title, foods, onAdd, onEdit, onDelete }: FoodSectionProps
       ))}
 
       <TouchableOpacity style={styles.addButton} onPress={onAdd}>
-        <Plus size={16} color="#000" />
+        <Plus size={16} color={colors.textPrimary} />
         <Text style={styles.addButtonText}>Add Food</Text>
       </TouchableOpacity>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  section: { backgroundColor: "#f8f8f8", borderRadius: 12, overflow: "hidden" },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e5e5",
-  },
-  sectionTitle: { fontSize: 18, fontWeight: "600" },
-  sectionCalories: { fontSize: 16, color: "#999" },
-  addButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 16,
-  },
-  addButtonText: { fontSize: 16, fontWeight: "500" },
-});
 
 export default FoodSection;

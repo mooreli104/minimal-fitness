@@ -2,10 +2,12 @@ import React from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { Home, Menu, Dumbbell, ForkKnifeCrossed, Heart } from "lucide-react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { useTheme } from "../context/ThemeContext";
 
 export default function BottomNav() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { colors } = useTheme();
 
   const navItems = [
     { icon: Home, route: "Dashboard", name: "home" },
@@ -18,7 +20,7 @@ export default function BottomNav() {
   const isActive = (r: string) => route.name === r;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
       <View style={styles.inner}>
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -35,19 +37,19 @@ export default function BottomNav() {
                 style={[
                   styles.iconWrapper,
                   item.isCenter ? styles.centerButton : styles.sideButton,
-                  item.isCenter && { backgroundColor: "black" },
+                  item.isCenter && { backgroundColor: colors.accent },
                 ]}
               >
                 <Icon
                   size={26}
                   strokeWidth={1.5}
-                  color={item.isCenter ? "white" : "black"}
+                  color={item.isCenter ? colors.background : colors.textPrimary}
                 />
               </View>
 
               {/* Active Indicator */}
               {!item.isCenter && active && (
-                <View style={styles.activeDot} />
+                <View style={[styles.activeDot, { backgroundColor: colors.textPrimary }]} />
               )}
             </TouchableOpacity>
           );
@@ -63,9 +65,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "white",
     borderTopWidth: 1,
-    borderTopColor: "#f3f4f6",
     paddingBottom: 24,
     paddingTop: 12,
     paddingHorizontal: 24,
@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
   activeDot: {
     width: 6,
     height: 6,
-    backgroundColor: "black",
     borderRadius: 999,
     marginTop: 4,
   },

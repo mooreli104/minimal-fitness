@@ -1,9 +1,10 @@
 import { StyleSheet, Dimensions } from 'react-native';
+import { ThemeColors } from '../context/ThemeContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-export const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffffff', paddingTop: 24 },
+export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background, paddingTop: 24 },
   content: { paddingHorizontal: 16, paddingTop: 48, paddingBottom: 120 },
   headerRow: {
     flexDirection: 'row',
@@ -12,15 +13,15 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 8,
     marginBottom: 16,
   },
-  header: { fontSize: 32, fontWeight: '700' },
+  header: { fontSize: 32, fontWeight: '700', color: colors.textPrimary },
   templateButton: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#007AFF',
+    color: '#007AFF', // This color is fine for both themes
   },
   loadingText: {
     textAlign: 'center',
-    color: '#999',
+    color: colors.textSecondary,
     marginTop: 48,
   },
   yesterdayIndicator: {
@@ -31,13 +32,13 @@ export const styles = StyleSheet.create({
   },
   yesterdayText: {
     fontSize: 13,
-    color: '#aaa',
+    color: colors.textTertiary,
     fontStyle: 'italic',
   },
   workoutDayHeader: {
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     alignItems: 'center',
     flexDirection: 'row',
@@ -47,18 +48,19 @@ export const styles = StyleSheet.create({
   workoutDayHeaderText: {
     fontSize: 18,
     fontWeight: '600',
+    color: colors.textPrimary,
   },
   daySelectorContainer: {
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#e5e5e5',
+    borderColor: colors.border,
     paddingVertical: 16,
     marginBottom: 16,
   },
   daySelectorTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -67,30 +69,30 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     marginRight: 8,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: colors.surfaceAlt,
   },
   dayButtonText: {
     fontWeight: '600',
-    color: '#000000',
+    color: colors.accent,
   },
   restDayButton: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: colors.surface,
     borderStyle: 'dashed',
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: colors.border,
   },
   restDayButtonText: {
-    color: '#999',
+    color: colors.textSecondary,
     fontStyle: 'italic',
   },
   restDayBadge: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#999',
+    color: colors.textSecondary,
     position: 'absolute',
     top: -5,
     right: -5,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: colors.surface,
     paddingHorizontal: 4,
     borderRadius: 4,
   },
@@ -142,31 +144,31 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
+    borderColor: colors.border,
     borderStyle: 'dashed',
   },
   addDayButtonText: {
     marginLeft: 4,
-    color: '#999',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   row: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-    backgroundColor: 'white',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.cardBackground,
     minHeight: 48,
   },
   tableHeader: {
-    backgroundColor: '#f8f8f8',
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
+    borderTopColor: colors.border,
   },
-  headerText: { padding: 12, fontWeight: '600', fontSize: 12, color: '#999', textTransform: 'uppercase', letterSpacing: 0.5 },
+  headerText: { padding: 12, fontWeight: '600', fontSize: 12, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
   exerciseCol: { flex: 12 },
   numberCol: { flex: 1, textAlign: 'center', minWidth: 70 },
   targetActualCol: { flex: 1.2, textAlign: 'center', minWidth: 80 },
-  cell: { padding: 12, fontSize: 16, alignSelf: 'center', minHeight: 48 },
+  cell: { padding: 12, fontSize: 16, alignSelf: 'center', minHeight: 48, color: colors.textPrimary },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -174,7 +176,7 @@ export const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 16,
   },
-  addButtonText: { fontSize: 16, fontWeight: '500' },
+  addButtonText: { fontSize: 16, fontWeight: '500', color: colors.textPrimary },
   emptyStateContainer: {
     padding: 32,
     alignItems: 'center',
@@ -183,6 +185,6 @@ export const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#999',
+    color: colors.textSecondary,
   },
 });

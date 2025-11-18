@@ -3,7 +3,8 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { Plus } from 'lucide-react-native';
 import { Exercise } from '../../types';
 import ExerciseRow from './ExerciseRow';
-import { styles } from '../../styles/Workout.styles';
+import { getWorkoutStyles } from '../../styles/Workout.styles';
+import { useTheme } from '../../context/ThemeContext';
 
 interface WorkoutTableProps {
   exercises: Exercise[];
@@ -18,6 +19,8 @@ const WorkoutTable = ({
   onDeleteExercise,
   onAddExercise,
 }: WorkoutTableProps) => {
+  const { colors } = useTheme();
+  const styles = getWorkoutStyles(colors);
   return (
     <>
       <View style={[styles.row, styles.tableHeader]}>
@@ -35,7 +38,7 @@ const WorkoutTable = ({
         />
       ))}
       <TouchableOpacity style={styles.addButton} onPress={onAddExercise}>
-        <Plus size={16} color="#000" strokeWidth={2} />
+        <Plus size={16} color={colors.textPrimary} strokeWidth={2} />
         <Text style={styles.addButtonText}>Add exercise</Text>
       </TouchableOpacity>
     </>

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { useTheme } from "../../context/ThemeContext";
 
 interface DateHeaderProps {
   date: Date;
@@ -11,6 +12,7 @@ interface DateHeaderProps {
 }
 
 const DateHeader = ({ date, onPrev, onNext, onToday, onPressDate }: DateHeaderProps) => {
+  const { colors } = useTheme();
   const today = new Date(); // Current date and time
   today.setHours(0, 0, 0, 0); // Set to the beginning of today
   const compareDate = new Date(date);
@@ -24,15 +26,15 @@ const DateHeader = ({ date, onPrev, onNext, onToday, onPressDate }: DateHeaderPr
   return (
     <View style={styles.dateHeaderContainer}>
       <TouchableOpacity onPress={onPrev} style={styles.dateArrow}>
-        <ChevronLeft size={24} color="#000" />
+        <ChevronLeft size={24} color={colors.textPrimary} />
       </TouchableOpacity>
       <View>
         <TouchableOpacity onPress={onPressDate} style={{ alignItems: 'center' }}>
-          <Text style={styles.dateHeaderText}>{formattedDate}</Text>
+          <Text style={[styles.dateHeaderText, { color: colors.textPrimary }]}>{formattedDate}</Text>
         </TouchableOpacity>
       </View>
       <TouchableOpacity onPress={onNext} disabled={isToday} style={styles.dateArrow}>
-        <ChevronRight size={24} color={isToday ? "#ccc" : "#000"} />
+        <ChevronRight size={24} color={isToday ? colors.textTertiary : colors.textPrimary} />
       </TouchableOpacity>
     </View>
   );

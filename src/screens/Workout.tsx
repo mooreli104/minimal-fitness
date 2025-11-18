@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Dimensions, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import {  GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import BottomNav from '../components/BottomNav';
@@ -13,14 +13,19 @@ import CalendarModal from '../components/common/CalendarModal';
 import { ChangeDayModal } from '../components/workout/ChangeDayModal';
 import { RenameDayModal } from '../components/workout/RenameDayModal';
 import { CountdownTimer } from '../components/workout/CountdownTimer';
-import { useTimer } from '../contexts/TimerContext';
-import { styles } from '../styles/Workout.styles';
+import { useTimer } from '../context/TimerContext';
+import { useTheme } from '../context/ThemeContext';
 import WorkoutHeader from '../components/workout/WorkoutHeader';
 import DaySelector from '../components/workout/DaySelector';
 import WorkoutTable from '../components/workout/WorkoutTable';
 import WorkoutEmptyState from '../components/workout/WorkoutEmptyState';
 
+import { getWorkoutStyles } from '../styles/Workout.styles';
+
 export default function Workout() {
+  const { colors } = useTheme();
+  const styles = getWorkoutStyles(colors);
+
   const {
     selectedDate,
     isCalendarVisible,
@@ -140,7 +145,7 @@ export default function Workout() {
       ]
     );
   };
-
+  
   const renderWorkoutContent = () => {
     if (isLoading) {
       return <Text style={styles.loadingText}>Loading workouts...</Text>;

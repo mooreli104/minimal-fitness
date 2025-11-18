@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { Plus } from 'lucide-react-native';
 import { WorkoutDay } from '../../types';
-import { styles } from '../../styles/Workout.styles';
+import { getWorkoutStyles } from '../../styles/Workout.styles';
+import { useTheme } from '../../context/ThemeContext';
 
 interface DaySelectorProps {
   program: WorkoutDay[];
@@ -17,6 +18,8 @@ const DaySelector = ({
   onLongPressDay,
   onAddDay,
 }: DaySelectorProps) => {
+  const { colors } = useTheme();
+  const styles = getWorkoutStyles(colors);
   return (
     <View style={styles.daySelectorContainer}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 8 }}>
@@ -32,7 +35,7 @@ const DaySelector = ({
           </TouchableOpacity>
         ))}
         <TouchableOpacity style={styles.addDayButton} onPress={onAddDay}>
-          <Plus size={16} color="#999" />
+          <Plus size={16} color={colors.textSecondary} />
           <Text style={styles.addDayButtonText}>Add Day</Text>
         </TouchableOpacity>
       </ScrollView>

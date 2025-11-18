@@ -4,6 +4,8 @@ import { Trash2 } from "lucide-react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Reanimated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from "react-native-reanimated";
 import { FoodEntry } from "../../types";
+import { useTheme } from "../../context/ThemeContext";
+import { getFoodLogStyles } from "../../styles/FoodLog.styles";
 
 interface FoodRowItemProps {
   food: FoodEntry;
@@ -16,6 +18,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = -SCREEN_WIDTH * 0.2;
 
 const FoodRowItem = ({ food, onPress, onDelete, isLastItem }: FoodRowItemProps) => {
+  const { colors } = useTheme();
+  const styles = getFoodLogStyles(colors);
   const macroParts: string[] = [];
   if (food.protein != null) macroParts.push(`P ${food.protein}g`);
   if (food.carbs != null) macroParts.push(`C ${food.carbs}g`);
@@ -75,31 +79,5 @@ const FoodRowItem = ({ food, onPress, onDelete, isLastItem }: FoodRowItemProps) 
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  foodRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e5e5",
-    backgroundColor: "white",
-  },
-  foodName: { fontSize: 16, fontWeight: "500" },
-  foodMacros: { fontSize: 13, color: "#999", marginTop: 4 },
-  deleteActionContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "flex-end",
-  },
-  deleteButton: {
-    backgroundColor: "#DC2626",
-    justifyContent: "center",
-    alignItems: "center",
-    width: 100,
-    height: "100%",
-  },
-});
 
 export default FoodRowItem;
