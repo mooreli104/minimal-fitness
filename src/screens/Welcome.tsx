@@ -1,10 +1,13 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { styles } from "../styles/Welcome.styles";
+import { useTheme } from "../context/ThemeContext";
+import { getStyles } from "../styles/Welcome.styles";
 
 export default function Welcome() {
   const navigation = useNavigation();
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   return (
     <View style={styles.container}>
