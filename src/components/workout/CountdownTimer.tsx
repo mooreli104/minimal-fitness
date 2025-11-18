@@ -8,20 +8,79 @@ import {
   ScrollView,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Animated,
+  TextInput,
+  Alert,
 } from 'react-native';
-import { Play, Pause, RotateCcw, X } from 'lucide-react-native';
+import { Play, Pause, RotateCcw, X, Edit3 } from 'lucide-react-native';
 import { useTimer } from '../../context/TimerContext';
+import { useTheme } from '../../context/ThemeContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface CountdownTimerProps {
   isVisible: boolean;
   onClose: () => void;
 }
-
-const ITEM_HEIGHT = 40;
+interface PresetTimer {
+  label: string;
+  seconds: number;
+}
+const ITEM_HEIGHT = 32;
 const VISIBLE_ITEMS = 5;
 const PICKER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
+const PRESETS_STORAGE_KEY = '@timer_presets';
+
+// Preset timer options in seconds
+const DEFAULT_PRESET_TIMERS: PresetTimer[] = [
+  { label: '30s', seconds: 30 },
+  { label: '1m', seconds: 60 },
+  { label: '2m', seconds: 120 },
+  { label: '3m', seconds: 180 },
+  { label: '5m', seconds: 300 },
+];
+
+// Rolling digit component
+const RollingDigit: React.FC<{ value: string; colors: any }> = ({ value, colors }) => {
+  const animatedValue = useRef(new Animated.Value(1)).current;
+  const prevValue = useRef(value);
+
+  useEffect(() => {
+    if (prevValue.current !== value) {
+      animatedValue.setValue(0);
+      Animated.spring(animatedValue, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
+      prevValue.current = value;
+    }
+  }, [value, animatedValue]);
+
+  const translateY = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [15, 0],
+  });
+
+  const opacity = animatedValue.interpolate({
+    inputRange: [0, 0.3, 1],
+    outputRange: [0, 0.6, 1],
+  });
+
+  return (
+    <Animated.Text
+      style={[
+        styles.timeText,
+        { color: colors.textPrimary, transform: [{ translateY }], opacity }
+      ]}
+    >
+      {value}
+    </Animated.Text>
+  );
+};
 
 export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClose }) => {
+  const { colors } = useTheme();
   const {
     remainingSeconds,
     totalSeconds,
@@ -38,7 +97,11 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
   const [selectedMinutes, setSelectedMinutes] = useState(1);
   const [selectedSeconds, setSelectedSeconds] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-
+  const [presetTimers, setPresetTimers] = useState<PresetTimer[]>(DEFAULT_PRESET_TIMERS);
+  const [editingPresetIndex, setEditingPresetIndex] = useState<number | null>(null);
+  const [editLabel, setEditLabel] = useState('');
+  const [editMinutes, setEditMinutes] = useState('');
+  const [editSeconds, setEditSeconds] = useState('');
   const hoursScrollRef = useRef<ScrollView>(null);
   const minutesScrollRef = useRef<ScrollView>(null);
   const secondsScrollRef = useRef<ScrollView>(null);
@@ -47,6 +110,30 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
   const minutes = Array.from({ length: 60 }, (_, i) => i);
   const seconds = Array.from({ length: 60 }, (_, i) => i);
 
+  // Load presets from storage
+  useEffect(() => {
+    const loadPresets = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(PRESETS_STORAGE_KEY);
+        if (stored) {
+          setPresetTimers(JSON.parse(stored));
+        }
+      } catch (error) {
+        console.error('Failed to load presets:', error);
+      }
+    };
+    loadPresets();
+  }, []);
+
+  // Save presets to storage
+  const savePresets = async (newPresets: PresetTimer[]) => {
+    try {
+      await AsyncStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(newPresets));
+      setPresetTimers(newPresets);
+    } catch (error) {
+      console.error('Failed to save presets:', error);
+    }
+  };
   const handleStart = () => {
     start();
     setIsPaused(false);
@@ -61,6 +148,65 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
     reset();
     setIsPaused(false);
   };
+
+  const handlePresetTimer = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    setSelectedHours(hrs);
+    setSelectedMinutes(mins);
+    setSelectedSeconds(secs);
+    setTime(seconds);
+
+    // Scroll pickers to the preset values
+    setTimeout(() => {
+      hoursScrollRef.current?.scrollTo({ y: hrs * ITEM_HEIGHT, animated: true });
+      minutesScrollRef.current?.scrollTo({ y: mins * ITEM_HEIGHT, animated: true });
+      secondsScrollRef.current?.scrollTo({ y: secs * ITEM_HEIGHT, animated: true });
+    }, 50);
+  };
+
+  const handleLongPressPreset = (index: number) => {
+    const preset = presetTimers[index];
+    const mins = Math.floor(preset.seconds / 60);
+    const secs = preset.seconds % 60;
+
+    setEditingPresetIndex(index);
+    setEditLabel(preset.label);
+    setEditMinutes(mins.toString());
+    setEditSeconds(secs.toString());
+  };
+
+  const handleSaveEditedPreset = () => {
+    if (editingPresetIndex === null) return;
+
+    const mins = parseInt(editMinutes) || 0;
+    const secs = parseInt(editSeconds) || 0;
+    const totalSeconds = mins * 60 + secs;
+
+    if (totalSeconds === 0) {
+      Alert.alert('Invalid Time', 'Please enter a valid time greater than 0 seconds.');
+      return;
+    }
+
+    const newPresets = [...presetTimers];
+    newPresets[editingPresetIndex] = {
+      label: editLabel.trim() || `${mins}m ${secs}s`,
+      seconds: totalSeconds,
+    };
+
+    savePresets(newPresets);
+    setEditingPresetIndex(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPresetIndex(null);
+    setEditLabel('');
+    setEditMinutes('');
+    setEditSeconds('');
+  };
+
   // Initialize picker values when modal opens
   useEffect(() => {
     if (isVisible && !isRunning) {
@@ -132,9 +278,12 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
               <Text
                 style={[
                   styles.pickerItemText,
-                  value === selectedValue && styles.pickerItemTextSelected,
+                  { color: colors.textTertiary },
+                  value === selectedValue && [styles.pickerItemTextSelected, { color: colors.textPrimary }],
                 ]}
-              >{value}</Text>
+              >
+                {value}
+              </Text>
             </View>
           ))}
         </ScrollView>
@@ -145,41 +294,58 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
   const progress = getProgress();
   const circumference = 2 * Math.PI * 120; // radius = 120
 
+  // Split time into individual digits for rolling animation
+  const timeString = formatTime(remainingSeconds);
+  const timeChars = timeString.split('');
+
   return (
     <Modal visible={isVisible} animationType="fade" transparent onRequestClose={onClose}>
-      <View style={styles.backdrop}>
-        {/* This TouchableOpacity will now only handle closing the modal when the area outside the container is pressed */}
+      <View style={[styles.backdrop, { backgroundColor: `rgba(0, 0, 0, ${colors.background === '#FCFCFC' ? '0.4' : '0.7'})` }]}>
         <TouchableOpacity style={StyleSheet.absoluteFill} onPress={onClose} testID="modal-backdrop" />
-        <View style={styles.container}>
-          {/* Close button */}
+        <View style={[styles.container, { backgroundColor: colors.surface }]}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <X size={24} color="#000" />
+            <X size={24} color={colors.textPrimary} />
           </TouchableOpacity>
 
-          {/* Timer Circle Display */}
           <View style={styles.timerDisplay}>
-            {/* Progress circle background */}
             <View style={styles.circleContainer}>
-              <View style={styles.circleBackground} />
+              <View style={[styles.circleBackground, { borderColor: colors.border }]} />
               <View
                 style={[
                   styles.circleProgress,
                   {
-                    borderColor: remainingSeconds === 0 ? '#34C759' : '#000',
+                    borderColor: remainingSeconds === 0 ? '#34C759' : colors.textPrimary,
                     borderWidth: 8,
                   },
                 ]}
               />
-
-              {/* Time display */}
-              <Text style={styles.timeText}>{formatTime(remainingSeconds)}</Text>
+              <View style={styles.timeDisplayRow}>
+                {timeChars.map((char, index) => (
+                  <RollingDigit key={`${index}-${char}`} value={char} colors={colors} />
+                ))}
+              </View>
             </View>
           </View>
 
-          {/* Scrolling time picker - visible when not running and not paused */}
+          {!isRunning && !isPaused && (
+            <View style={styles.presetsContainer}>
+              {presetTimers.map((preset, index) => (
+                <TouchableOpacity
+                  key={`${preset.label}-${index}`}
+                  style={[styles.presetButton, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+                  onPress={() => handlePresetTimer(preset.seconds)}
+                  onLongPress={() => handleLongPressPreset(index)}
+                  delayLongPress={500}
+                >
+                  <Text style={[styles.presetButtonText, { color: colors.textPrimary }]}>{preset.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
           {!isRunning && !isPaused && (
             <View style={styles.pickerContainer}>
-              <View style={styles.pickerHighlight} />
+              <View style={[styles.pickerHighlight, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]} />
               <View style={styles.pickerRow}>
                 <View style={styles.pickerGroup}>
                   {renderPickerColumn(
@@ -188,7 +354,8 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
                     (e) => handleScroll(e, setSelectedHours, 24),
                     hoursScrollRef,
                     'hours'
-                  )}<Text style={styles.pickerUnitLabel}>h</Text>
+                  )}
+                  <Text style={[styles.pickerUnitLabel, { color: colors.textPrimary }]}>h</Text>
                 </View>
                 <View style={styles.pickerGroup}>
                   {renderPickerColumn(
@@ -197,7 +364,8 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
                     (e) => handleScroll(e, setSelectedMinutes, 60),
                     minutesScrollRef,
                     'min'
-                  )}<Text style={styles.pickerUnitLabel}>m</Text>
+                  )}
+                  <Text style={[styles.pickerUnitLabel, { color: colors.textPrimary }]}>m</Text>
                 </View>
                 <View style={styles.pickerGroup}>
                   {renderPickerColumn(
@@ -206,47 +374,106 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
                     (e) => handleScroll(e, setSelectedSeconds, 60),
                     secondsScrollRef,
                     'sec'
-                  )}<Text style={styles.pickerUnitLabel}>s</Text>
+                  )}
+                  <Text style={[styles.pickerUnitLabel, { color: colors.textPrimary }]}>s</Text>
                 </View>
               </View>
             </View>
           )}
 
-          {/* Control buttons */}
           <View style={styles.controlsContainer}>
-              <TouchableOpacity style={styles.controlButton} onPress={handleReset}>
-                <RotateCcw size={28} color="#000" />
+            <TouchableOpacity style={styles.controlButton} onPress={handleReset}>
+              <RotateCcw size={28} color={colors.textPrimary} />
+            </TouchableOpacity>
+
+            {!isRunning && !isPaused ? (
+              <TouchableOpacity
+                style={[styles.controlButton, styles.playButton, { backgroundColor: colors.accent }]}
+                onPress={() => {
+                  handleStart();
+                  onClose();
+                }}
+                disabled={remainingSeconds === 0}
+              >
+                <Play size={36} color={colors.surface} fill={colors.surface} />
               </TouchableOpacity>
-
-              {!isRunning && !isPaused ? (
-                <TouchableOpacity
-                  style={[styles.controlButton, styles.playButton]}
-                  onPress={() => {
-                    handleStart();
-                    onClose();
-                  }}
-                  disabled={remainingSeconds === 0}
-                >
-                  <Play size={36} color="#fff" fill="#fff" />
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  style={[styles.controlButton, styles.playButton]}
-                  onPress={isRunning ? handlePause : handleStart}
-                  disabled={remainingSeconds === 0}
-                >
-                  {isRunning ? (
-                    <Pause size={36} color="#fff" fill="#fff" />
-                  ) : (
-                    <Play size={36} color="#fff" fill="#fff" />
-                  )}
-                </TouchableOpacity>
-              )}
-
-              <View style={styles.controlButton} />
-          </View> 
+            ) : (
+              <TouchableOpacity
+                style={[styles.controlButton, styles.playButton, { backgroundColor: colors.accent }]}
+                onPress={isRunning ? handlePause : handleStart}
+                disabled={remainingSeconds === 0}
+              >
+                {isRunning ? (
+                  <Pause size={36} color={colors.surface} fill={colors.surface} />
+                ) : (
+                  <Play size={36} color={colors.surface} fill={colors.surface} />
+                )}
+              </TouchableOpacity>
+            )}
+            <View style={styles.controlButton} />
+          </View>
         </View>
       </View>
+
+      <Modal visible={editingPresetIndex !== null} animationType="fade" transparent onRequestClose={handleCancelEdit}>
+        <View style={[styles.editModalBackdrop, { backgroundColor: `rgba(0, 0, 0, ${colors.background === '#FCFCFC' ? '0.4' : '0.7'})` }]}>
+          <View style={[styles.editModalContent, { backgroundColor: colors.surface }]}>
+            <View style={styles.editModalHeader}>
+              <Text style={[styles.editModalTitle, { color: colors.textPrimary }]}>Edit Preset</Text>
+              <TouchableOpacity onPress={handleCancelEdit}>
+                <X size={24} color={colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.editModalBody}>
+              <Text style={[styles.editModalLabel, { color: colors.textSecondary }]}>Label</Text>
+              <TextInput
+                style={[styles.editModalInput, { backgroundColor: colors.inputBackground, color: colors.textPrimary, borderColor: colors.border }]}
+                value={editLabel}
+                onChangeText={setEditLabel}
+                placeholder="e.g., 1m, Quick rest"
+                placeholderTextColor={colors.textTertiary}
+              />
+
+              <Text style={[styles.editModalLabel, { color: colors.textSecondary, marginTop: 16 }]}>Time</Text>
+              <View style={styles.editModalTimeRow}>
+                <View style={{ flex: 1 }}>
+                  <TextInput
+                    style={[styles.editModalInput, { backgroundColor: colors.inputBackground, color: colors.textPrimary, borderColor: colors.border }]}
+                    value={editMinutes}
+                    onChangeText={setEditMinutes}
+                    placeholder="Min"
+                    placeholderTextColor={colors.textTertiary}
+                    keyboardType="number-pad"
+                    maxLength={3}
+                  />
+                  <Text style={[styles.editModalUnitLabel, { color: colors.textTertiary }]}>minutes</Text>
+                </View>
+                <Text style={[styles.editModalColon, { color: colors.textPrimary }]}>:</Text>
+                <View style={{ flex: 1 }}>
+                  <TextInput
+                    style={[styles.editModalInput, { backgroundColor: colors.inputBackground, color: colors.textPrimary, borderColor: colors.border }]}
+                    value={editSeconds}
+                    onChangeText={setEditSeconds}
+                    placeholder="Sec"
+                    placeholderTextColor={colors.textTertiary}
+                    keyboardType="number-pad"
+                    maxLength={2}
+                  />
+                  <Text style={[styles.editModalUnitLabel, { color: colors.textTertiary }]}>seconds</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.editModalSaveButton, { backgroundColor: colors.accent }]}
+                onPress={handleSaveEditedPreset}
+              >
+                <Text style={[styles.editModalSaveButtonText, { color: colors.surface }]}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 };
@@ -300,8 +527,32 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 64,
     fontWeight: '300',
-    color: '#000',
     letterSpacing: -2,
+  },
+  timeDisplayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  presetsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: -20,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  presetButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    minWidth: 60,
+    alignItems: 'center',
+  },
+  presetButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   pickerContainer: {
     width: '100%',
@@ -347,17 +598,14 @@ const styles = StyleSheet.create({
   },
   pickerItemText: {
     fontSize: 20,
-    color: '#999',
     fontWeight: '400',
   },
   pickerItemTextSelected: {
     fontSize: 24,
-    color: '#000',
     fontWeight: '500',
   },
   pickerUnitLabel: {
     fontSize: 20,
-    color: '#000',
     fontWeight: '400',
     alignSelf: 'center',
     marginLeft: -15,
@@ -376,9 +624,71 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   playButton: {
-    backgroundColor: '#000',
     width: 80,
     height: 80,
     borderRadius: 40,
+  },
+
+  editModalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  editModalContent: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 16,
+    padding: 24,
+  },
+  editModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  editModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  editModalBody: {
+    gap: 8,
+  },
+  editModalLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  editModalInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+  },
+  editModalTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 8,
+  },
+  editModalUnitLabel: {
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  editModalColon: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginTop: 8,
+  },
+  editModalSaveButton: {
+    marginTop: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  editModalSaveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
