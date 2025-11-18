@@ -11,6 +11,7 @@ import BottomNav from "../components/BottomNav";
 import { MealCategory } from "../types";
 import DateHeader from "../components/common/DateHeader";
 import CalendarModal from "../components/common/CalendarModal";
+import { ConfirmDialog } from "../components/common/ConfirmDialog";
 import FoodSection from "../components/food/FoodSection";
 import AddFoodModal from "../components/food/AddFoodModal";
 import CalorieSummaryBar from "../components/food/CalorieSummaryBar";
@@ -24,6 +25,7 @@ import { useFoodModal } from "../hooks/useFoodModal";
 export default function FoodLog() {
   const { colors } = useTheme();
   const [isTemplateManagerVisible, setTemplateManagerVisible] = useState(false);
+  const [isCopyConfirmVisible, setCopyConfirmVisible] = useState(false);
 
   const {
     selectedDate,
@@ -161,6 +163,15 @@ export default function FoodLog() {
           onDateSelect={handleDateSelectFromCalendar}
           selectedDate={selectedDate}
         />
+        <ConfirmDialog
+          isVisible={isCopyConfirmVisible}
+          onClose={() => setCopyConfirmVisible(false)}
+          onConfirm={copyYesterdayLog}
+          title="Copy from Yesterday?"
+          message="This will replace your current log with yesterday's entries. Are you sure?"
+          confirmText="Copy"
+          cancelText="Cancel"
+        />
         <DietTemplateManager
           isVisible={isTemplateManagerVisible}
           templates={templates}
@@ -219,7 +230,7 @@ export default function FoodLog() {
           )}
 
           <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.copyButton} onPress={copyYesterdayLog}>
+            <TouchableOpacity style={styles.copyButton} onPress={() => setCopyConfirmVisible(true)}>
               <Copy size={16} color={colors.textSecondary} />
               <Text style={styles.copyButtonText}>Copy from yesterday</Text>
             </TouchableOpacity>
