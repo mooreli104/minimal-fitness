@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, AppStateStatus, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { getItem, setItem } from '../utils/storage';
 import { STORAGE_KEYS, TIME } from '../utils/constants';
@@ -10,6 +10,11 @@ import {
   cancelAllTimerNotifications,
   updateTimerOngoingNotification,
 } from '../services/timerNotifications';
+import {
+  startTimerLiveActivity,
+  updateTimerLiveActivity,
+  endTimerLiveActivity,
+} from '../services/liveActivity';
 
 /**
  * Timer state stored in AsyncStorage
@@ -177,19 +182,32 @@ export const useCountdownTimer = () => {
   /**
    * Handles timer completion with haptic feedback and notification cleanup
    */
-  const handleTimerComplete = () => {
+  const handleTimerComplete = async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy), 100);
     setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy), 300);
 
-    // Clean up notifications
+    // Stop notification updates
     if (notificationUpdateIntervalRef.current) {
       clearInterval(notificationUpdateIntervalRef.current);
       notificationUpdateIntervalRef.current = null;
     }
+
+    // Dismiss only the ongoing notification, let the completion notification fire
     if (ongoingNotificationIdRef.current) {
-      cancelAllTimerNotifications();
+      try {
+        const Notifications = await import('expo-notifications');
+        // Only dismiss the ongoing notification, not all notifications
+        await Notifications.dismissNotificationAsync('timer-ongoing');
+      } catch (error) {
+        console.error('Error dismissing ongoing notification:', error);
+      }
       ongoingNotificationIdRef.current = null;
+    }
+
+    // End Live Activity with completion state on iOS
+    if (Platform.OS === 'ios') {
+      await endTimerLiveActivity(true);
     }
 
     // Reset timer back to total seconds
@@ -227,6 +245,11 @@ export const useCountdownTimer = () => {
       // Schedule completion notification
       await scheduleTimerCompleteNotification(remainingSeconds);
 
+      // Start Live Activity for iOS (Dynamic Island)
+      if (Platform.OS === 'ios') {
+        await startTimerLiveActivity(remainingSeconds);
+      }
+
       // Show ongoing notification
       const notificationId = await showTimerOngoingNotification(remainingSeconds);
       if (notificationId) {
@@ -240,6 +263,11 @@ export const useCountdownTimer = () => {
 
             if (remaining > 0 && ongoingNotificationIdRef.current) {
               await updateTimerOngoingNotification(ongoingNotificationIdRef.current, remaining);
+
+              // Update Live Activity on iOS
+              if (Platform.OS === 'ios') {
+                await updateTimerLiveActivity(remaining);
+              }
             }
           }
         }, 1000);
@@ -262,6 +290,11 @@ export const useCountdownTimer = () => {
     }
     await cancelAllTimerNotifications();
     ongoingNotificationIdRef.current = null;
+
+    // End Live Activity on iOS
+    if (Platform.OS === 'ios') {
+      await endTimerLiveActivity(false);
+    }
   };
 
   /**
@@ -280,6 +313,11 @@ export const useCountdownTimer = () => {
     }
     await cancelAllTimerNotifications();
     ongoingNotificationIdRef.current = null;
+
+    // End Live Activity on iOS
+    if (Platform.OS === 'ios') {
+      await endTimerLiveActivity(false);
+    }
   };
 
   /**

@@ -17,7 +17,8 @@
       "buildNumber": "1.0.0",
       "supportsTablet": true,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSSupportsLiveActivities": true
       }
     },
     "android": {
@@ -29,14 +30,18 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "VIBRATE",
-        "POST_NOTIFICATIONS"
-      ]
+        "POST_NOTIFICATIONS",
+        "FOREGROUND_SERVICE",
+        "WAKE_LOCK"
+      ],
+      "package": "com.robinandlamb.calibu"
     },
     "notification": {
       "icon": "./assets/icon.png",
       "color": "#0A0A0A",
       "androidMode": "default",
-      "androidCollapsedTitle": "Timer Running"
+      "androidCollapsedTitle": "Timer Running",
+      "iosDisplayInForeground": true
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { Zap, Wheat, Droplet } from "lucide-react-native";
+import { Wheat, Beef, Nut } from "lucide-react-native";
 import { useTheme } from "../../context/ThemeContext";
 import { getMacroCardStyles } from "./MacroCard.styles";
 import CircularProgress from "./CircularProgress";
@@ -26,7 +26,7 @@ const MacroCard = ({ type, current, target }: MacroCardProps) => {
       case "protein":
         return {
           label: "Protein",
-          icon: Zap,
+          icon: Beef,
           color: colors.blue,
         };
       case "carbs":
@@ -38,7 +38,7 @@ const MacroCard = ({ type, current, target }: MacroCardProps) => {
       case "fat":
         return {
           label: "Fats",
-          icon: Droplet,
+          icon: Nut,
           color: colors.orange,
         };
     }

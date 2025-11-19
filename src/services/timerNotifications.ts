@@ -4,9 +4,10 @@ import { Platform } from 'react-native';
 // Configure how notifications should behave when app is in foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: false, // Don't show banner when app is in foreground
+    shouldShowBanner: true, // Show banner even when app is in foreground
     shouldPlaySound: false,
     shouldSetBadge: false,
+    shouldShowList: true,
   }),
 });
 
@@ -72,7 +73,11 @@ export async function scheduleTimerCompleteNotification(seconds: number): Promis
       return null;
     }
 
-    const notificationId = await Notifications.scheduleNotificationAsync({
+    // Use a fixed identifier separate from the ongoing notification
+    const notificationId = 'timer-complete';
+
+    await Notifications.scheduleNotificationAsync({
+      identifier: notificationId,
       content: {
         title: '⏰ Timer Complete!',
         body: 'Your workout timer has finished.',
@@ -97,6 +102,7 @@ export async function scheduleTimerCompleteNotification(seconds: number): Promis
 
 /**
  * Show an ongoing notification with the remaining time
+ * Uses chronometer style for Android to show live countdown
  */
 export async function showTimerOngoingNotification(remainingSeconds: number): Promise<string | null> {
   try {
@@ -105,6 +111,7 @@ export async function showTimerOngoingNotification(remainingSeconds: number): Pr
       return null;
     }
 
+    const targetEndTime = Date.now() + remainingSeconds * 1000;
     const hours = Math.floor(remainingSeconds / 3600);
     const minutes = Math.floor((remainingSeconds % 3600) / 60);
     const seconds = remainingSeconds % 60;
@@ -116,21 +123,34 @@ export async function showTimerOngoingNotification(remainingSeconds: number): Pr
       timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    const notificationId = await Notifications.scheduleNotificationAsync({
-      content: {
-        title: '⏱️ Timer',
-        body: timeString,
-        sound: false,
-        priority: Notifications.AndroidNotificationPriority.MAX,
-        sticky: true,
-        autoDismiss: false,
-        categoryIdentifier: 'timer_ongoing',
-        data: {
-          type: 'timer_running',
-          remainingSeconds,
-        },
-        badge: 0,
+    // Use a fixed identifier for the ongoing notification so updates work properly
+    const notificationId = 'timer-ongoing';
+
+    const content: any = {
+      title: '⏱️ Timer Running',
+      body: timeString,
+      sound: false,
+      priority: Notifications.AndroidNotificationPriority.HIGH,
+      sticky: true,
+      autoDismiss: false,
+      data: {
+        type: 'timer_running',
+        remainingSeconds,
+        targetEndTime,
       },
+      badge: 0,
+    };
+
+    // On Android, use chronometer style for live countdown
+    if (Platform.OS === 'android') {
+      content.data.chronometer = true;
+      content.data.chronometerCountDown = true;
+      content.data.when = targetEndTime;
+    }
+
+    await Notifications.scheduleNotificationAsync({
+      identifier: notificationId,
+      content,
       trigger: null, // Show immediately
     });
 
@@ -143,6 +163,7 @@ export async function showTimerOngoingNotification(remainingSeconds: number): Pr
 
 /**
  * Update the ongoing notification with new remaining time
+ * Uses the same identifier to replace the existing notification
  */
 export async function updateTimerOngoingNotification(
   notificationId: string,
@@ -160,17 +181,16 @@ export async function updateTimerOngoingNotification(
       timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    await Notifications.dismissNotificationAsync(notificationId);
-
+    // Using the same identifier automatically updates the existing notification
     await Notifications.scheduleNotificationAsync({
+      identifier: notificationId,
       content: {
-        title: '⏱️ Timer',
+        title: '⏱️ Timer Running',
         body: timeString,
         sound: false,
-        priority: Notifications.AndroidNotificationPriority.MAX,
+        priority: Notifications.AndroidNotificationPriority.HIGH,
         sticky: true,
         autoDismiss: false,
-        categoryIdentifier: 'timer_ongoing',
         data: {
           type: 'timer_running',
           remainingSeconds,
