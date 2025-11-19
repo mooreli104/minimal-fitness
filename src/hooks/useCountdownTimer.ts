@@ -4,6 +4,12 @@ import * as Haptics from 'expo-haptics';
 import { getItem, setItem } from '../utils/storage';
 import { STORAGE_KEYS, TIME } from '../utils/constants';
 import { formatTime } from '../utils/formatters';
+import {
+  scheduleTimerCompleteNotification,
+  showTimerOngoingNotification,
+  cancelAllTimerNotifications,
+  updateTimerOngoingNotification,
+} from '../services/timerNotifications';
 
 /**
  * Timer state stored in AsyncStorage
@@ -24,9 +30,12 @@ export const useCountdownTimer = () => {
   const [totalSeconds, setTotalSeconds] = useState(60);
   const [remainingSeconds, setRemainingSeconds] = useState(60);
   const [isRunning, setIsRunning] = useState(false);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const targetEndTimeRef = useRef<number | null>(null);
   const appStateRef = useRef(AppState.currentState);
+  const ongoingNotificationIdRef = useRef<string | null>(null);
+  const notificationUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Calculates remaining time based on target end time
@@ -55,6 +64,9 @@ export const useCountdownTimer = () => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+      }
+      if (notificationUpdateIntervalRef.current) {
+        clearInterval(notificationUpdateIntervalRef.current);
       }
     };
   }, []);
@@ -123,6 +135,11 @@ export const useCountdownTimer = () => {
 
           if (newRemaining > 0) {
             setIsRunning(true);
+            // Restart ongoing notification
+            const notificationId = await showTimerOngoingNotification(newRemaining);
+            if (notificationId) {
+              ongoingNotificationIdRef.current = notificationId;
+            }
           } else {
             setIsRunning(false);
             targetEndTimeRef.current = null;
@@ -158,43 +175,111 @@ export const useCountdownTimer = () => {
   };
 
   /**
-   * Handles timer completion with haptic feedback
+   * Handles timer completion with haptic feedback and notification cleanup
    */
   const handleTimerComplete = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy), 100);
     setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy), 300);
+
+    // Clean up notifications
+    if (notificationUpdateIntervalRef.current) {
+      clearInterval(notificationUpdateIntervalRef.current);
+      notificationUpdateIntervalRef.current = null;
+    }
+    if (ongoingNotificationIdRef.current) {
+      cancelAllTimerNotifications();
+      ongoingNotificationIdRef.current = null;
+    }
+
+    // Reset timer back to total seconds
+    setRemainingSeconds(totalSeconds);
+
+    // Show completion modal
+    setShowCompleteModal(true);
+  };
+
+  /**
+   * Closes the completion modal
+   */
+  const closeCompleteModal = () => {
+    setShowCompleteModal(false);
+  };
+
+  /**
+   * Restarts the timer from the completion modal
+   */
+  const restartFromComplete = async () => {
+    setShowCompleteModal(false);
+    await start();
   };
 
   /**
    * Starts the timer
    */
-  const start = () => {
+  const start = async () => {
     if (remainingSeconds > 0) {
       const now = Date.now();
       targetEndTimeRef.current = now + remainingSeconds * TIME.MILLISECONDS_PER_SECOND;
       setIsRunning(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      // Schedule completion notification
+      await scheduleTimerCompleteNotification(remainingSeconds);
+
+      // Show ongoing notification
+      const notificationId = await showTimerOngoingNotification(remainingSeconds);
+      if (notificationId) {
+        ongoingNotificationIdRef.current = notificationId;
+
+        // Update notification every second for live countdown
+        notificationUpdateIntervalRef.current = setInterval(async () => {
+          if (targetEndTimeRef.current !== null) {
+            const now = Date.now();
+            const remaining = Math.max(0, Math.ceil((targetEndTimeRef.current - now) / TIME.MILLISECONDS_PER_SECOND));
+
+            if (remaining > 0 && ongoingNotificationIdRef.current) {
+              await updateTimerOngoingNotification(ongoingNotificationIdRef.current, remaining);
+            }
+          }
+        }, 1000);
+      }
     }
   };
 
   /**
    * Pauses the timer
    */
-  const pause = () => {
+  const pause = async () => {
     setIsRunning(false);
     targetEndTimeRef.current = null;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    // Cancel notifications when paused
+    if (notificationUpdateIntervalRef.current) {
+      clearInterval(notificationUpdateIntervalRef.current);
+      notificationUpdateIntervalRef.current = null;
+    }
+    await cancelAllTimerNotifications();
+    ongoingNotificationIdRef.current = null;
   };
 
   /**
    * Resets the timer to total seconds
    */
-  const reset = () => {
+  const reset = async () => {
     setIsRunning(false);
     targetEndTimeRef.current = null;
     setRemainingSeconds(totalSeconds);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Cancel notifications when reset
+    if (notificationUpdateIntervalRef.current) {
+      clearInterval(notificationUpdateIntervalRef.current);
+      notificationUpdateIntervalRef.current = null;
+    }
+    await cancelAllTimerNotifications();
+    ongoingNotificationIdRef.current = null;
   };
 
   /**
@@ -220,11 +305,14 @@ export const useCountdownTimer = () => {
     remainingSeconds,
     totalSeconds,
     isRunning,
+    showCompleteModal,
     start,
     pause,
     reset,
     setTime,
     formatTime, // Exported from utils/formatters
     getProgress,
+    closeCompleteModal,
+    restartFromComplete,
   };
 };

@@ -26,13 +26,31 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "VIBRATE",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "notification": {
+      "icon": "./assets/icon.png",
+      "color": "#0A0A0A",
+      "androidMode": "default",
+      "androidCollapsedTitle": "Timer Running"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#0A0A0A",
+          "sounds": []
+        }
+      ]
     ]
   }
 }

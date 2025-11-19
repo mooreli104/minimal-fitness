@@ -28,9 +28,29 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
   } = useTimer();
 
   const { presets, editingPreset, editingIndex, startEditing, cancelEditing, saveEditedPreset } = useTimerPresets();
+
+  // Local state for the picker's displayed value.
   const [selectedHours, setSelectedHours] = useState(0);
   const [selectedMinutes, setSelectedMinutes] = useState(1);
   const [selectedSeconds, setSelectedSeconds] = useState(0);
+
+  // Track if we're in the middle of closing to prevent updates during animation
+  const [isClosing, setIsClosing] = useState(false);
+
+  // When the timer context's totalSeconds changes (e.g., from a preset),
+  // update the local state for the picker.
+  useEffect(() => {
+    if (isVisible) {
+      setIsClosing(false);
+      const newHours = Math.floor(totalSeconds / 3600);
+      const newMinutes = Math.floor((totalSeconds % 3600) / 60);
+      const newSeconds = totalSeconds % 60;
+
+      setSelectedHours(newHours);
+      setSelectedMinutes(newMinutes);
+      setSelectedSeconds(newSeconds);
+    }
+  }, [totalSeconds, isVisible]);
 
   const handleStart = () => {
     start();
@@ -44,50 +64,42 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
     reset();
   };
 
+  // When a preset is clicked, update the timer context.
+  // The useEffect above will handle updating the picker's visual state.
   const handlePresetTimer = (seconds: number) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-
-    setSelectedHours(hrs);
-    setSelectedMinutes(mins);
-    setSelectedSeconds(secs);
     setTime(seconds);
   };
 
-  useEffect(() => {
-    if (isVisible && !isRunning) {
-      const hrs = Math.floor(totalSeconds / 3600);
-      const mins = Math.floor((totalSeconds % 3600) / 60);
-      const secs = totalSeconds % 60;
+  // When the user stops scrolling the picker, update the timer context.
+  const handleScrollEnd = (time: { hours: number; minutes: number; seconds: number }) => {
+    const totalSecs = time.hours * 3600 + time.minutes * 60 + time.seconds;
+    setTime(totalSecs);
+  };
 
-      setSelectedHours(hrs);
-      setSelectedMinutes(mins);
-      setSelectedSeconds(secs);
-    }
-  }, [isVisible, isRunning, totalSeconds]);
+  const handleClose = () => {
+    setIsClosing(true);
+    onClose();
+  };
 
-  useEffect(() => {
-    if (!isRunning) {
-      const totalSecs = selectedHours * 3600 + selectedMinutes * 60 + selectedSeconds;
-      if (totalSecs > 0) {
-        setTime(totalSecs);
-      }
-    }
-  }, [selectedHours, selectedMinutes, selectedSeconds, isRunning]);
+  const handleStartAndClose = () => {
+    setIsClosing(true);
+    start();
+    // Small delay to ensure smooth close
+    setTimeout(() => {
+      onClose();
+    }, 100);
+  };
 
   const progress = getProgress();
-  const circumference = 2 * Math.PI * 120; // radius = 120
-
   const timeString = formatTime(remainingSeconds);
   const timeChars = timeString.split('');
 
   return (
-    <Modal visible={isVisible} animationType="fade" transparent onRequestClose={onClose}>
+    <Modal visible={isVisible} animationType="fade" transparent onRequestClose={handleClose}>
       <View style={[styles.backdrop, { backgroundColor: `rgba(0, 0, 0, ${colors.background === '#FCFCFC' ? '0.4' : '0.7'})` }]}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} onPress={onClose} testID="modal-backdrop" />
-        <View style={[styles.container, { backgroundColor: colors.surface }]}>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} onPress={handleClose} testID="modal-backdrop" />
+        <View style={[styles.container, { backgroundColor: colors.surface, opacity: isClosing ? 0 : 1 }]}>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
             <X size={24} color={colors.textPrimary} />
           </TouchableOpacity>
 
@@ -112,31 +124,32 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
           </View>
 
           {!isRunning && (
-            <View style={styles.presetsContainer}>
-              {presets.map((preset, index) => (
-                <TouchableOpacity
-                  key={`${preset.label}-${index}`}
-                  style={[styles.presetButton, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
-                  onPress={() => handlePresetTimer(preset.seconds)}
-                  onLongPress={() => startEditing(index)}
-                  delayLongPress={500}
-                >
-                  <Text style={[styles.presetButtonText, { color: colors.textPrimary }]}>{preset.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+            <>
+              <View style={styles.presetsContainer}>
+                {presets.map((preset, index) => (
+                  <TouchableOpacity
+                    key={`${preset.label}-${index}`}
+                    style={[styles.presetButton, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+                    onPress={() => handlePresetTimer(preset.seconds)}
+                    onLongPress={() => startEditing(index)}
+                    delayLongPress={500}
+                  >
+                    <Text style={[styles.presetButtonText, { color: colors.textPrimary }]}>{preset.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
 
-          {!isRunning && (
-            <TimePicker
-              selectedHours={selectedHours}
-              selectedMinutes={selectedMinutes}
-              selectedSeconds={selectedSeconds}
-              onHoursChange={setSelectedHours}
-              onMinutesChange={setSelectedMinutes}
-              onSecondsChange={setSelectedSeconds}
-              isRunning={isRunning}
-            />
+              <TimePicker
+                selectedHours={selectedHours}
+                selectedMinutes={selectedMinutes}
+                selectedSeconds={selectedSeconds}
+                onHoursChange={setSelectedHours}
+                onMinutesChange={setSelectedMinutes}
+                onSecondsChange={setSelectedSeconds}
+                onScrollEnd={handleScrollEnd}
+                isRunning={isRunning}
+              />
+            </>
           )}
 
           <View style={styles.controlsContainer}>
@@ -147,10 +160,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
             {!isRunning ? (
               <TouchableOpacity
                 style={[styles.controlButton, styles.playButton, { backgroundColor: colors.accent }]}
-                onPress={() => {
-                  handleStart();
-                  onClose();
-                }}
+                onPress={handleStartAndClose}
                 disabled={remainingSeconds === 0}
               >
                 <Play size={36} color={colors.surface} fill={colors.surface} />

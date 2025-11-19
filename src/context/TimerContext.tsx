@@ -5,12 +5,15 @@ interface TimerContextType {
   remainingSeconds: number;
   totalSeconds: number;
   isRunning: boolean;
+  showCompleteModal: boolean;
   start: () => void;
   pause: () => void;
   reset: () => void;
   setTime: (seconds: number) => void;
   formatTime: (seconds: number) => string;
   getProgress: () => number;
+  closeCompleteModal: () => void;
+  restartFromComplete: () => void;
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
