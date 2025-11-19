@@ -10,6 +10,8 @@ import {
   saveFoodLog as saveFoodLogService,
   loadCalorieTarget,
   saveCalorieTarget as saveCalorieTargetService,
+  loadMacroTargets,
+  saveMacroTargets,
 } from '../services/foodStorage.service';
 
 /**
@@ -24,22 +26,29 @@ export const useFoodLog = (date: Date) => {
     Snacks: [],
   });
   const [calorieTarget, setCalorieTarget] = useState(2000);
+  const [proteinTarget, setProteinTarget] = useState(150);
+  const [carbsTarget, setCarbsTarget] = useState(200);
+  const [fatTarget, setFatTarget] = useState(65);
   const [isLoading, setIsLoading] = useState(true);
 
   /**
-   * Loads food log and calorie target from storage
+   * Loads food log and nutrition targets from storage
    */
   const loadLog = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      const [loadedLog, loadedTarget] = await Promise.all([
+      const [loadedLog, loadedCalorieTarget, loadedMacroTargets] = await Promise.all([
         loadFoodLog(date),
         loadCalorieTarget(),
+        loadMacroTargets(),
       ]);
 
       setLog(loadedLog);
-      setCalorieTarget(loadedTarget);
+      setCalorieTarget(loadedCalorieTarget);
+      setProteinTarget(loadedMacroTargets.protein);
+      setCarbsTarget(loadedMacroTargets.carbs);
+      setFatTarget(loadedMacroTargets.fat);
     } catch (error) {
       Alert.alert('Error', 'Failed to load food log');
       console.error('Food log load error:', error);
@@ -103,27 +112,24 @@ export const useFoodLog = (date: Date) => {
     saveLog(newLog);
   }, [log, saveLog]);
 
-  // ========== Calorie Target ==========
+  // ========== Nutrition Targets ==========
 
-  const handleSetCalorieTarget = useCallback(() => {
-    Alert.prompt(
-      'Set Calorie Target',
-      'Enter your daily calorie goal:',
-      async (text) => {
-        const newTarget = parsePositiveInt(text);
+  const handleSetNutritionTargets = useCallback(async (targets: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  }) => {
+    setCalorieTarget(targets.calories);
+    setProteinTarget(targets.protein);
+    setCarbsTarget(targets.carbs);
+    setFatTarget(targets.fat);
 
-        if (newTarget && isValidCalorieTarget(newTarget)) {
-          setCalorieTarget(newTarget);
-          await saveCalorieTargetService(newTarget);
-        } else {
-          Alert.alert('Invalid Input', 'Please enter a valid calorie target (1-10000).');
-        }
-      },
-      'plain-text',
-      String(calorieTarget),
-      'number-pad'
-    );
-  }, [calorieTarget]);
+    await Promise.all([
+      saveCalorieTargetService(targets.calories),
+      saveMacroTargets(targets.protein, targets.carbs, targets.fat),
+    ]);
+  }, []);
 
   // ========== Copy Yesterday's Log ==========
 
@@ -193,11 +199,14 @@ export const useFoodLog = (date: Date) => {
     totalCarbs,
     totalFat,
     calorieTarget,
+    proteinTarget,
+    carbsTarget,
+    fatTarget,
     isLogEmpty,
     addFood,
     updateFood,
     deleteFood,
-    handleSetCalorieTarget,
+    handleSetNutritionTargets,
     copyYesterdayLog,
     loadDietTemplate,
   };

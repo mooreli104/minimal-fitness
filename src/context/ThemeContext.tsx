@@ -26,6 +26,7 @@ export interface ThemeColors {
   blue: string;
   green: string;
   cyan: string;
+  red: string;
 
   // Additional theme-specific colors
   chartLine: string;
@@ -43,10 +44,11 @@ const lightColors: ThemeColors = {
   textTertiary: '#9CA3AF',
   accent: '#0A0A0A',
   error: '#DC2626',
-  orange: '#FFF7ED',
-  blue: '#EFF6FF',
-  green: '#F0FDF4',
-  cyan: '#ECFEFF',
+  orange: '#F97316',
+  blue: '#3B82F6',
+  green: '#10B981',
+  cyan: '#06B6D4',
+  red: '#EF4444',
   chartLine: '#111111',
   cardBackground: '#FFFFFF',
   inputBackground: '#F3F4F6',
@@ -63,10 +65,11 @@ const darkColors: ThemeColors = {
   textTertiary: '#707070',
   accent: '#FFFFFF',
   error: '#FF4D4D',
-  orange: '#5A3A29',
-  blue: '#2D3755',
-  green: '#294A35',
-  cyan: '#2D4A4A',
+  orange: '#FB923C',
+  blue: '#60A5FA',
+  green: '#34D399',
+  cyan: '#22D3EE',
+  red: '#F87171',
   chartLine: '#FFFFFF',
   cardBackground: '#1A1A1A',
   inputBackground: '#2A2A2A',

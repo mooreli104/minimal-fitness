@@ -12,6 +12,7 @@ import CalendarModal from "../components/common/CalendarModal";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
 import AddFoodModal from "../components/food/AddFoodModal";
 import DietTemplateManager from "../components/DietTemplateManager";
+import NutritionTargetsModal from "../components/food/NutritionTargetsModal";
 import { BackgroundPattern } from "../components/common/BackgroundPattern";
 import { useTheme } from "../context/ThemeContext";
 import { useFoodModal } from "../hooks/useFoodModal";
@@ -42,10 +43,13 @@ export default function FoodLog() {
     totalCarbs,
     totalFat,
     calorieTarget,
+    proteinTarget,
+    carbsTarget,
+    fatTarget,
     addFood,
     updateFood,
     deleteFood,
-    handleSetCalorieTarget,
+    handleSetNutritionTargets,
     copyYesterdayLog,
     loadDietTemplate,
   } = useFoodLog(selectedDate);
@@ -128,6 +132,17 @@ export default function FoodLog() {
           onRenameTemplate={renameTemplate}
           onDeleteTemplate={deleteTemplate}
         />
+        <NutritionTargetsModal
+          isVisible={modals.nutritionTargets.isVisible}
+          onClose={modals.nutritionTargets.close}
+          onSave={handleSetNutritionTargets}
+          currentTargets={{
+            calories: calorieTarget,
+            protein: proteinTarget,
+            carbs: carbsTarget,
+            fat: fatTarget,
+          }}
+        />
 
         <ScrollView contentContainerStyle={styles.content}>
           <DateHeader
@@ -154,10 +169,13 @@ export default function FoodLog() {
             totalCarbs={totalCarbs}
             totalFat={totalFat}
             calorieTarget={calorieTarget}
+            proteinTarget={proteinTarget}
+            carbsTarget={carbsTarget}
+            fatTarget={fatTarget}
             onAddFood={handleAddFood}
             onEditFood={handleEditFood}
             onDeleteFood={deleteFood}
-            onSetCalorieTarget={handleSetCalorieTarget}
+            onSetCalorieTarget={modals.nutritionTargets.open}
             onCopyYesterday={modals.copyConfirm.open}
             onOpenTemplateManager={modals.templateManager.open}
           />

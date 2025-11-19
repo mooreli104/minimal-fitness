@@ -10,6 +10,9 @@ export const STORAGE_KEYS = {
   WORKOUT_TEMPLATES: '@workoutTemplates',
   FOOD_LOG_PREFIX: '@foodlog_',
   CALORIE_TARGET: '@calorieTarget',
+  PROTEIN_TARGET: '@proteinTarget',
+  CARBS_TARGET: '@carbsTarget',
+  FAT_TARGET: '@fatTarget',
   TIMER_STATE: '@countdown_timer_state',
   THEME: '@app_theme',
 } as const;
@@ -17,6 +20,9 @@ export const STORAGE_KEYS = {
 // Default Values
 export const DEFAULTS = {
   CALORIE_TARGET: 2000,
+  PROTEIN_TARGET: 150,
+  CARBS_TARGET: 200,
+  FAT_TARGET: 65,
   TIMER_DURATION: 60,
   NEW_EXERCISE_TEMPLATE: {
     name: '',

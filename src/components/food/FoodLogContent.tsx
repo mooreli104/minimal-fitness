@@ -3,8 +3,8 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { Copy, BookOpen } from 'lucide-react-native';
 import { MealCategory, FoodEntry as Food } from '../../types';
 import FoodSection from './FoodSection';
-import CalorieSummaryBar from './CalorieSummaryBar';
-import MacroSummary from './MacroSummary';
+import CalorieSummaryCard from './CalorieSummaryCard';
+import MacroSummaryCards from './MacroSummaryCards';
 import { useTheme } from '../../context/ThemeContext';
 import { getFoodLogStyles } from '../../styles/FoodLog.styles';
 
@@ -16,6 +16,9 @@ interface FoodLogContentProps {
   totalCarbs: number;
   totalFat: number;
   calorieTarget: number;
+  proteinTarget: number;
+  carbsTarget: number;
+  fatTarget: number;
   onAddFood: (meal: MealCategory) => void;
   onEditFood: (food: Food, meal: MealCategory) => void;
   onDeleteFood: (id: number, meal: MealCategory) => void;
@@ -32,6 +35,9 @@ export const FoodLogContent: React.FC<FoodLogContentProps> = ({
   totalCarbs,
   totalFat,
   calorieTarget,
+  proteinTarget,
+  carbsTarget,
+  fatTarget,
   onAddFood,
   onEditFood,
   onDeleteFood,
@@ -44,15 +50,15 @@ export const FoodLogContent: React.FC<FoodLogContentProps> = ({
 
   return (
     <>
-      <CalorieSummaryBar
+      <CalorieSummaryCard
         consumed={totalCalories}
         target={calorieTarget}
         onPressTarget={onSetCalorieTarget}
       />
-      <MacroSummary
-        protein={totalProtein}
-        carbs={totalCarbs}
-        fat={totalFat}
+      <MacroSummaryCards
+        protein={{ current: totalProtein, target: proteinTarget }}
+        carbs={{ current: totalCarbs, target: carbsTarget }}
+        fat={{ current: totalFat, target: fatTarget }}
       />
 
       {isLoading ? (

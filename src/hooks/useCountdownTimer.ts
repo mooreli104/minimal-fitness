@@ -212,7 +212,7 @@ export const useCountdownTimer = () => {
    * Calculates progress as a percentage
    */
   const getProgress = (): number => {
-    if (totalSeconds === 0) return 0;
+    if (totalSeconds === 0) return 1;
     return remainingSeconds / totalSeconds;
   };
 
