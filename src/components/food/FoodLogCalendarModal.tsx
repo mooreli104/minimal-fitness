@@ -10,7 +10,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { loadFoodLog } from '../../services/foodStorage.service';
-import { DailyFoodLog } from '../../types';
+import { hasFoodEntries } from '../../utils/analytics';
 
 interface FoodLogCalendarModalProps {
   isVisible: boolean;
@@ -39,13 +39,6 @@ const FoodLogCalendarModal = ({
       loadMonthStatuses(new Date(initialSelectedDate));
     }
   }, [isVisible, initialSelectedDate]);
-
-  /**
-   * Check if a food log has any entries
-   */
-  const hasFoodEntries = (log: DailyFoodLog): boolean => {
-    return Object.values(log).some((meal) => meal.length > 0);
-  };
 
   /**
    * Load food log statuses for all days in the current month

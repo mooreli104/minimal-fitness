@@ -74,6 +74,32 @@ export const getDateOffset = (date: Date, daysOffset: number): Date => {
 };
 
 /**
+ * Get date N days ago from a reference date
+ * @param days Number of days ago
+ * @param fromDate Reference date (defaults to today)
+ * @returns Date N days ago
+ */
+export const getDaysAgo = (days: number, fromDate: Date = new Date()): Date => {
+  const date = new Date(fromDate);
+  date.setDate(date.getDate() - days);
+  return date;
+};
+
+/**
+ * Get start of current week (Sunday)
+ * @param date Reference date (defaults to today)
+ * @returns Start of week date
+ */
+export const getStartOfWeek = (date: Date = new Date()): Date => {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day; // Days since Sunday
+  d.setDate(d.getDate() - diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+/**
  * Formats a number with thousands separators
  * @param value Number to format
  * @returns Formatted string

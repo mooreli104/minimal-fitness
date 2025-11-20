@@ -21,8 +21,7 @@ const CalendarModal = ({ isVisible, onClose, onDateSelect, selectedDate: initial
   }, [isVisible, initialSelectedDate]);
 
   const changeMonth = (amount: number) => {
-    const newDate = new Date(displayDate);
-    newDate.setMonth(newDate.getMonth() + amount);
+    const newDate = new Date(displayDate.getFullYear(), displayDate.getMonth() + amount, 1);
     setDisplayDate(newDate);
   };
 
@@ -158,7 +157,6 @@ const styles = StyleSheet.create({
   calendarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-around',
   },
   calendarDay: {
     width: 40,
@@ -167,7 +165,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 2,
   },
-  calendarDayText: { fontSize: 16 },
+  calendarDayText: { fontSize: 18, fontWeight: '500' },
   calendarDayTextToday: { fontWeight: 'bold', color: '#007AFF' },
 });
 

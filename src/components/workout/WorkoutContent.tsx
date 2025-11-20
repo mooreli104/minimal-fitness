@@ -2,13 +2,13 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { useTimer } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Exercise, WorkoutLog } from '../../types';
+import { Exercise, WorkoutDay } from '../../types';
 import WorkoutTable from './WorkoutTable';
 import WorkoutEmptyState from './WorkoutEmptyState';
 import { getWorkoutStyles } from '../../styles/Workout.styles';
 
 interface WorkoutContentProps {
-  workoutLog: WorkoutLog | null;
+  workoutLog: WorkoutDay | null;
   isLoading: boolean;
   onOpenTimer: () => void;
   onOpenChangeDayModal: () => void;

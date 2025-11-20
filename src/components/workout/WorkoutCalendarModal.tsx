@@ -11,7 +11,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { loadWorkoutLog } from '../../services/workoutStorage.service';
-import { WorkoutDay } from '../../types';
+import { isWorkoutCompleted } from '../../utils/analytics';
 
 interface WorkoutCalendarModalProps {
   isVisible: boolean;
@@ -42,22 +42,6 @@ const WorkoutCalendarModal = ({
   }, [isVisible, initialSelectedDate]);
 
   /**
-   * Check if a workout is complete (all exercises have actual and weight)
-   */
-  const isWorkoutComplete = (workout: WorkoutDay): boolean => {
-    if (workout.isRest) return false;
-    if (workout.exercises.length === 0) return false;
-
-    return workout.exercises.every(
-      (exercise) =>
-        exercise.actual &&
-        exercise.actual.trim() !== '' &&
-        exercise.weight &&
-        exercise.weight.trim() !== ''
-    );
-  };
-
-  /**
    * Load workout statuses for all days in the current month
    */
   const loadMonthStatuses = async (date: Date) => {
@@ -77,7 +61,7 @@ const WorkoutCalendarModal = ({
           if (workout) {
             if (workout.isRest) {
               statuses[key] = 'rest';
-            } else if (isWorkoutComplete(workout)) {
+            } else if (isWorkoutCompleted(workout)) {
               statuses[key] = 'complete';
             } else {
               statuses[key] = 'incomplete';
