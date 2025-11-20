@@ -3,6 +3,7 @@
  */
 
 export { useAnalytics } from './useAnalytics';
+export { useAnalyticsCharts } from './useAnalyticsCharts';
 export { useCountdownTimer } from './useCountdownTimer';
 export { useDashboardData } from './useDashboardData';
 export { useDateManager } from './useDateManager';
