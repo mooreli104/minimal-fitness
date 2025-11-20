@@ -9,7 +9,7 @@ import { useDateManager } from '../hooks/useDateManager';
 import { useWorkout } from '../hooks/useWorkout';
 import { WorkoutDay, WorkoutTemplate } from '../types';
 import DateHeader from '../components/common/DateHeader';
-import CalendarModal from '../components/common/CalendarModal';
+import WorkoutCalendarModal from '../components/workout/WorkoutCalendarModal';
 import { ChangeDayModal } from '../components/workout/ChangeDayModal';
 import { RenameDayModal } from '../components/workout/RenameDayModal';
 import { CountdownTimer } from '../components/workout/CountdownTimer';
@@ -192,7 +192,7 @@ export default function Workout() {
             }}
             isRestDay={selectedDay?.isRest}
           />
-          <CalendarModal
+          <WorkoutCalendarModal
             isVisible={isCalendarVisible}
             onClose={closeCalendar}
             onDateSelect={handleDateSelectFromCalendar}

@@ -1,14 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useNavigation } from '@react-navigation/native';
+import type { FoodSearchResult } from '../types/food';
 
 import { useDateManager } from "../hooks/useDateManager";
 import { useFoodLog } from "../hooks/useFoodLog";
 import { useDietTemplates } from "../hooks/useDietTemplates";
 import BottomNav from "../components/BottomNav";
 import DateHeader from "../components/common/DateHeader";
-import CalendarModal from "../components/common/CalendarModal";
+import FoodLogCalendarModal from "../components/food/FoodLogCalendarModal";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
 import AddFoodModal from "../components/food/AddFoodModal";
 import DietTemplateManager from "../components/DietTemplateManager";
@@ -21,6 +23,8 @@ import { FoodLogContent } from "../components/food/FoodLogContent";
 import { getFoodLogStyles } from "../styles/FoodLog.styles";
 
 export default function FoodLog() {
+  const navigation = useNavigation();
+  const [activeMealForSearch, setActiveMealForSearch] = useState<string | null>(null);
   const { colors } = useTheme();
   const styles = getFoodLogStyles(colors);
   const modals = useFoodLogModals();
@@ -64,11 +68,32 @@ export default function FoodLog() {
   const {
     isModalVisible,
     editingFood,
-    handleAddFood,
+    handleAddFood: handleAddFoodOriginal,
     handleEditFood,
     handleSaveFood,
     closeModal,
   } = useFoodModal(addFood, updateFood);
+
+  // Navigate to search screen instead of modal
+  const handleAddFood = (meal: string) => {
+    setActiveMealForSearch(meal);
+    navigation.navigate('FoodSearch' as never, {
+      mealType: meal,
+      onSelectFood: (food: FoodSearchResult) => {
+        // Convert search result to FoodEntry and add to log
+        const foodEntry = {
+          id: Date.now(),
+          name: food.description,
+          timestamp: new Date().toISOString(),
+          calories: food.calories || 0,
+          protein: food.protein_g || 0,
+          carbs: food.carbs_g || 0,
+          fat: food.fat_g || 0,
+        };
+        addFood(foodEntry, meal as any);
+      },
+    } as never);
+  };
 
   const handleSaveAsTemplate = () => {
     const isLogEmpty = Object.values(log).every(meal => meal.length === 0);
@@ -108,7 +133,7 @@ export default function FoodLog() {
           onSave={handleSaveFood}
           editingFood={editingFood}
         />
-        <CalendarModal
+        <FoodLogCalendarModal
           isVisible={isCalendarVisible}
           onClose={closeCalendar}
           onDateSelect={handleDateSelectFromCalendar}

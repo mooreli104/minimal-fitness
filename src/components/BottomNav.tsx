@@ -13,11 +13,21 @@ export default function BottomNav() {
     { icon: Home, route: "Dashboard", name: "home" },
     { icon: Dumbbell, route: "Workout", name: "workout" },
     { icon: ForkKnifeCrossed, route: "FoodLog", name: "foodlog" },
-    { icon: ChartColumnIncreasing, route: "Heart", name: "add" },
-    { icon: Menu, route: "More", name: "More" },
+    { icon: ChartColumnIncreasing, route: "Analytics", name: "analytics" },
+    { icon: Menu, route: "More", name: "more" },
   ];
 
-  const isActive = (r: string) => route.name === r;
+  const isActive = (r: string) => {
+    // Check if current route matches the target route
+    if (route.name === r) return true;
+
+    // For FoodLog, also check if we're on FoodLogMain or FoodSearch (nested stack screens)
+    if (r === "FoodLog" && (route.name === "FoodLogMain" || route.name === "FoodSearch")) {
+      return true;
+    }
+
+    return false;
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, borderTopColor: colors.border }]}>

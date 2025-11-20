@@ -5,6 +5,13 @@ export interface ChartDataPoint {
   value: number;
 }
 
+// Weight Tracking
+export interface WeightEntry {
+  date: string; // ISO date string (YYYY-MM-DD)
+  weight: number; // in lbs
+  timestamp: string; // ISO 8601 format
+}
+
 // Food Logging
 export interface FoodEntry {
   id: number;

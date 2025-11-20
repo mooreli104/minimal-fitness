@@ -55,7 +55,9 @@
           "color": "#0A0A0A",
           "sounds": []
         }
-      ]
+      ],
+      "expo-sqlite",
+      "expo-asset"
     ]
   }
 }

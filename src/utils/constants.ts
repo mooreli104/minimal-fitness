@@ -15,6 +15,7 @@ export const STORAGE_KEYS = {
   FAT_TARGET: '@fatTarget',
   TIMER_STATE: '@countdown_timer_state',
   THEME: '@app_theme',
+  WEIGHT_ENTRIES: '@weightEntries',
 } as const;
 
 // Default Values

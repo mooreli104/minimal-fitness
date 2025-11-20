@@ -13,7 +13,8 @@ export const getAddFoodModalStyles = (colors: ThemeColors) => StyleSheet.create(
     backgroundColor: colors.cardBackground,
     borderRadius: 16,
     padding: 24,
-    width: "100%",
+    width: "90%",
+    maxWidth: 500,
     gap: 16,
   },
   modalHeader: {
@@ -46,7 +47,7 @@ export const getAddFoodModalStyles = (colors: ThemeColors) => StyleSheet.create(
     color: colors.textPrimary,
   },
   saveButton: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.textPrimary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center"
@@ -71,7 +72,7 @@ export const getAddFoodModalStyles = (colors: ThemeColors) => StyleSheet.create(
     maxWidth: 400,
   },
   doneButton: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.textPrimary,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
