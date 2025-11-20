@@ -228,9 +228,10 @@ export const useAnalyticsCharts = () => {
             ? Math.round(dailyData.reduce((sum, d) => sum + d.fat, 0) / daysWithFood)
             : 0;
 
-        // Calculate current streak (from today backwards)
+        // Calculate current streak (from yesterday backwards, excluding today)
         let currentStreak = 0;
-        for (let i = dailyData.length - 1; i >= 0; i--) {
+        // Start from index length - 2 to skip today (which is at length - 1)
+        for (let i = dailyData.length - 2; i >= 0; i--) {
           const day = dailyData[i];
           if (day.hasWorkout || day.hasFood) {
             currentStreak++;

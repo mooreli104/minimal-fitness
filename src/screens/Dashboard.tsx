@@ -1,164 +1,223 @@
-import React, { useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
-import { useIsFocused } from "@react-navigation/native";
+/**
+ * Dashboard Screen
+ * Main dashboard with streaks, water tracker, and to-do list
+ */
 
-import BottomNav from "../components/BottomNav";
-import CalorieChart from "../components/CalorieChart";
-import { useDateManager } from "../hooks/useDateManager";
-import { useDashboardData } from "../hooks/useDashboardData";
-import DateHeader from "../components/common/DateHeader";
-import CalendarModal from "../components/common/CalendarModal";
-import { BackgroundPattern } from "../components/common/BackgroundPattern";
-import { useTheme } from "../context/ThemeContext";
-import { formatNumber } from "../utils/formatters";
+import React from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  StatusBar,
+  ActivityIndicator,
+  RefreshControl,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../context/ThemeContext';
+import { useDashboardStreaks } from '../hooks/useDashboardStreaks';
+import { useWaterIntake } from '../hooks/useWaterIntake';
+import { useTodoList } from '../hooks/useTodoList';
+import { useAnalyticsCharts } from '../hooks/useAnalyticsCharts';
+import { StreakCard } from '../components/dashboard/StreakCard';
+import { WaterTracker } from '../components/dashboard/WaterTracker';
+import { TodoChecklist } from '../components/dashboard/TodoChecklist';
+import { QuickStats } from '../components/dashboard/QuickStats';
+import BottomNav from '../components/BottomNav';
 
 export default function Dashboard() {
-  const { colors } = useTheme();
-  const isFocused = useIsFocused();
+  const { colors, theme } = useTheme();
+  const styles = getStyles(colors, theme);
 
+  // Load streak data
   const {
-    selectedDate,
-    isCalendarVisible,
-    handleDateChange,
-    handleDateSelectFromCalendar,
-    openCalendar,
-    closeCalendar,
-    isToday,
-  } = useDateManager();
+    workoutStreak,
+    foodStreak,
+    isLoading: streaksLoading,
+    refresh: refreshStreaks,
+  } = useDashboardStreaks();
 
-  const { data, loadDashboardData } = useDashboardData();
+  // Load water intake
+  const {
+    glasses,
+    goal,
+    increment: incrementWater,
+    decrement: decrementWater,
+    isLoading: waterLoading,
+  } = useWaterIntake();
 
-  useEffect(() => {
-    if (isFocused) {
-      loadDashboardData(selectedDate);
-    }
-  }, [isFocused, selectedDate, loadDashboardData]);
+  // Load todo list
+  const {
+    todos,
+    addTodo,
+    toggleTodo,
+    deleteTodo,
+    isLoading: todosLoading,
+  } = useTodoList();
 
-  const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
-    content: { paddingHorizontal: 24, paddingTop: 59, paddingBottom: 120, gap: 24 },
-    topSection: {
-      paddingTop: 24,
-    },
-    totalWrapper: {
-      alignItems: "center",
-      marginBottom: 16,
-    },
-    totalCalories: {
-      fontSize: 48,
-      fontWeight: "700",
-      color: colors.textPrimary,
-    },
-    kcalText: {
-      color: colors.textSecondary,
-      fontSize: 14,
-      marginTop: 4,
-    },
-    entriesWrapper: {
-      marginTop: 16,
-    },
-    sectionHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 12,
-    },
-    sectionLabel: {
-      fontSize: 12,
-      color: colors.textSecondary,
-      fontWeight: "600",
-      textTransform: "uppercase",
-      letterSpacing: 1,
-    },
-    sectionLine: {
-      flex: 1,
-      height: 1,
-      backgroundColor: colors.border,
-      marginLeft: 12,
-    },
-    entryRow: {
-      paddingVertical: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    entryText: {
-      fontSize: 16,
-      color: colors.textPrimary,
-    },
-    placeholderText: {
-      textAlign: "center",
-      color: colors.textSecondary,
-      marginTop: 20,
-      fontSize: 16,
-    },
-    yesterdayIndicator: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: 32,
-      marginBottom: -16,
-    },
-    yesterdayText: {
-      fontSize: 13,
-      color: colors.textTertiary,
-      fontStyle: 'italic',
-    },
-  });
+  // Load analytics data for Quick Stats (week view)
+  const {
+    dailyData,
+    workoutsCount,
+    totalVolume,
+    avgCalories,
+    currentStreak,
+    timeRange,
+    isLoading: analyticsLoading,
+  } = useAnalyticsCharts();
+
+  // Calculate volume change (compare first half vs second half of period)
+  const halfwayIndex = Math.floor(dailyData.length / 2);
+  const firstHalfVolume = dailyData
+    .slice(0, halfwayIndex)
+    .reduce((sum, d) => sum + d.volume, 0);
+  const secondHalfVolume = dailyData
+    .slice(halfwayIndex)
+    .reduce((sum, d) => sum + d.volume, 0);
+  const volumeChange =
+    firstHalfVolume > 0
+      ? Math.round(((secondHalfVolume - firstHalfVolume) / firstHalfVolume) * 100)
+      : 0;
+
+  const isLoading = streaksLoading || waterLoading || todosLoading || analyticsLoading;
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refreshStreaks();
+    setRefreshing(false);
+  };
 
   return (
-    <View style={styles.container}>
-      <BackgroundPattern />
-      <CalendarModal
-        isVisible={isCalendarVisible}
-        onClose={closeCalendar}
-        onDateSelect={handleDateSelectFromCalendar}
-        selectedDate={selectedDate}
+    <SafeAreaView style={styles.container}>
+      <StatusBar
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.background}
       />
 
-      <View style={styles.content}>
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-          <DateHeader
-            date={selectedDate}
-            onPrev={() => handleDateChange('prev')}
-            onNext={() => handleDateChange('next')}
-            onToday={() => handleDateChange('today')}
-            onPressDate={openCalendar}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.accent}
+            colors={[colors.accent]}
           />
-          <View style={styles.yesterdayIndicator}>
-            {!isToday && (
-            <TouchableOpacity onPress={() => handleDateChange('today')}>
-              <Text style={styles.yesterdayText}>Jump to Today</Text>
-            </TouchableOpacity>
-            )}
-          </View>
-          <View style={styles.topSection}>
-            <View style={styles.totalWrapper}>
-              <Text style={styles.totalCalories}>
-                {formatNumber(data.totalCalories)}
-              </Text>
-              <Text style={styles.kcalText}>kcal</Text>
-            </View>
-            <CalorieChart data={data.chartData.today} />
-          </View>
+        }
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Dashboard</Text>
+          <Text style={styles.subtitle}>Track your daily progress</Text>
+        </View>
 
-          <View style={styles.entriesWrapper}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionLabel}>Top Foods</Text>
-              <View style={styles.sectionLine} />
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.accent} />
+          </View>
+        ) : (
+          <>
+            {/* Streak Cards */}
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Your Streaks</Text>
+              <View style={styles.streaksGrid}>
+                <StreakCard type="workout" streak={workoutStreak} />
+                <StreakCard type="food" streak={foodStreak} />
+              </View>
             </View>
 
-            {data.displayedEntries.length > 0 ? (
-              data.displayedEntries.map((entry) => (
-                <View key={entry.id} style={styles.entryRow}>
-                  <Text style={styles.entryText}>{entry.name} — {entry.calories} calories</Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.placeholderText}>No foods logged for this day.</Text>
-            )}
-          </View>
-        </ScrollView>
-      </View>
+            {/* Quick Stats */}
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Quick Stats</Text>
+              <QuickStats
+                workoutsCount={workoutsCount}
+                totalVolume={totalVolume}
+                avgCalories={avgCalories}
+                currentStreak={currentStreak}
+                volumeChange={volumeChange}
+                dailyData={dailyData}
+                timeRange={timeRange}
+              />
+            </View>
+
+            {/* Water Tracker */}
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Hydration</Text>
+              <WaterTracker
+                glasses={glasses}
+                goal={goal}
+                onIncrement={incrementWater}
+                onDecrement={decrementWater}
+              />
+            </View>
+
+            {/* Todo Checklist */}
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Tasks</Text>
+              <TodoChecklist
+                todos={todos}
+                onAdd={addTodo}
+                onToggle={toggleTodo}
+                onDelete={deleteTodo}
+              />
+            </View>
+          </>
+        )}
+      </ScrollView>
 
       <BottomNav />
-    </View>
+    </SafeAreaView>
   );
 }
+
+const getStyles = (colors: any, theme: 'light' | 'dark') =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      padding: 20,
+      paddingBottom: 120,
+      gap: 24,
+    },
+    header: {
+      marginBottom: 8,
+    },
+    title: {
+      fontSize: 32,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      marginBottom: 4,
+    },
+    subtitle: {
+      fontSize: 15,
+      fontWeight: '400',
+      color: colors.textSecondary,
+    },
+    loadingContainer: {
+      marginTop: 60,
+      alignItems: 'center',
+    },
+    section: {
+      gap: 12,
+    },
+    sectionLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: colors.textSecondary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.8,
+      paddingHorizontal: 4,
+    },
+    streaksGrid: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+  });
