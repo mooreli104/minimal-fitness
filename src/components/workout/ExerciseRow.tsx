@@ -11,11 +11,12 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface ExerciseRowProps {
   item: Exercise;
+  previousExercise?: Exercise;
   onExerciseChange: (id: number, field: keyof Exercise, value: string) => void;
   onDeleteExercise: (id: number) => void;
 }
 
-const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowProps) => {
+const ExerciseRow = ({ item, previousExercise, onExerciseChange, onDeleteExercise }: ExerciseRowProps) => {
   const { colors, theme } = useTheme();
   const styles = getWorkoutStyles(colors);
   const translateX = useSharedValue(0);
@@ -62,7 +63,7 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
           <TextInput
             style={[styles.cell, styles.targetActualCol]}
             value={item.target}
-            placeholder="3x8"
+            placeholder={previousExercise?.target || "3x8"}
             placeholderTextColor={colors.textSecondary}
             scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'target', text)}
@@ -71,7 +72,7 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
           <TextInput
             style={[styles.cell, styles.targetActualCol]}
             value={item.actual}
-            placeholder="SetxRep"
+            placeholder={previousExercise?.actual || "SetxRep"}
             placeholderTextColor={colors.textSecondary}
             scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'actual', text)}
@@ -80,7 +81,7 @@ const ExerciseRow = ({ item, onExerciseChange, onDeleteExercise }: ExerciseRowPr
           <TextInput
             style={[styles.cell, styles.numberCol]}
             value={item.weight}
-            placeholder="-"
+            placeholder={previousExercise?.weight || "-"}
             placeholderTextColor={colors.textSecondary}
             scrollEnabled={false}
             onChangeText={(text) => onExerciseChange(item.id, 'weight', text)}

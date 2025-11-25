@@ -8,6 +8,7 @@ import { useTheme } from '../../context/ThemeContext';
 
 interface WorkoutTableProps {
   exercises: Exercise[];
+  previousExercises: Exercise[];
   onExerciseChange: (id: number, field: keyof Exercise, value: string) => void;
   onDeleteExercise: (id: number) => void;
   onAddExercise: () => void;
@@ -15,12 +16,20 @@ interface WorkoutTableProps {
 
 const WorkoutTable = ({
   exercises,
+  previousExercises,
   onExerciseChange,
   onDeleteExercise,
   onAddExercise,
 }: WorkoutTableProps) => {
   const { colors } = useTheme();
   const styles = getWorkoutStyles(colors);
+
+  // Find matching exercise from previous workout by name
+  const findPreviousExercise = (exerciseName: string): Exercise | undefined => {
+    if (!exerciseName) return undefined;
+    return previousExercises.find(ex => ex.name.toLowerCase() === exerciseName.toLowerCase());
+  };
+
   return (
     <View style={styles.tableContainer}>
       <View style={styles.tableInner}>
@@ -34,6 +43,7 @@ const WorkoutTable = ({
           <ExerciseRow
             key={item.id}
             item={item}
+            previousExercise={findPreviousExercise(item.name)}
             onExerciseChange={onExerciseChange}
             onDeleteExercise={onDeleteExercise}
           />

@@ -60,6 +60,12 @@ export interface WorkoutTemplate {
   days: WorkoutDay[];
 }
 
+export type DayOfWeek = 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
+
+export interface WeeklyPlan {
+  [key: string]: number | null; // Maps day of week to WorkoutDay id, or null for rest/no plan
+}
+
 // Navigation types
 export type RootStackParamList = {
   Welcome: undefined;

@@ -9,12 +9,15 @@ import {
   loadWorkoutLog,
   saveWorkoutLog as saveWorkoutLogService,
   deleteWorkoutLog,
+  findPreviousWorkoutByName,
+  findLastExerciseOccurrence,
 } from '../services/workoutStorage.service';
 import { useWorkoutProgram } from './useWorkoutProgram';
 import { useWorkoutTemplates } from './useWorkoutTemplates';
 
 export const useWorkout = (selectedDate: Date) => {
   const [workoutLog, setWorkoutLog] = useState<WorkoutDay | null>(null);
+  const [previousWorkout, setPreviousWorkout] = useState<WorkoutDay | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [yesterdaysWorkoutName, setYesterdaysWorkoutName] = useState<string | null>(null);
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
@@ -31,6 +34,14 @@ export const useWorkout = (selectedDate: Date) => {
     try {
       const log = await loadWorkoutLog(selectedDate);
       setWorkoutLog(log);
+
+      // Load previous workout with the same name for placeholders
+      if (log && !log.isRest && log.name) {
+        const prevWorkout = await findPreviousWorkoutByName(log.name, selectedDate);
+        setPreviousWorkout(prevWorkout);
+      } else {
+        setPreviousWorkout(null);
+      }
 
       const yesterdayLog = await loadWorkoutLog(getYesterday(selectedDate));
       if (yesterdayLog) {
@@ -110,15 +121,23 @@ export const useWorkout = (selectedDate: Date) => {
     saveWorkoutLog(updatedLog);
   }, [workoutLog, saveWorkoutLog]);
 
-  const selectDayToLog = useCallback((dayToLog: WorkoutDay) => {
+  const selectDayToLog = useCallback(async (dayToLog: WorkoutDay) => {
     const newLog = JSON.parse(JSON.stringify(dayToLog));
     newLog.id = generateId();
     if (dayToLog.isRest) {
       newLog.exercises = [];
     }
     setWorkoutLog(newLog);
-    saveWorkoutLog(newLog);
-  }, [saveWorkoutLog]);
+    await saveWorkoutLog(newLog);
+
+    // Load previous workout for placeholders immediately
+    if (!dayToLog.isRest && dayToLog.name) {
+      const prevWorkout = await findPreviousWorkoutByName(dayToLog.name, selectedDate);
+      setPreviousWorkout(prevWorkout);
+    } else {
+      setPreviousWorkout(null);
+    }
+  }, [saveWorkoutLog, selectedDate]);
 
   const loadTemplate = useCallback(async (template: any) => {
     const newProgram = template.days.map((day: any) => ({
@@ -131,6 +150,7 @@ export const useWorkout = (selectedDate: Date) => {
 
   return {
     workoutLog,
+    previousWorkout,
     program,
     templates,
     isLoading,

@@ -7,12 +7,15 @@ import TemplateManager from '../components/TemplateManager';
 import WorkoutDayActionSheet from '../components/WorkoutDayActionSheet';
 import { useDateManager } from '../hooks/useDateManager';
 import { useWorkout } from '../hooks/useWorkout';
+import { useWeeklyPlan } from '../hooks/useWeeklyPlan';
 import { WorkoutDay, WorkoutTemplate } from '../types';
 import DateHeader from '../components/common/DateHeader';
 import WorkoutCalendarModal from '../components/workout/WorkoutCalendarModal';
 import { ChangeDayModal } from '../components/workout/ChangeDayModal';
 import { RenameDayModal } from '../components/workout/RenameDayModal';
 import { CountdownTimer } from '../components/workout/CountdownTimer';
+import { InlineLoopingTimer } from '../components/workout/InlineLoopingTimer';
+import { WeekPlannerModal } from '../components/workout/WeekPlannerModal';
 import { useTheme } from '../context/ThemeContext';
 import WorkoutHeader from '../components/workout/WorkoutHeader';
 import DaySelector from '../components/workout/DaySelector';
@@ -38,6 +41,7 @@ export default function Workout() {
 
   const {
     workoutLog,
+    previousWorkout,
     program,
     templates,
     isLoading,
@@ -62,6 +66,11 @@ export default function Workout() {
   const modals = useWorkoutModals();
   const [selectedDay, setSelectedDay] = useState<WorkoutDay | null>(null);
   const [newDayName, setNewDayName] = useState('');
+  const [isWeekPlannerVisible, setIsWeekPlannerVisible] = useState(false);
+
+  const { weeklyPlan, updateDayPlan, clearWeeklyPlan } = useWeeklyPlan();
+
+  console.log('Workout component render - isWeekPlannerVisible:', isWeekPlannerVisible);
 
   const handleOpenDayActionSheet = (day: WorkoutDay) => {
     setSelectedDay(day);
@@ -160,6 +169,48 @@ export default function Workout() {
     }
   };
 
+  const handleClearWeeklyPlan = () => {
+    Alert.alert(
+      'Clear Weekly Plan',
+      'Are you sure you want to clear all planned workouts for the week?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: () => clearWeeklyPlan(),
+        },
+      ]
+    );
+  };
+
+  const handlePopulateWeek = () => {
+    const workoutDays = program.filter(day => !day.isRest);
+
+    if (workoutDays.length === 0) {
+      Alert.alert('No Workouts', 'Please add workout days to your program first.');
+      return;
+    }
+
+    Alert.alert(
+      'Auto-Populate Week',
+      `This will assign your ${workoutDays.length} workout day${workoutDays.length > 1 ? 's' : ''} to the week in a repeating pattern.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Populate',
+          onPress: () => {
+            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            daysOfWeek.forEach((day, index) => {
+              const workoutIndex = index % workoutDays.length;
+              updateDayPlan(day as any, workoutDays[workoutIndex].id);
+            });
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardAvoidingView
@@ -224,6 +275,15 @@ export default function Workout() {
             isVisible={modals.timer.isVisible}
             onClose={modals.timer.close}
           />
+          <WeekPlannerModal
+            isVisible={isWeekPlannerVisible}
+            onClose={() => setIsWeekPlannerVisible(false)}
+            weeklyPlan={weeklyPlan}
+            programDays={program}
+            onUpdateDay={updateDayPlan}
+            onClearPlan={handleClearWeeklyPlan}
+            onPopulateWeek={handlePopulateWeek}
+          />
 
           <ScrollView contentContainerStyle={styles.content}>
             <WorkoutHeader onOpenTemplateManager={modals.templateManager.open} />
@@ -256,6 +316,7 @@ export default function Workout() {
 
             <WorkoutContent
               workoutLog={workoutLog}
+              previousWorkout={previousWorkout}
               isLoading={isLoading}
               onOpenTimer={modals.timer.open}
               onOpenChangeDayModal={modals.changeDayModal.open}
@@ -270,6 +331,22 @@ export default function Workout() {
               onDeleteExercise={deleteExerciseFromLog}
               onAddExercise={addExerciseToLog}
             />
+
+            <InlineLoopingTimer />
+
+            <TouchableOpacity
+              style={styles.planWeekButton}
+              onPress={() => {
+                console.log('Plan Your Week button clicked');
+                console.log('Current isWeekPlannerVisible:', isWeekPlannerVisible);
+                console.log('Program days:', program.length);
+                console.log('Weekly plan:', weeklyPlan);
+                setIsWeekPlannerVisible(true);
+                console.log('Set isWeekPlannerVisible to true');
+              }}
+            >
+              <Text style={styles.planWeekButtonText}>Plan Your Week</Text>
+            </TouchableOpacity>
           </ScrollView>
           <BottomNav />
         </View>

@@ -8,12 +8,14 @@ export const STORAGE_KEYS = {
   WORKOUT_LOG_PREFIX: '@workoutlog_',
   WORKOUT_PROGRAM: '@workoutProgram',
   WORKOUT_TEMPLATES: '@workoutTemplates',
+  WEEKLY_PLAN: '@weeklyPlan',
   FOOD_LOG_PREFIX: '@foodlog_',
   CALORIE_TARGET: '@calorieTarget',
   PROTEIN_TARGET: '@proteinTarget',
   CARBS_TARGET: '@carbsTarget',
   FAT_TARGET: '@fatTarget',
   TIMER_STATE: '@countdown_timer_state',
+  LOOPING_TIMER_STATE: '@looping_timer_state',
   THEME: '@app_theme',
   WEIGHT_ENTRIES: '@weightEntries',
 } as const;
@@ -39,6 +41,7 @@ export const UI = {
   MAX_SWIPE_DISTANCE: 100,
   TOP_FOODS_LIMIT: 5,
   DAYS_IN_WEEK: 7,
+  WEEK_DAYS: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const,
 } as const;
 
 // Time Constants

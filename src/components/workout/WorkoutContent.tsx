@@ -9,6 +9,7 @@ import { getWorkoutStyles } from '../../styles/Workout.styles';
 
 interface WorkoutContentProps {
   workoutLog: WorkoutDay | null;
+  previousWorkout: WorkoutDay | null;
   isLoading: boolean;
   onOpenTimer: () => void;
   onOpenChangeDayModal: () => void;
@@ -21,6 +22,7 @@ interface WorkoutContentProps {
 
 export const WorkoutContent: React.FC<WorkoutContentProps> = ({
   workoutLog,
+  previousWorkout,
   isLoading,
   onOpenTimer,
   onOpenChangeDayModal,
@@ -61,6 +63,7 @@ export const WorkoutContent: React.FC<WorkoutContentProps> = ({
       </View>
       <WorkoutTable
         exercises={workoutLog.exercises}
+        previousExercises={previousWorkout?.exercises || []}
         onExerciseChange={onUpdateExercise}
         onDeleteExercise={onDeleteExercise}
         onAddExercise={onAddExercise}

@@ -81,15 +81,6 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
     onClose();
   };
 
-  const handleStartAndClose = () => {
-    setIsClosing(true);
-    start();
-    // Small delay to ensure smooth close
-    setTimeout(() => {
-      onClose();
-    }, 100);
-  };
-
   const progress = getProgress();
   const timeString = formatTime(remainingSeconds);
   const timeChars = timeString.split('');
@@ -160,7 +151,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ isVisible, onClo
             {!isRunning ? (
               <TouchableOpacity
                 style={[styles.controlButton, styles.playButton, { backgroundColor: colors.accent }]}
-                onPress={handleStartAndClose}
+                onPress={handleStart}
                 disabled={remainingSeconds === 0}
               >
                 <Play size={36} color={colors.surface} fill={colors.surface} />

@@ -14,6 +14,10 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
     marginBottom: 16,
   },
   header: { fontSize: 32, fontWeight: '700', color: colors.textPrimary },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 16,
+  },
   templateButton: {
     fontSize: 16,
     fontWeight: '500',
@@ -226,5 +230,41 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
   emptyStateText: {
     fontSize: 16,
     color: colors.textSecondary,
+  },
+  loopingTimerButton: {
+    backgroundColor: '#22C55E',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  loopingTimerButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  planWeekButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  planWeekButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
