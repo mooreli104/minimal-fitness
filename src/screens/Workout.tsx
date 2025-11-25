@@ -70,8 +70,6 @@ export default function Workout() {
 
   const { weeklyPlan, updateDayPlan, clearWeeklyPlan } = useWeeklyPlan();
 
-  console.log('Workout component render - isWeekPlannerVisible:', isWeekPlannerVisible);
-
   const handleOpenDayActionSheet = (day: WorkoutDay) => {
     setSelectedDay(day);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -336,14 +334,7 @@ export default function Workout() {
 
             <TouchableOpacity
               style={styles.planWeekButton}
-              onPress={() => {
-                console.log('Plan Your Week button clicked');
-                console.log('Current isWeekPlannerVisible:', isWeekPlannerVisible);
-                console.log('Program days:', program.length);
-                console.log('Weekly plan:', weeklyPlan);
-                setIsWeekPlannerVisible(true);
-                console.log('Set isWeekPlannerVisible to true');
-              }}
+              onPress={() => setIsWeekPlannerVisible(true)}
             >
               <Text style={styles.planWeekButtonText}>Plan Your Week</Text>
             </TouchableOpacity>

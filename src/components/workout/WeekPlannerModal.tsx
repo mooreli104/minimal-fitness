@@ -85,8 +85,6 @@ export const WeekPlannerModal = ({
   onClearPlan,
   onPopulateWeek,
 }: WeekPlannerModalProps) => {
-  console.log('WeekPlannerModal render:', { isVisible, weeklyPlan, programDaysCount: programDays.length, weekDaysCount: UI.WEEK_DAYS.length });
-
   return (
     <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
@@ -108,18 +106,15 @@ export const WeekPlannerModal = ({
             <TouchableOpacity style={styles.populateButton} onPress={onPopulateWeek}>
               <Text style={styles.populateButtonText}>Auto-Populate Week</Text>
             </TouchableOpacity>
-            {UI.WEEK_DAYS.map((day) => {
-              console.log('Rendering day:', day);
-              return (
-                <DayPlannerRow
-                  key={day}
-                  dayOfWeek={day as DayOfWeek}
-                  selectedWorkoutId={weeklyPlan[day]}
-                  programDays={programDays}
-                  onSelect={onUpdateDay}
-                />
-              );
-            })}
+            {UI.WEEK_DAYS.map((day) => (
+              <DayPlannerRow
+                key={day}
+                dayOfWeek={day as DayOfWeek}
+                selectedWorkoutId={weeklyPlan[day]}
+                programDays={programDays}
+                onSelect={onUpdateDay}
+              />
+            ))}
           </ScrollView>
 
           <View style={styles.footer}>

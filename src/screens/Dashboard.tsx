@@ -60,7 +60,6 @@ export default function Dashboard() {
     dailyData,
     workoutsCount,
     totalVolume,
-    avgCalories,
     currentStreak,
     timeRange,
     isLoading: analyticsLoading,
@@ -133,13 +132,9 @@ export default function Dashboard() {
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>Quick Stats</Text>
               <QuickStats
-                workoutsCount={workoutsCount}
                 totalVolume={totalVolume}
-                avgCalories={avgCalories}
-                currentStreak={currentStreak}
                 volumeChange={volumeChange}
                 dailyData={dailyData}
-                timeRange={timeRange}
               />
             </View>
 

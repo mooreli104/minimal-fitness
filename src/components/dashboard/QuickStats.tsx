@@ -1,30 +1,62 @@
 /**
  * QuickStats Component
- * Displays volume and calories in a compact grid
+ * Displays volume and weight tracking in a compact grid
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { TrendingUp, TrendingDown } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { TrendingUp, TrendingDown, Scale } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { VolumeSparkline } from '../analytics/VolumeSparkline';
+import { useBodyWeight } from '../../hooks/useBodyWeight';
 import type { DailyDataPoint } from '../../hooks/useAnalyticsCharts';
 
 interface QuickStatsProps {
   totalVolume: number;
-  avgCalories: number;
   volumeChange: number;
   dailyData: DailyDataPoint[];
 }
 
 export const QuickStats: React.FC<QuickStatsProps> = ({
   totalVolume,
-  avgCalories,
   volumeChange,
   dailyData,
 }) => {
   const { colors, theme } = useTheme();
   const styles = getStyles(colors, theme);
+  const { latestWeight, logWeight, isLoading: weightLoading } = useBodyWeight();
+
+  const handleLogWeight = () => {
+    Alert.prompt(
+      'Log Weight',
+      'Enter your current weight (lbs):',
+      (value) => {
+        const weight = parseFloat(value);
+        if (!isNaN(weight) && weight > 0) {
+          logWeight(weight);
+        } else {
+          Alert.alert('Invalid Input', 'Please enter a valid weight.');
+        }
+      },
+      'plain-keyboard',
+      latestWeight?.weight.toString() || ''
+    );
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const isToday = date.toDateString() === today.toDateString();
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+
+    if (isToday) return 'Today';
+    if (isYesterday) return 'Yesterday';
+
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
 
   return (
     <View style={styles.grid}>
@@ -71,14 +103,19 @@ export const QuickStats: React.FC<QuickStatsProps> = ({
         <Text style={styles.cardSubtext}>Total lbs lifted</Text>
       </View>
 
-      {/* Avg Calories */}
-      <View style={styles.card}>
-        <Text style={styles.cardLabel}>Avg Calories</Text>
+      {/* Weight Tracking */}
+      <TouchableOpacity style={styles.card} onPress={handleLogWeight} activeOpacity={0.7}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardLabel}>Body Weight</Text>
+          <Scale size={14} color={colors.accent} strokeWidth={2} />
+        </View>
         <Text style={styles.cardValue}>
-          {avgCalories > 0 ? avgCalories.toLocaleString() : '—'}
+          {latestWeight ? `${latestWeight.weight} lbs` : '—'}
         </Text>
-        <Text style={styles.cardSubtext}>Daily average</Text>
-      </View>
+        <Text style={styles.cardSubtext}>
+          {latestWeight ? formatDate(latestWeight.date) : 'Tap to log'}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -108,13 +145,18 @@ const getStyles = (colors: any, theme: 'light' | 'dark') =>
           }
         : {}),
     },
+    cardHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 8,
+    },
     cardLabel: {
       fontSize: 12,
       fontWeight: '500',
       color: colors.textSecondary,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
-      marginBottom: 8,
     },
     cardValue: {
       fontSize: 28,

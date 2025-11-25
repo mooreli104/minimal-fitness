@@ -11,7 +11,10 @@ import type { ExerciseProgressionPoint } from '../components/analytics/WeightPro
 interface UseWeightProgressionResult {
   progressionData: Map<string, ExerciseProgressionPoint[]>;
   topExercises: string[]; // Top 3-5 exercises by frequency
+  exerciseToWorkoutDay: Map<string, Set<string>>; // Maps exercise name to workout day names
+  allWorkoutDays: string[]; // All unique workout day names
   isLoading: boolean;
+  getExercisesByWorkoutDay: (workoutDay: string | null) => string[];
 }
 
 /**
@@ -65,6 +68,10 @@ export const useWeightProgression = (
     Map<string, ExerciseProgressionPoint[]>
   >(new Map());
   const [topExercises, setTopExercises] = useState<string[]>([]);
+  const [exerciseToWorkoutDay, setExerciseToWorkoutDay] = useState<
+    Map<string, Set<string>>
+  >(new Map());
+  const [allWorkoutDays, setAllWorkoutDays] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -88,12 +95,20 @@ export const useWeightProgression = (
         // Build progression map: exerciseName -> array of points
         const progressionMap = new Map<string, ExerciseProgressionPoint[]>();
         const exerciseFrequency = new Map<string, number>();
+        const exerciseWorkoutDayMap = new Map<string, Set<string>>();
+        const workoutDaySet = new Set<string>();
 
         dates.forEach((date, index) => {
           const workout = workoutLogs[index];
           if (!workout || workout.isRest) return;
 
           const dateKey = formatDateToKey(date);
+          const workoutDayName = workout.name;
+
+          // Track unique workout days
+          if (workoutDayName) {
+            workoutDaySet.add(workoutDayName);
+          }
 
           workout.exercises.forEach((exercise) => {
             // Skip if no actual or weight logged
@@ -130,6 +145,14 @@ export const useWeightProgression = (
               exerciseName,
               (exerciseFrequency.get(exerciseName) || 0) + 1
             );
+
+            // Map exercise to workout day
+            if (workoutDayName) {
+              if (!exerciseWorkoutDayMap.has(exerciseName)) {
+                exerciseWorkoutDayMap.set(exerciseName, new Set());
+              }
+              exerciseWorkoutDayMap.get(exerciseName)!.add(workoutDayName);
+            }
           });
         });
 
@@ -152,6 +175,8 @@ export const useWeightProgression = (
 
         setProgressionData(progressionMap);
         setTopExercises(topExercisesList);
+        setExerciseToWorkoutDay(exerciseWorkoutDayMap);
+        setAllWorkoutDays(Array.from(workoutDaySet).sort());
       } catch (error) {
         console.error('Failed to load weight progression data:', error);
       } finally {
@@ -162,9 +187,24 @@ export const useWeightProgression = (
     loadProgressionData();
   }, [daysToLoad]);
 
+  const getExercisesByWorkoutDay = (workoutDay: string | null): string[] => {
+    if (!workoutDay) {
+      return topExercises; // Return all top exercises if no filter
+    }
+
+    // Filter top exercises by workout day
+    return topExercises.filter((exerciseName) => {
+      const workoutDays = exerciseToWorkoutDay.get(exerciseName);
+      return workoutDays && workoutDays.has(workoutDay);
+    });
+  };
+
   return {
     progressionData,
     topExercises,
+    exerciseToWorkoutDay,
+    allWorkoutDays,
     isLoading,
+    getExercisesByWorkoutDay,
   };
 };

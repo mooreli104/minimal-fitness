@@ -3,7 +3,7 @@
  * Displays interactive charts and metrics with time range selection
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -14,13 +14,18 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
-import { TimeRangeSelector } from '../components/analytics/TimeRangeSelector';
-import { CaloriesTrendChart } from '../components/analytics/CaloriesTrendChart';
-import { MacroStackedBarChart } from '../components/analytics/MacroStackedBarChart';
+import { WorkoutDayFilter } from '../components/analytics/WorkoutDayFilter';
+import { NutritionCharts } from '../components/analytics/NutritionCharts';
 import { WeightProgressionChart } from '../components/analytics/WeightProgressionChart';
+import { BodyWeightChart } from '../components/analytics/BodyWeightChart';
+import { WorkoutHeatmap } from '../components/analytics/WorkoutHeatmap';
+import { PersonalRecords } from '../components/analytics/PersonalRecords';
 import BottomNav from '../components/BottomNav';
 import { useAnalyticsCharts } from '../hooks/useAnalyticsCharts';
 import { useWeightProgression } from '../hooks/useWeightProgression';
+import { useBodyWeight } from '../hooks/useBodyWeight';
+import { useWorkoutHeatmap } from '../hooks/useWorkoutHeatmap';
+import { usePersonalRecords } from '../hooks/usePersonalRecords';
 
 export default function Analytics() {
   const { colors, theme } = useTheme();
@@ -40,8 +45,31 @@ export default function Analytics() {
   const {
     progressionData,
     topExercises,
+    allWorkoutDays,
+    getExercisesByWorkoutDay,
     isLoading: isProgressionLoading,
   } = useWeightProgression(90);
+
+  // Load body weight data
+  const { weightEntries } = useBodyWeight();
+
+  // Load workout heatmap data
+  const {
+    heatmapData,
+    totalWorkoutDays,
+    currentStreak,
+    longestStreak,
+    isLoading: isHeatmapLoading,
+  } = useWorkoutHeatmap(182); // 6 months
+
+  // Load personal records
+  const { personalRecords, isLoading: isPRsLoading } = usePersonalRecords(365);
+
+  // Workout day filter state
+  const [selectedWorkoutDay, setSelectedWorkoutDay] = useState<string | null>(null);
+
+  // Get filtered exercises based on selected workout day
+  const displayExercises = getExercisesByWorkoutDay(selectedWorkoutDay);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -61,32 +89,58 @@ export default function Analytics() {
           <Text style={styles.subtitle}>Track your fitness journey</Text>
         </View>
 
-        {/* Time Range Selector */}
-        <TimeRangeSelector selected={timeRange} onSelect={changeTimeRange} />
-
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.accent} />
           </View>
         ) : (
           <>
-            {/* Calories Trend Chart */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Calorie Intake</Text>
-              <CaloriesTrendChart data={aggregatedData} height={220} />
-            </View>
+            {/* Nutrition Charts (Swipeable) */}
+            <NutritionCharts
+              timeRange={timeRange}
+              onChangeTimeRange={changeTimeRange}
+              aggregatedData={aggregatedData}
+              avgProtein={avgProtein}
+              avgCarbs={avgCarbs}
+              avgFat={avgFat}
+            />
 
-            {/* Macros Stacked Bar Chart */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Macronutrients</Text>
-              <MacroStackedBarChart
-                data={aggregatedData}
-                avgProtein={avgProtein}
-                avgCarbs={avgCarbs}
-                avgFat={avgFat}
-                height={200}
-              />
-            </View>
+            {/* Workout Consistency Heatmap */}
+            {!isHeatmapLoading && heatmapData.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Workout Consistency</Text>
+                <Text style={styles.sectionSubtitle}>
+                  {totalWorkoutDays} workout days • Current streak: {currentStreak} • Best: {longestStreak}
+                </Text>
+                <View style={styles.chartCard}>
+                  <WorkoutHeatmap data={heatmapData} />
+                </View>
+              </View>
+            )}
+
+            {/* Personal Records Section */}
+            {!isPRsLoading && personalRecords.size > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Personal Records</Text>
+                <Text style={styles.sectionSubtitle}>
+                  Your strongest lifts by estimated 1RM
+                </Text>
+                <PersonalRecords records={personalRecords} topN={5} />
+              </View>
+            )}
+
+            {/* Body Weight Chart */}
+            {weightEntries.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Body Weight</Text>
+                <Text style={styles.sectionSubtitle}>
+                  Track your weight progression over time
+                </Text>
+                <View style={styles.chartCard}>
+                  <BodyWeightChart data={weightEntries} height={220} />
+                </View>
+              </View>
+            )}
 
             {/* Weight Progression Section */}
             {!isProgressionLoading && topExercises.length > 0 && (
@@ -96,24 +150,41 @@ export default function Analytics() {
                   Track your strength gains over time
                 </Text>
 
-                {topExercises.slice(0, 3).map((exerciseName) => {
-                  const exerciseData = progressionData.get(exerciseName) || [];
-                  if (exerciseData.length < 3) return null;
+                {/* Workout Day Filter */}
+                {allWorkoutDays.length > 0 && (
+                  <WorkoutDayFilter
+                    workoutDays={allWorkoutDays}
+                    selected={selectedWorkoutDay}
+                    onSelect={setSelectedWorkoutDay}
+                  />
+                )}
 
-                  return (
-                    <View key={exerciseName} style={styles.chartCard}>
-                      <WeightProgressionChart
-                        data={exerciseData}
-                        exerciseName={exerciseName
-                          .split(' ')
-                          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                          .join(' ')}
-                        width={350}
-                        height={200}
-                      />
-                    </View>
-                  );
-                })}
+                {displayExercises.length === 0 ? (
+                  <View style={styles.emptyState}>
+                    <Text style={[styles.emptyStateText, { color: colors.textTertiary }]}>
+                      No exercises found for {selectedWorkoutDay || 'this filter'}
+                    </Text>
+                  </View>
+                ) : (
+                  displayExercises.slice(0, 3).map((exerciseName) => {
+                    const exerciseData = progressionData.get(exerciseName) || [];
+                    if (exerciseData.length < 3) return null;
+
+                    return (
+                      <View key={exerciseName} style={styles.chartCard}>
+                        <WeightProgressionChart
+                          data={exerciseData}
+                          exerciseName={exerciseName
+                            .split(' ')
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ')}
+                          width={350}
+                          height={200}
+                        />
+                      </View>
+                    );
+                  })
+                )}
               </View>
             )}
           </>
@@ -181,5 +252,15 @@ const getStyles = (colors: any, theme: 'light' | 'dark') =>
       borderColor: colors.border,
       padding: 16,
       marginBottom: 12,
+    },
+    emptyState: {
+      padding: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    emptyStateText: {
+      fontSize: 14,
+      fontWeight: '500',
+      textAlign: 'center',
     },
   });
