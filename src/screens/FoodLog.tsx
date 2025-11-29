@@ -8,6 +8,7 @@ import type { FoodSearchResult } from '../types/food';
 import { useDateManager } from "../hooks/useDateManager";
 import { useFoodLog } from "../hooks/useFoodLog";
 import { useDietTemplates } from "../hooks/useDietTemplates";
+import { useMealCategories } from "../hooks/useMealCategories";
 import BottomNav from "../components/BottomNav";
 import DateHeader from "../components/common/DateHeader";
 import FoodLogCalendarModal from "../components/food/FoodLogCalendarModal";
@@ -15,6 +16,7 @@ import { ConfirmDialog } from "../components/common/ConfirmDialog";
 import AddFoodModal from "../components/food/AddFoodModal";
 import DietTemplateManager from "../components/DietTemplateManager";
 import NutritionTargetsModal from "../components/food/NutritionTargetsModal";
+import { MealCategoryManager } from "../components/food/MealCategoryManager";
 import { BackgroundPattern } from "../components/common/BackgroundPattern";
 import { useTheme } from "../context/ThemeContext";
 import { useFoodModal } from "../hooks/useFoodModal";
@@ -25,6 +27,8 @@ import { getFoodLogStyles } from "../styles/FoodLog.styles";
 export default function FoodLog() {
   const navigation = useNavigation();
   const [activeMealForSearch, setActiveMealForSearch] = useState<string | null>(null);
+  const [isMealCategoryManagerVisible, setIsMealCategoryManagerVisible] = useState(false);
+  const [pendingTemplate, setPendingTemplate] = useState<any>(null);
   const { colors } = useTheme();
   const styles = getFoodLogStyles(colors);
   const modals = useFoodLogModals();
@@ -39,6 +43,15 @@ export default function FoodLog() {
     isToday,
   } = useDateManager();
 
+  // Load meal categories
+  const {
+    mealCategories,
+    addCategory,
+    renameCategory,
+    deleteCategory,
+    addCategoriesFromTemplate,
+  } = useMealCategories();
+
   const {
     log,
     isLoading,
@@ -50,13 +63,15 @@ export default function FoodLog() {
     proteinTarget,
     carbsTarget,
     fatTarget,
+    isLogEmpty,
     addFood,
     updateFood,
     deleteFood,
+    toggleConsumed,
     handleSetNutritionTargets,
     copyYesterdayLog,
     loadDietTemplate,
-  } = useFoodLog(selectedDate);
+  } = useFoodLog(selectedDate, mealCategories);
 
   const {
     templates,
@@ -96,8 +111,6 @@ export default function FoodLog() {
   };
 
   const handleSaveAsTemplate = () => {
-    const isLogEmpty = Object.values(log).every(meal => meal.length === 0);
-
     if (isLogEmpty) {
       Alert.alert(
         'Empty Log',
@@ -119,8 +132,34 @@ export default function FoodLog() {
   };
 
   const handleLoadTemplate = (template: any) => {
-    loadDietTemplate(template.meals);
+    setPendingTemplate(template);
     modals.templateManager.close();
+
+    // If log is empty, load immediately
+    if (isLogEmpty) {
+      // Add any missing meal categories from the template
+      const templateCategories = Object.keys(template.meals);
+      addCategoriesFromTemplate(templateCategories);
+
+      // Load the template
+      loadDietTemplate(template.meals);
+    } else {
+      // Show confirmation dialog if log has data
+      modals.templateLoadConfirm.open();
+    }
+  };
+
+  const confirmLoadTemplate = () => {
+    if (pendingTemplate) {
+      // Add any missing meal categories from the template
+      const templateCategories = Object.keys(pendingTemplate.meals);
+      addCategoriesFromTemplate(templateCategories);
+
+      // Load the template
+      loadDietTemplate(pendingTemplate.meals);
+      setPendingTemplate(null);
+    }
+    modals.templateLoadConfirm.close();
   };
 
   return (
@@ -148,6 +187,15 @@ export default function FoodLog() {
           confirmText="Copy"
           cancelText="Cancel"
         />
+        <ConfirmDialog
+          isVisible={modals.templateLoadConfirm.isVisible}
+          onClose={modals.templateLoadConfirm.close}
+          onConfirm={confirmLoadTemplate}
+          title="Load Diet Template?"
+          message="This will replace your current food log with the template. Are you sure?"
+          confirmText="Load Template"
+          cancelText="Cancel"
+        />
         <DietTemplateManager
           isVisible={modals.templateManager.isVisible}
           templates={templates}
@@ -167,6 +215,14 @@ export default function FoodLog() {
             carbs: carbsTarget,
             fat: fatTarget,
           }}
+        />
+        <MealCategoryManager
+          isVisible={isMealCategoryManagerVisible}
+          onClose={() => setIsMealCategoryManagerVisible(false)}
+          categories={mealCategories}
+          onAdd={addCategory}
+          onRename={renameCategory}
+          onDelete={deleteCategory}
         />
 
         <ScrollView contentContainerStyle={styles.content}>
@@ -189,6 +245,7 @@ export default function FoodLog() {
           <FoodLogContent
             log={log}
             isLoading={isLoading}
+            mealCategories={mealCategories}
             totalCalories={totalCalories}
             totalProtein={totalProtein}
             totalCarbs={totalCarbs}
@@ -200,9 +257,11 @@ export default function FoodLog() {
             onAddFood={handleAddFood}
             onEditFood={handleEditFood}
             onDeleteFood={deleteFood}
+            onToggleConsumed={toggleConsumed}
             onSetCalorieTarget={modals.nutritionTargets.open}
             onCopyYesterday={modals.copyConfirm.open}
             onOpenTemplateManager={modals.templateManager.open}
+            onManageMealCategories={() => setIsMealCategoryManagerVisible(true)}
           />
         </ScrollView>
 

@@ -3,12 +3,13 @@
  * Displays volume and weight tracking in a compact grid
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { TrendingUp, TrendingDown, Scale } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { VolumeSparkline } from '../analytics/VolumeSparkline';
 import { useBodyWeight } from '../../hooks/useBodyWeight';
+import { WeightInputModal } from '../common/WeightInputModal';
 import type { DailyDataPoint } from '../../hooks/useAnalyticsCharts';
 
 interface QuickStatsProps {
@@ -23,28 +24,26 @@ export const QuickStats: React.FC<QuickStatsProps> = ({
   dailyData,
 }) => {
   const { colors, theme } = useTheme();
-  const styles = getStyles(colors, theme);
   const { latestWeight, logWeight, isLoading: weightLoading } = useBodyWeight();
+  const [showWeightModal, setShowWeightModal] = useState(false);
 
-  const handleLogWeight = () => {
-    Alert.prompt(
-      'Log Weight',
-      'Enter your current weight (lbs):',
-      (value) => {
-        const weight = parseFloat(value);
-        if (!isNaN(weight) && weight > 0) {
-          logWeight(weight);
-        } else {
-          Alert.alert('Invalid Input', 'Please enter a valid weight.');
-        }
-      },
-      'plain-keyboard',
-      latestWeight?.weight.toString() || ''
-    );
-  };
+  // Memoize styles to prevent recreation on every render
+  const styles = useMemo(() => getStyles(colors, theme), [colors, theme]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  // Memoize callbacks to prevent child re-renders
+  const handleLogWeight = useCallback(() => {
+    setShowWeightModal(true);
+  }, []);
+
+  const handleWeightSubmit = useCallback((weight: number) => {
+    logWeight(weight);
+  }, [logWeight]);
+
+  const formatDateTime = useCallback((dateString: string, timestamp: number) => {
+    // Parse date string as local date (YYYY-MM-DD) to avoid timezone issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
@@ -52,16 +51,25 @@ export const QuickStats: React.FC<QuickStatsProps> = ({
     const isToday = date.toDateString() === today.toDateString();
     const isYesterday = date.toDateString() === yesterday.toDateString();
 
-    if (isToday) return 'Today';
-    if (isYesterday) return 'Yesterday';
+    // Format time from timestamp
+    const time = new Date(timestamp).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
 
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
+    if (isToday) return `Today at ${time}`;
+    if (isYesterday) return `Yesterday at ${time}`;
+
+    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${dateStr} at ${time}`;
+  }, []);
 
   return (
-    <View style={styles.grid}>
-      {/* Volume */}
-      <View style={styles.card}>
+    <>
+      <View style={styles.grid}>
+        {/* Volume */}
+        <View style={styles.card}>
         <Text style={styles.cardLabel}>Volume</Text>
         <View style={styles.valueRow}>
           <Text style={styles.cardValue}>
@@ -113,10 +121,19 @@ export const QuickStats: React.FC<QuickStatsProps> = ({
           {latestWeight ? `${latestWeight.weight} lbs` : '—'}
         </Text>
         <Text style={styles.cardSubtext}>
-          {latestWeight ? formatDate(latestWeight.date) : 'Tap to log'}
+          {latestWeight ? formatDateTime(latestWeight.date, latestWeight.timestamp) : 'Tap to log'}
         </Text>
       </TouchableOpacity>
     </View>
+
+      {/* Weight Input Modal */}
+      <WeightInputModal
+        isVisible={showWeightModal}
+        onClose={() => setShowWeightModal(false)}
+        onSubmit={handleWeightSubmit}
+        initialValue={latestWeight?.weight}
+      />
+    </>
   );
 };
 

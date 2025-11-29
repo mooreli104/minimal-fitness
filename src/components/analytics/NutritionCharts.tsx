@@ -3,7 +3,7 @@
  * Swipeable component combining Calorie Intake and Macronutrient charts
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { TimeRangeSelector } from './TimeRangeSelector';
@@ -34,21 +34,24 @@ export const NutritionCharts: React.FC<NutritionChartsProps> = ({
   const [currentPage, setCurrentPage] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const handleScroll = (event: any) => {
+  // Memoize scroll handler to prevent recreation
+  const handleScroll = useCallback((event: any) => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const page = Math.round(offsetX / SCREEN_WIDTH);
     setCurrentPage(page);
-  };
+  }, []);
 
-  const scrollToPage = (page: number) => {
+  // Memoize scroll function to prevent recreation
+  const scrollToPage = useCallback((page: number) => {
     scrollViewRef.current?.scrollTo({
       x: page * SCREEN_WIDTH,
       animated: true,
     });
     setCurrentPage(page);
-  };
+  }, []);
 
-  const pages = [
+  // Memoize pages array to prevent recreating chart components on every render
+  const pages = useMemo(() => [
     {
       title: 'Calorie Intake',
       component: <CaloriesTrendChart data={aggregatedData} height={220} />,
@@ -65,13 +68,10 @@ export const NutritionCharts: React.FC<NutritionChartsProps> = ({
         />
       ),
     },
-  ];
+  ], [aggregatedData, avgProtein, avgCarbs, avgFat]);
 
   return (
     <View style={styles.container}>
-      {/* Time Range Selector */}
-      <TimeRangeSelector selected={timeRange} onSelect={onChangeTimeRange} />
-
       {/* Chart Title with Page Indicator */}
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>{pages[currentPage].title}</Text>
@@ -111,6 +111,11 @@ export const NutritionCharts: React.FC<NutritionChartsProps> = ({
           </View>
         ))}
       </ScrollView>
+
+      {/* Time Range Selector - Moved below charts */}
+      <View style={styles.timeRangeSelectorContainer}>
+        <TimeRangeSelector selected={timeRange} onSelect={onChangeTimeRange} />
+      </View>
     </View>
   );
 };
@@ -123,7 +128,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 16,
     marginBottom: 12,
     paddingHorizontal: 4,
   },
@@ -148,5 +152,9 @@ const styles = StyleSheet.create({
   },
   page: {
     justifyContent: 'center',
+  },
+  timeRangeSelectorContainer: {
+    marginTop: 16,
+    paddingHorizontal: 4,
   },
 });

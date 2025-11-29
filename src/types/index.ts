@@ -21,13 +21,14 @@ export interface FoodEntry {
   protein?: number;
   carbs?: number;
   fat?: number;
+  consumed?: boolean; // Whether the food has been eaten (marked via swipe)
 }
 
-export type MealCategory = "Breakfast" | "Lunch" | "Dinner" | "Snacks";
+// Meal category is now dynamic - can be any string
+export type MealCategory = string;
 
-export type DailyFoodLog = {
-  [key in MealCategory]: FoodEntry[];
-};
+// DailyFoodLog uses Record to support dynamic meal categories
+export type DailyFoodLog = Record<string, FoodEntry[]>;
 
 export interface DietTemplate {
   id: number;

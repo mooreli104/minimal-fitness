@@ -18,13 +18,17 @@ import {
  * Hook for managing food logs and calorie targets
  * Handles all food logging state and AsyncStorage operations
  */
-export const useFoodLog = (date: Date) => {
-  const [log, setLog] = useState<DailyFoodLog>({
-    Breakfast: [],
-    Lunch: [],
-    Dinner: [],
-    Snacks: [],
-  });
+export const useFoodLog = (date: Date, mealCategories: string[]) => {
+  // Initialize log with empty arrays for all meal categories
+  const createEmptyLog = useCallback((): DailyFoodLog => {
+    const emptyLog: DailyFoodLog = {};
+    mealCategories.forEach(category => {
+      emptyLog[category] = [];
+    });
+    return emptyLog;
+  }, [mealCategories]);
+
+  const [log, setLog] = useState<DailyFoodLog>(createEmptyLog());
   const [calorieTarget, setCalorieTarget] = useState(2000);
   const [proteinTarget, setProteinTarget] = useState(150);
   const [carbsTarget, setCarbsTarget] = useState(200);
@@ -33,6 +37,7 @@ export const useFoodLog = (date: Date) => {
 
   /**
    * Loads food log and nutrition targets from storage
+   * Filters out categories that no longer exist
    */
   const loadLog = useCallback(async () => {
     setIsLoading(true);
@@ -44,7 +49,17 @@ export const useFoodLog = (date: Date) => {
         loadMacroTargets(),
       ]);
 
-      setLog(loadedLog);
+      // Create new log with current categories
+      const filteredLog = createEmptyLog();
+
+      // Copy over foods from loaded log that match current categories
+      Object.keys(loadedLog).forEach(category => {
+        if (mealCategories.includes(category)) {
+          filteredLog[category] = loadedLog[category];
+        }
+      });
+
+      setLog(filteredLog);
       setCalorieTarget(loadedCalorieTarget);
       setProteinTarget(loadedMacroTargets.protein);
       setCarbsTarget(loadedMacroTargets.carbs);
@@ -55,7 +70,7 @@ export const useFoodLog = (date: Date) => {
     } finally {
       setIsLoading(false);
     }
-  }, [date]);
+  }, [date, mealCategories, createEmptyLog]);
 
   /**
    * Saves food log to storage
@@ -112,6 +127,22 @@ export const useFoodLog = (date: Date) => {
     saveLog(newLog);
   }, [log, saveLog]);
 
+  const toggleConsumed = useCallback((id: number, meal: MealCategory) => {
+    const newLog = { ...log };
+    const list = [...newLog[meal]];
+    const index = list.findIndex((f) => f.id === id);
+
+    if (index >= 0) {
+      list[index] = {
+        ...list[index],
+        consumed: !list[index].consumed,
+      };
+      newLog[meal] = list;
+      setLog(newLog);
+      saveLog(newLog);
+    }
+  }, [log, saveLog]);
+
   // ========== Nutrition Targets ==========
 
   const handleSetNutritionTargets = useCallback(async (targets: {
@@ -145,19 +176,17 @@ export const useFoodLog = (date: Date) => {
 
       // Create new log with new IDs and current timestamp
       const currentTimestamp = new Date(date).toISOString();
-      const newLog: DailyFoodLog = {
-        Breakfast: [],
-        Lunch: [],
-        Dinner: [],
-        Snacks: [],
-      };
+      const newLog = createEmptyLog();
 
-      for (const meal of Object.keys(yesterdayLog) as MealCategory[]) {
-        newLog[meal] = yesterdayLog[meal].map((entry) => ({
-          ...entry,
-          id: generateUniqueId(),
-          timestamp: currentTimestamp,
-        }));
+      // Copy foods that match current meal categories
+      for (const meal of Object.keys(yesterdayLog)) {
+        if (mealCategories.includes(meal)) {
+          newLog[meal] = yesterdayLog[meal].map((entry) => ({
+            ...entry,
+            id: generateUniqueId(),
+            timestamp: currentTimestamp,
+          }));
+        }
       }
 
       setLog(newLog);
@@ -166,30 +195,28 @@ export const useFoodLog = (date: Date) => {
       Alert.alert('Error', 'Failed to copy data.');
       console.error('Copy yesterday log error:', error);
     }
-  }, [date, saveLog]);
+  }, [date, mealCategories, createEmptyLog, saveLog]);
 
   // ========== Load Diet Template ==========
 
   const loadDietTemplate = useCallback((templateMeals: DailyFoodLog) => {
     const currentTimestamp = new Date(date).toISOString();
-    const newLog: DailyFoodLog = {
-      Breakfast: [],
-      Lunch: [],
-      Dinner: [],
-      Snacks: [],
-    };
+    const newLog = createEmptyLog();
 
-    for (const meal of Object.keys(templateMeals) as MealCategory[]) {
-      newLog[meal] = templateMeals[meal].map((food) => ({
-        ...food,
-        id: generateUniqueId(),
-        timestamp: currentTimestamp,
-      }));
+    // Copy foods that match current meal categories
+    for (const meal of Object.keys(templateMeals)) {
+      if (mealCategories.includes(meal)) {
+        newLog[meal] = templateMeals[meal].map((food) => ({
+          ...food,
+          id: generateUniqueId(),
+          timestamp: currentTimestamp,
+        }));
+      }
     }
 
     setLog(newLog);
     saveLog(newLog);
-  }, [date, saveLog]);
+  }, [date, mealCategories, createEmptyLog, saveLog]);
 
   return {
     log,
@@ -206,6 +233,7 @@ export const useFoodLog = (date: Date) => {
     addFood,
     updateFood,
     deleteFood,
+    toggleConsumed,
     handleSetNutritionTargets,
     copyYesterdayLog,
     loadDietTemplate,

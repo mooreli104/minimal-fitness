@@ -243,13 +243,12 @@ const styles = StyleSheet.create({
   },
   calendarWeekDays: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
     marginBottom: 10,
   },
   calendarWeekDayText: {
     fontSize: 12,
     fontWeight: '500',
-    width: 32,
+    width: 40, // Match calendar day width for proper alignment
     textAlign: 'center',
   },
   calendarGrid: {

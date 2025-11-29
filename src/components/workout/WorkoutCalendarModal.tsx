@@ -1,12 +1,12 @@
 /**
  * Workout Calendar Modal
  * Shows workout status indicators:
- * - Gray dot: Rest day
- * - Red dot: Incomplete workout (missing weights or actual sets)
- * - Green dot: Complete workout (all exercises logged)
+ * - Green highlight: Rest day
+ * - Red highlight: Incomplete workout (missing weights or actual sets)
+ * - Green highlight: Complete workout (all exercises logged)
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
@@ -34,17 +34,14 @@ const WorkoutCalendarModal = ({
   const [displayDate, setDisplayDate] = useState(new Date(initialSelectedDate));
   const [dayStatuses, setDayStatuses] = useState<DayStatus>({});
 
-  useEffect(() => {
-    if (isVisible) {
-      setDisplayDate(new Date(initialSelectedDate));
-      loadMonthStatuses(new Date(initialSelectedDate));
-    }
-  }, [isVisible, initialSelectedDate]);
+  // Memoize styles based on colors to prevent recreation on every render
+  const styles = useMemo(() => getStyles(colors), [colors]);
 
   /**
    * Load workout statuses for all days in the current month
+   * Memoized to prevent unnecessary re-creation
    */
-  const loadMonthStatuses = async (date: Date) => {
+  const loadMonthStatuses = useCallback(async (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -75,22 +72,29 @@ const WorkoutCalendarModal = ({
 
     await Promise.all(promises);
     setDayStatuses(statuses);
-  };
+  }, []);
 
-  const changeMonth = (amount: number) => {
+  useEffect(() => {
+    if (isVisible) {
+      setDisplayDate(new Date(initialSelectedDate));
+      loadMonthStatuses(new Date(initialSelectedDate));
+    }
+  }, [isVisible, initialSelectedDate, loadMonthStatuses]);
+
+  const changeMonth = useCallback((amount: number) => {
     const newDate = new Date(displayDate.getFullYear(), displayDate.getMonth() + amount, 1);
     setDisplayDate(newDate);
     loadMonthStatuses(newDate);
-  };
+  }, [displayDate, loadMonthStatuses]);
 
-  const handleSelectDate = (day: number) => {
+  const handleSelectDate = useCallback((day: number) => {
     const newSelectedDate = new Date(
       displayDate.getFullYear(),
       displayDate.getMonth(),
       day
     );
     onDateSelect(newSelectedDate);
-  };
+  }, [displayDate, onDateSelect]);
 
   const renderCalendar = () => {
     const year = displayDate.getFullYear();
@@ -135,7 +139,7 @@ const WorkoutCalendarModal = ({
       } else if (status && !isFuture) {
         // Status highlighting (slightly smaller than selected)
         if (status === 'rest') {
-          backgroundColor = `${colors.textTertiary}40`; // Gray with 25% opacity
+          backgroundColor = `${colors.green}40`; // Green with 25% opacity
           textColor = colors.textPrimary;
         } else if (status === 'complete') {
           backgroundColor = `${colors.green}40`; // Green with 25% opacity
@@ -224,7 +228,11 @@ const WorkoutCalendarModal = ({
   );
 };
 
-const styles = StyleSheet.create({
+/**
+ * Get styles function - memoized by component for performance
+ * Following RN best practices: styles are created once and reused
+ */
+const getStyles = (colors: any) => StyleSheet.create({
   calendarBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -257,20 +265,19 @@ const styles = StyleSheet.create({
   },
   calendarWeekDays: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
     marginBottom: 10,
   },
   calendarWeekDayText: {
     fontSize: 12,
     fontWeight: '500',
-    width: 32,
+    width: 40, // Match calendar day width for proper alignment
     textAlign: 'center',
   },
   calendarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
- calendarDay: {
+  calendarDay: {
     width: 40,
     height: 40,
     justifyContent: 'center',
@@ -282,7 +289,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
   },
-  calendarDayTextToday: { fontWeight: 'bold', color: '#007AFF' },
+  calendarDayTextToday: {
+    fontWeight: 'bold',
+    color: '#007AFF'
+  },
 });
 
 export default WorkoutCalendarModal;

@@ -138,6 +138,7 @@ const aggregateData = (
 
 export const useAnalyticsCharts = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [data, setData] = useState<AnalyticsChartsData>({
     timeRange: 'week',
     dailyData: [],
@@ -154,7 +155,10 @@ export const useAnalyticsCharts = () => {
 
   const calculateAnalytics = useCallback(
     async (range: TimeRange) => {
-      setData((prev) => ({ ...prev, isLoading: true }));
+      // Only set loading state on initial load to prevent screen refresh
+      if (isInitialLoad) {
+        setData((prev) => ({ ...prev, isLoading: true }));
+      }
 
       try {
         const daysToLoad = TIME_RANGE_DAYS[range];
@@ -179,7 +183,8 @@ export const useAnalyticsCharts = () => {
 
           const hasWorkout = workout ? isWorkoutCompleted(workout) : false;
           const hasFood = hasFoodEntries(foodLog);
-          const volume = workout && hasWorkout ? calculateWorkoutVolume(workout) : 0;
+          // Calculate volume for any workout, even if not fully completed
+          const volume = workout ? calculateWorkoutVolume(workout) : 0;
 
           let calories = 0;
           let protein = 0;
@@ -256,12 +261,18 @@ export const useAnalyticsCharts = () => {
           currentStreak,
           isLoading: false,
         });
+        if (isInitialLoad) {
+          setIsInitialLoad(false);
+        }
       } catch (error) {
         console.error('Analytics charts calculation error:', error);
         setData((prev) => ({ ...prev, isLoading: false }));
+        if (isInitialLoad) {
+          setIsInitialLoad(false);
+        }
       }
     },
-    []
+    [isInitialLoad]
   );
 
   useEffect(() => {

@@ -19,19 +19,14 @@ const getFoodLogKey = (date: Date): string => {
 /**
  * Loads food log for a specific date
  * @param date Date to load food log for
- * @returns Daily food log with all meals
+ * @returns Daily food log with all meals (may contain any meal categories)
  */
 export const loadFoodLog = async (date: Date): Promise<DailyFoodLog> => {
   const key = getFoodLogKey(date);
-  const log = await getItem<Partial<DailyFoodLog>>(key);
+  const log = await getItem<DailyFoodLog>(key);
 
   if (!log) {
-    return {
-      Breakfast: [],
-      Lunch: [],
-      Dinner: [],
-      Snacks: [],
-    };
+    return {}; // Return empty object, useFoodLog will populate with current categories
   }
 
   // Normalize and ensure timestamps

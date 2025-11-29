@@ -3,7 +3,7 @@
  * Displays interactive charts and metrics with time range selection
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { WorkoutDayFilter } from '../components/analytics/WorkoutDayFilter';
 import { NutritionCharts } from '../components/analytics/NutritionCharts';
@@ -30,6 +31,8 @@ import { usePersonalRecords } from '../hooks/usePersonalRecords';
 export default function Analytics() {
   const { colors, theme } = useTheme();
   const styles = getStyles(colors, theme);
+  const isFocused = useIsFocused();
+  const [hasBodyWeightLoaded, setHasBodyWeightLoaded] = useState(false);
 
   const {
     timeRange,
@@ -51,7 +54,7 @@ export default function Analytics() {
   } = useWeightProgression(90);
 
   // Load body weight data
-  const { weightEntries } = useBodyWeight();
+  const { weightEntries, refreshData: refreshBodyWeight } = useBodyWeight();
 
   // Load workout heatmap data
   const {
@@ -70,6 +73,20 @@ export default function Analytics() {
 
   // Get filtered exercises based on selected workout day
   const displayExercises = getExercisesByWorkoutDay(selectedWorkoutDay);
+
+  // Mark body weight data as loaded after initial render
+  useEffect(() => {
+    if (weightEntries.length >= 0) {
+      setHasBodyWeightLoaded(true);
+    }
+  }, [weightEntries]);
+
+  // Reload body weight data when screen comes into focus (after initial load)
+  useEffect(() => {
+    if (isFocused && hasBodyWeightLoaded) {
+      refreshBodyWeight();
+    }
+  }, [isFocused, hasBodyWeightLoaded, refreshBodyWeight]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -104,19 +121,6 @@ export default function Analytics() {
               avgCarbs={avgCarbs}
               avgFat={avgFat}
             />
-
-            {/* Workout Consistency Heatmap */}
-            {!isHeatmapLoading && heatmapData.length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Workout Consistency</Text>
-                <Text style={styles.sectionSubtitle}>
-                  {totalWorkoutDays} workout days • Current streak: {currentStreak} • Best: {longestStreak}
-                </Text>
-                <View style={styles.chartCard}>
-                  <WorkoutHeatmap data={heatmapData} />
-                </View>
-              </View>
-            )}
 
             {/* Personal Records Section */}
             {!isPRsLoading && personalRecords.size > 0 && (

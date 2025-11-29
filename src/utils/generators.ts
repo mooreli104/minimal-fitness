@@ -16,5 +16,7 @@ export const generateId = (): number => {
  * @returns Unique number with random component
  */
 export const generateUniqueId = (): number => {
-  return Date.now() + Math.random();
+  // Multiply random by 100000 to ensure better uniqueness
+  // This creates a range of up to 100000 different IDs per millisecond
+  return Date.now() * 100000 + Math.floor(Math.random() * 100000);
 };

@@ -3,6 +3,7 @@ import { useState } from 'react';
 export const useFoodLogModals = () => {
   const [isTemplateManagerVisible, setTemplateManagerVisible] = useState(false);
   const [isCopyConfirmVisible, setCopyConfirmVisible] = useState(false);
+  const [isTemplateLoadConfirmVisible, setTemplateLoadConfirmVisible] = useState(false);
   const [isNutritionTargetsVisible, setNutritionTargetsVisible] = useState(false);
 
   const openTemplateManager = () => setTemplateManagerVisible(true);
@@ -10,6 +11,9 @@ export const useFoodLogModals = () => {
 
   const openCopyConfirm = () => setCopyConfirmVisible(true);
   const closeCopyConfirm = () => setCopyConfirmVisible(false);
+
+  const openTemplateLoadConfirm = () => setTemplateLoadConfirmVisible(true);
+  const closeTemplateLoadConfirm = () => setTemplateLoadConfirmVisible(false);
 
   const openNutritionTargets = () => setNutritionTargetsVisible(true);
   const closeNutritionTargets = () => setNutritionTargetsVisible(false);
@@ -24,6 +28,11 @@ export const useFoodLogModals = () => {
       isVisible: isCopyConfirmVisible,
       open: openCopyConfirm,
       close: closeCopyConfirm,
+    },
+    templateLoadConfirm: {
+      isVisible: isTemplateLoadConfirmVisible,
+      open: openTemplateLoadConfirm,
+      close: closeTemplateLoadConfirm,
     },
     nutritionTargets: {
       isVisible: isNutritionTargetsVisible,

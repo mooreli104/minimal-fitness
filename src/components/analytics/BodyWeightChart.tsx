@@ -15,6 +15,7 @@ interface BodyWeightChartProps {
 }
 
 const CHART_PADDING = { top: 20, right: 16, bottom: 30, left: 40 };
+const CONTAINER_PADDING = 12; // Container has padding: 12
 
 export const BodyWeightChart: React.FC<BodyWeightChartProps> = ({
   data,
@@ -53,7 +54,8 @@ export const BodyWeightChart: React.FC<BodyWeightChartProps> = ({
   // Sort data by date (oldest to newest)
   const sortedData = [...data].sort((a, b) => a.timestamp - b.timestamp);
 
-  const width = screenWidth;
+  // Calculate width accounting for container padding (12px on each side)
+  const width = screenWidth - (CONTAINER_PADDING * 2);
   const chartWidth = width - CHART_PADDING.left - CHART_PADDING.right;
   const chartHeight = height - CHART_PADDING.top - CHART_PADDING.bottom;
 
@@ -63,9 +65,10 @@ export const BodyWeightChart: React.FC<BodyWeightChartProps> = ({
   const maxWeight = Math.max(...weights);
   const weightRange = maxWeight - minWeight;
 
-  // Add 10% padding to top and bottom
-  const minY = minWeight - weightRange * 0.1;
-  const maxY = maxWeight + weightRange * 0.1;
+  // Add 10% padding to top and bottom, with minimum range of 5 lbs for better visualization
+  const effectiveRange = Math.max(weightRange, 5);
+  const minY = Math.max(0, minWeight - effectiveRange * 0.1); // Don't go below 0
+  const maxY = maxWeight + effectiveRange * 0.1;
 
   // Calculate points
   const points = sortedData.map((d, i) => {
@@ -92,10 +95,19 @@ export const BodyWeightChart: React.FC<BodyWeightChartProps> = ({
       ` L ${CHART_PADDING.left},${CHART_PADDING.top + chartHeight} Z`
     : '';
 
-  // Format date for tooltip
-  const formatDate = (entry: WeightEntry) => {
-    const date = new Date(entry.date);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  // Format date and time for tooltip
+  const formatDateTime = (entry: WeightEntry) => {
+    // Parse date string as local date (YYYY-MM-DD) to avoid timezone issues
+    const [year, month, day] = entry.date.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+
+    const time = new Date(entry.timestamp).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return { date: dateStr, time };
   };
 
   // Y-axis labels (show 4 ticks)
@@ -114,19 +126,25 @@ export const BodyWeightChart: React.FC<BodyWeightChartProps> = ({
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
       {/* Tooltip */}
-      {activeIndex !== null && sortedData[activeIndex] && (
-        <View style={[styles.tooltip, { backgroundColor: colors.accent }]}>
-          <Text style={[styles.tooltipDate, { color: colors.background }]}>
-            {formatDate(sortedData[activeIndex])}
-          </Text>
-          <Text style={[styles.tooltipValue, { color: colors.background }]}>
-            {sortedData[activeIndex].weight} lbs
-          </Text>
-        </View>
-      )}
+      {activeIndex !== null && sortedData[activeIndex] && (() => {
+        const { date, time } = formatDateTime(sortedData[activeIndex]);
+        return (
+          <View style={[styles.tooltip, { backgroundColor: colors.accent }]}>
+            <Text style={[styles.tooltipDate, { color: colors.background }]}>
+              {date}
+            </Text>
+            <Text style={[styles.tooltipValue, { color: colors.background }]}>
+              {sortedData[activeIndex].weight} lbs
+            </Text>
+            <Text style={[styles.tooltipTime, { color: colors.background }]}>
+              {time}
+            </Text>
+          </View>
+        );
+      })()}
 
-      {/* Stats Badge */}
-      {sortedData.length >= 2 && (
+      {/* Stats Badge - Only show if there's actual weight change */}
+      {sortedData.length >= 2 && Math.abs(weightChange) > 0.1 && (
         <View style={[styles.statsBadge, { backgroundColor: `${colors.accent}15` }]}>
           <Text style={[styles.statsText, { color: colors.textPrimary }]}>
             {weightChange > 0 ? '+' : ''}{weightChange.toFixed(1)} lbs
@@ -237,11 +255,17 @@ const styles = StyleSheet.create({
   tooltipValue: {
     fontSize: 16,
     fontWeight: '600',
+    marginBottom: 2,
+  },
+  tooltipTime: {
+    fontSize: 10,
+    fontWeight: '400',
+    opacity: 0.9,
   },
   statsBadge: {
     position: 'absolute',
     top: 16,
-    left: 16,
+    left: 52, // Position after y-axis labels (CHART_PADDING.left + margin)
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,

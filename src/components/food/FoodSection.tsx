@@ -12,9 +12,10 @@ interface FoodSectionProps {
   onAdd: () => void;
   onEdit: (food: FoodEntry) => void;
   onDelete: (foodId: number) => void;
+  onToggleConsumed: (foodId: number) => void;
 }
 
-const FoodSection = ({ title, foods, onAdd, onEdit, onDelete }: FoodSectionProps) => {
+const FoodSection = ({ title, foods, onAdd, onEdit, onDelete, onToggleConsumed }: FoodSectionProps) => {
   const { colors } = useTheme();
   const styles = getFoodSectionStyles(colors);
   const totalCalories = (foods ?? []).reduce((sum, item) => sum + item.calories, 0);
@@ -33,6 +34,7 @@ const FoodSection = ({ title, foods, onAdd, onEdit, onDelete }: FoodSectionProps
             food={food}
             onPress={() => onEdit(food)}
             onDelete={() => onDelete(food.id)}
+            onToggleConsumed={() => onToggleConsumed(food.id)}
             isLastItem={index === foods.length - 1}
           />
         ))}

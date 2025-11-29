@@ -16,7 +16,7 @@ interface TimeRangeSelectorProps {
 const TIME_RANGES: { value: TimeRange; label: string }[] = [
   { value: 'day', label: 'Day' },
   { value: 'week', label: 'Week' },
-  { value: 'month', label: 'Month' },
+  { value: 'month', label: '1M' },
   { value: '3months', label: '3M' },
   { value: 'all', label: 'All' },
 ];
@@ -44,6 +44,7 @@ export const TimeRangeSelector: React.FC<TimeRangeSelectorProps> = ({
             activeOpacity={0.7}
           >
             <Text
+              numberOfLines={1}
               style={[
                 styles.buttonText,
                 {

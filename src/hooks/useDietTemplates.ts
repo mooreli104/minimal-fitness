@@ -2,18 +2,30 @@ import { useState, useEffect, useCallback } from 'react';
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DietTemplate, DailyFoodLog, MealCategory } from '../types';
+import { defaultDietTemplates } from '../data/defaultTemplates';
 
 const DIET_TEMPLATES_KEY = '@dietTemplates';
+const DIET_TEMPLATES_INITIALIZED_KEY = '@dietTemplatesInitialized';
 
 export const useDietTemplates = () => {
   const [templates, setTemplates] = useState<DietTemplate[]>([]);
 
   const loadTemplates = useCallback(async () => {
     try {
+      const isInitialized = await AsyncStorage.getItem(DIET_TEMPLATES_INITIALIZED_KEY);
       const storedTemplates = await AsyncStorage.getItem(DIET_TEMPLATES_KEY);
-      if (storedTemplates) {
+
+      if (!isInitialized) {
+        // First run - initialize with default templates
+        setTemplates(defaultDietTemplates);
+        await AsyncStorage.setItem(DIET_TEMPLATES_KEY, JSON.stringify(defaultDietTemplates));
+        await AsyncStorage.setItem(DIET_TEMPLATES_INITIALIZED_KEY, 'true');
+      } else if (storedTemplates) {
         const parsed = JSON.parse(storedTemplates);
         setTemplates(parsed);
+      } else {
+        // Initialized but no templates - show empty
+        setTemplates([]);
       }
     } catch (e) {
       Alert.alert('Error', 'Failed to load diet templates.');
@@ -34,13 +46,9 @@ export const useDietTemplates = () => {
 
   const saveCurrentAsTemplate = useCallback((templateName: string, currentLog: DailyFoodLog) => {
     // Remove IDs and timestamps from the template
-    const cleanedMeals: DailyFoodLog = {
-      Breakfast: [],
-      Lunch: [],
-      Dinner: [],
-      Snacks: [],
-    };
+    const cleanedMeals: DailyFoodLog = {};
 
+    // Copy all meal categories from current log
     for (const meal of Object.keys(currentLog) as MealCategory[]) {
       cleanedMeals[meal] = currentLog[meal].map(food => ({
         ...food,
