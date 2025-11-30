@@ -85,3 +85,47 @@ export const setString = async (key: string, value: string): Promise<void> => {
     throw new StorageError('write', key, error);
   }
 };
+
+/**
+ * Utility to load data with automatic migration and save-back
+ * @param key Storage key
+ * @param migrateFn Migration function to apply
+ * @returns Migrated data or null
+ */
+export const getItemWithMigration = async <T>(
+  key: string,
+  migrateFn: (data: T) => T
+): Promise<T | null> => {
+  const data = await getItem<T>(key);
+  if (!data) return null;
+
+  const migrated = migrateFn(data);
+
+  if (JSON.stringify(data) !== JSON.stringify(migrated)) {
+    await setItem(key, migrated);
+  }
+
+  return migrated;
+};
+
+/**
+ * Utility to load array data with automatic migration and save-back
+ * @param key Storage key
+ * @param migrateFn Migration function to apply to each item
+ * @returns Migrated array or empty array
+ */
+export const getArrayWithMigration = async <T>(
+  key: string,
+  migrateFn: (item: T) => T
+): Promise<T[]> => {
+  const data = await getItem<T[]>(key);
+  if (!data) return [];
+
+  const migrated = data.map(migrateFn);
+
+  if (JSON.stringify(data) !== JSON.stringify(migrated)) {
+    await setItem(key, migrated);
+  }
+
+  return migrated;
+};

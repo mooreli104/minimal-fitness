@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
-import { Exercise, WorkoutDay } from '../types';
+import { Exercise, WorkoutDay, WorkoutTemplate } from '../types';
 import { generateId } from '../utils/generators';
 import { DEFAULTS } from '../utils/constants';
 import { getYesterday } from '../utils/formatters';
@@ -139,8 +139,8 @@ export const useWorkout = (selectedDate: Date) => {
     }
   }, [saveWorkoutLog, selectedDate]);
 
-  const loadTemplate = useCallback(async (template: any) => {
-    const newProgram = template.days.map((day: any) => ({
+  const loadTemplate = useCallback(async (template: WorkoutTemplate) => {
+    const newProgram = template.days.map((day) => ({
       ...day,
       isRest: day.isRest ?? false,
     }));

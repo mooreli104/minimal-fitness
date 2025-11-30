@@ -14,18 +14,16 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme, ThemeColors, Theme } from '../context/ThemeContext';
 import { WorkoutDayFilter } from '../components/analytics/WorkoutDayFilter';
 import { NutritionCharts } from '../components/analytics/NutritionCharts';
 import { WeightProgressionChart } from '../components/analytics/WeightProgressionChart';
 import { BodyWeightChart } from '../components/analytics/BodyWeightChart';
-import { WorkoutHeatmap } from '../components/analytics/WorkoutHeatmap';
 import { PersonalRecords } from '../components/analytics/PersonalRecords';
 import BottomNav from '../components/BottomNav';
 import { useAnalyticsCharts } from '../hooks/useAnalyticsCharts';
 import { useWeightProgression } from '../hooks/useWeightProgression';
 import { useBodyWeight } from '../hooks/useBodyWeight';
-import { useWorkoutHeatmap } from '../hooks/useWorkoutHeatmap';
 import { usePersonalRecords } from '../hooks/usePersonalRecords';
 
 export default function Analytics() {
@@ -55,15 +53,6 @@ export default function Analytics() {
 
   // Load body weight data
   const { weightEntries, refreshData: refreshBodyWeight } = useBodyWeight();
-
-  // Load workout heatmap data
-  const {
-    heatmapData,
-    totalWorkoutDays,
-    currentStreak,
-    longestStreak,
-    isLoading: isHeatmapLoading,
-  } = useWorkoutHeatmap(182); // 6 months
 
   // Load personal records
   const { personalRecords, isLoading: isPRsLoading } = usePersonalRecords(365);
@@ -200,7 +189,7 @@ export default function Analytics() {
   );
 }
 
-const getStyles = (colors: any, theme: 'light' | 'dark') =>
+const getStyles = (colors: ThemeColors, theme: Theme) =>
   StyleSheet.create({
     container: {
       flex: 1,

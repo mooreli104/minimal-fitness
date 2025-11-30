@@ -14,7 +14,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme, ThemeColors, Theme } from '../context/ThemeContext';
 import { useDashboardStreaks } from '../hooks/useDashboardStreaks';
 import { useWaterIntake } from '../hooks/useWaterIntake';
 import { useTodoList } from '../hooks/useTodoList';
@@ -168,7 +168,7 @@ export default function Dashboard() {
   );
 }
 
-const getStyles = (colors: any, theme: 'light' | 'dark') =>
+const getStyles = (colors: ThemeColors, theme: Theme) =>
   StyleSheet.create({
     container: {
       flex: 1,

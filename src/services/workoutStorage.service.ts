@@ -4,7 +4,7 @@
  */
 
 import { WorkoutDay, WorkoutTemplate, Exercise } from '../types';
-import { getItem, setItem, removeItem } from '../utils/storage';
+import { setItem, removeItem, getItemWithMigration, getArrayWithMigration } from '../utils/storage';
 import { STORAGE_KEYS } from '../utils/constants';
 import { formatDateToKey } from '../utils/formatters';
 import { migrateWorkoutDay, migrateWorkoutTemplate } from '../utils/migrations';
@@ -23,19 +23,7 @@ const getWorkoutLogKey = (date: Date): string => {
  */
 export const loadWorkoutLog = async (date: Date): Promise<WorkoutDay | null> => {
   const key = getWorkoutLogKey(date);
-  const log = await getItem<WorkoutDay>(key);
-
-  if (!log) return null;
-
-  // Migrate old format if needed
-  const migrated = migrateWorkoutDay(log);
-
-  // Save back if migration occurred
-  if (JSON.stringify(log) !== JSON.stringify(migrated)) {
-    await setItem(key, migrated);
-  }
-
-  return migrated;
+  return await getItemWithMigration(key, migrateWorkoutDay);
 };
 
 /**
@@ -62,19 +50,7 @@ export const deleteWorkoutLog = async (date: Date): Promise<void> => {
  * @returns Array of workout days
  */
 export const loadWorkoutProgram = async (): Promise<WorkoutDay[]> => {
-  const program = await getItem<WorkoutDay[]>(STORAGE_KEYS.WORKOUT_PROGRAM);
-
-  if (!program) return [];
-
-  // Migrate old format if needed
-  const migrated = program.map(migrateWorkoutDay);
-
-  // Save back if migration occurred
-  if (JSON.stringify(program) !== JSON.stringify(migrated)) {
-    await setItem(STORAGE_KEYS.WORKOUT_PROGRAM, migrated);
-  }
-
-  return migrated;
+  return await getArrayWithMigration(STORAGE_KEYS.WORKOUT_PROGRAM, migrateWorkoutDay);
 };
 
 /**
@@ -90,19 +66,7 @@ export const saveWorkoutProgram = async (program: WorkoutDay[]): Promise<void> =
  * @returns Array of workout templates
  */
 export const loadWorkoutTemplates = async (): Promise<WorkoutTemplate[]> => {
-  const templates = await getItem<WorkoutTemplate[]>(STORAGE_KEYS.WORKOUT_TEMPLATES);
-
-  if (!templates) return [];
-
-  // Migrate old format if needed
-  const migrated = templates.map(migrateWorkoutTemplate);
-
-  // Save back if migration occurred
-  if (JSON.stringify(templates) !== JSON.stringify(migrated)) {
-    await setItem(STORAGE_KEYS.WORKOUT_TEMPLATES, migrated);
-  }
-
-  return migrated;
+  return await getArrayWithMigration(STORAGE_KEYS.WORKOUT_TEMPLATES, migrateWorkoutTemplate);
 };
 
 /**
@@ -143,7 +107,6 @@ export const findPreviousWorkoutByName = async (
 
     return null;
   } catch (error) {
-    console.error('Error finding previous workout:', error);
     return null;
   }
 };
@@ -163,39 +126,25 @@ export const findLastExerciseOccurrence = async (
   try {
     if (!exerciseName.trim()) return null;
 
-    console.log(`Searching for "${exerciseName}" before ${beforeDate.toISOString().split('T')[0]}`);
-    let daysChecked = 0;
-    let workoutsFound = 0;
-
     for (let i = 1; i <= maxDaysBack; i++) {
       const checkDate = new Date(beforeDate);
       checkDate.setDate(checkDate.getDate() - i);
-      daysChecked++;
 
       const log = await loadWorkoutLog(checkDate);
       if (log && !log.isRest && log.exercises) {
-        workoutsFound++;
-        // Find the exercise with matching name that has at least some values filled
         const exercise = log.exercises.find(
           ex => ex.name.toLowerCase() === exerciseName.toLowerCase() &&
                 (ex.target || ex.actual || ex.weight)
         );
 
         if (exercise) {
-          console.log(`✓ Found "${exerciseName}" from ${checkDate.toISOString().split('T')[0]} after checking ${daysChecked} days (${workoutsFound} workouts):`, {
-            target: exercise.target,
-            actual: exercise.actual,
-            weight: exercise.weight,
-          });
           return exercise;
         }
       }
     }
 
-    console.log(`✗ No history found for "${exerciseName}" after checking ${daysChecked} days (${workoutsFound} workouts)`);
     return null;
   } catch (error) {
-    console.error('Error finding last exercise occurrence:', error);
     return null;
   }
 };

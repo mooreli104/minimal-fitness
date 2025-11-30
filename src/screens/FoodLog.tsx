@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { FoodSearchResult } from '../types/food';
+import type { DietTemplate } from '../types';
 import type { RouteProp } from '@react-navigation/native';
 
 import { useDateManager } from "../hooks/useDateManager";
@@ -148,7 +149,7 @@ export default function FoodLog() {
     );
   };
 
-  const handleLoadTemplate = (template: any) => {
+  const handleLoadTemplate = (template: DietTemplate) => {
     setPendingTemplate(template);
     modals.templateManager.close();
 

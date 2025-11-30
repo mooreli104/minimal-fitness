@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, X, Plus, Check } from 'lucide-react-native';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme, ThemeColors, Theme } from '../context/ThemeContext';
 import { useFoodSearch } from '../hooks/useFoodSearch';
 import type { FoodSearchResult } from '../types/food';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -115,7 +115,7 @@ export const FoodSearchScreen: React.FC<Props> = ({ navigation, route }) => {
           <Search size={48} color={colors.textSecondary} strokeWidth={1.5} />
           <Text style={styles.emptyTitle}>Search for foods</Text>
           <Text style={styles.emptyDescription}>
-            Search our database of 1.9M+ foods
+            Search our database of common foods
           </Text>
         </View>
       );
@@ -251,7 +251,7 @@ export const FoodSearchScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
-const getStyles = (colors: any, theme: 'light' | 'dark') =>
+const getStyles = (colors: ThemeColors, theme: Theme) =>
   StyleSheet.create({
     container: {
       flex: 1,

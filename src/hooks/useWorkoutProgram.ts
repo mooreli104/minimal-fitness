@@ -95,6 +95,6 @@ export const useWorkoutProgram = () => {
     duplicateProgramDay,
     deleteProgramDay,
     toggleRestDay,
-    setProgram,
+    setProgram: saveProgram, // Use saveProgram to persist changes
   };
 };
