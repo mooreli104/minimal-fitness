@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import type { FoodSearchResult } from '../types/food';
+import type { RouteProp } from '@react-navigation/native';
 
 import { useDateManager } from "../hooks/useDateManager";
 import { useFoodLog } from "../hooks/useFoodLog";
@@ -24,8 +25,14 @@ import { useFoodLogModals } from "../hooks/useFoodLogModals";
 import { FoodLogContent } from "../components/food/FoodLogContent";
 import { getFoodLogStyles } from "../styles/FoodLog.styles";
 
+type FoodLogRouteParams = {
+  selectedFood?: FoodSearchResult;
+  mealType?: string;
+};
+
 export default function FoodLog() {
   const navigation = useNavigation();
+  const route = useRoute<RouteProp<{ FoodLog: FoodLogRouteParams }, 'FoodLog'>>();
   const [activeMealForSearch, setActiveMealForSearch] = useState<string | null>(null);
   const [isMealCategoryManagerVisible, setIsMealCategoryManagerVisible] = useState(false);
   const [pendingTemplate, setPendingTemplate] = useState<any>(null);
@@ -89,24 +96,34 @@ export default function FoodLog() {
     closeModal,
   } = useFoodModal(addFood, updateFood);
 
-  // Navigate to search screen instead of modal
+  // Handle food selection from search screen
+  useEffect(() => {
+    if (route.params?.selectedFood && route.params?.mealType) {
+      const food = route.params.selectedFood;
+      const meal = route.params.mealType;
+
+      // Convert search result to FoodEntry and add to log
+      const foodEntry = {
+        id: Date.now(),
+        name: food.description,
+        timestamp: new Date().toISOString(),
+        calories: food.calories || 0,
+        protein: food.protein_g || 0,
+        carbs: food.carbs_g || 0,
+        fat: food.fat_g || 0,
+      };
+      addFood(foodEntry, meal as any);
+
+      // Clear the params to prevent re-adding on subsequent renders
+      navigation.setParams({ selectedFood: undefined, mealType: undefined } as any);
+    }
+  }, [route.params?.selectedFood, route.params?.mealType]);
+
+  // Navigate to search screen
   const handleAddFood = (meal: string) => {
     setActiveMealForSearch(meal);
     navigation.navigate('FoodSearch' as never, {
       mealType: meal,
-      onSelectFood: (food: FoodSearchResult) => {
-        // Convert search result to FoodEntry and add to log
-        const foodEntry = {
-          id: Date.now(),
-          name: food.description,
-          timestamp: new Date().toISOString(),
-          calories: food.calories || 0,
-          protein: food.protein_g || 0,
-          carbs: food.carbs_g || 0,
-          fat: food.fat_g || 0,
-        };
-        addFood(foodEntry, meal as any);
-      },
     } as never);
   };
 

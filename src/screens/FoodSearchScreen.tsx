@@ -12,9 +12,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, X, Plus, Check } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useFoodSearch } from '../hooks/useFoodSearch';
@@ -22,10 +22,12 @@ import type { FoodSearchResult } from '../types/food';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
-  FoodLog: undefined;
+  FoodLog: {
+    selectedFood?: FoodSearchResult;
+    mealType?: string;
+  } | undefined;
   FoodSearch: {
     mealType: string;
-    onSelectFood: (food: FoodSearchResult) => void;
   };
 };
 
@@ -36,7 +38,7 @@ type TabType = 'all' | 'my-meals' | 'my-recipes' | 'my-foods';
 export const FoodSearchScreen: React.FC<Props> = ({ navigation, route }) => {
   const { colors, theme } = useTheme();
   const styles = getStyles(colors, theme);
-  const { onSelectFood } = route.params;
+  const { mealType } = route.params;
 
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const {
@@ -50,8 +52,10 @@ export const FoodSearchScreen: React.FC<Props> = ({ navigation, route }) => {
   } = useFoodSearch();
 
   const handleSelectFood = (food: FoodSearchResult) => {
-    onSelectFood(food);
-    navigation.goBack();
+    navigation.navigate('FoodLog', {
+      selectedFood: food,
+      mealType: mealType,
+    });
   };
 
   const handleClearSearch = () => {

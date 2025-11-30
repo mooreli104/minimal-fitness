@@ -48,8 +48,16 @@ class FoodsRepository {
       // Native platform: Use expo-sqlite
       const SQLite = require('expo-sqlite');
 
-      // Get the database asset
-      const dbAsset = Asset.fromModule(require('../data/foods.db'));
+      // Try to get the database asset
+      let dbAsset;
+      try {
+        dbAsset = Asset.fromModule(require('../data/foods.db'));
+      } catch (error) {
+        console.warn('⚠️  Food database file not found. Food search will not be available.');
+        console.warn('💡 To enable food search, add the foods.db file to src/data/');
+        this.isInitialized = true;
+        return;
+      }
 
       // Download/cache the asset if needed
       if (!dbAsset.downloaded) {
