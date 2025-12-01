@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { formatDateToKey } from '../utils/formatters';
 
 const STORAGE_KEY = '@water_intake';
 const DAILY_GOAL = 8; // glasses
@@ -21,7 +22,7 @@ export const useWaterIntake = () => {
 
   // Get today's date key
   const getTodayKey = useCallback((): string => {
-    return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    return formatDateToKey(new Date()); // YYYY-MM-DD
   }, []);
 
   // Load water data

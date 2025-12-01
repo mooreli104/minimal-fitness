@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
+import { formatDateToKey } from '../../utils/formatters';
 
 interface HeatmapDay {
   date: string; // YYYY-MM-DD
@@ -43,7 +44,7 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({ data }) => {
       for (let i = 0; i < 7; i++) {
         const date = new Date(weekStart);
         date.setDate(weekStart.getDate() + i);
-        const dateKey = date.toISOString().split('T')[0];
+        const dateKey = formatDateToKey(date);
 
         days.push(
           dataMap.get(dateKey) || {
@@ -68,7 +69,7 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({ data }) => {
       for (let i = 0; i < 42; i++) {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + i);
-        const dateKey = date.toISOString().split('T')[0];
+        const dateKey = formatDateToKey(date);
 
         days.push(
           dataMap.get(dateKey) || {

@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { loadWorkoutLog } from '../services/workoutStorage.service';
-import { getDaysAgo } from '../utils/formatters';
+import { getDaysAgo, formatDateToKey } from '../utils/formatters';
 
 export interface PersonalRecord {
   exerciseName: string;
@@ -84,7 +84,7 @@ export const usePersonalRecords = (daysToLoad: number = 365): UsePersonalRecords
           const workout = workoutLogs[index];
           if (!workout || workout.isRest) return;
 
-          const dateKey = date.toISOString().split('T')[0];
+          const dateKey = formatDateToKey(date);
 
           workout.exercises.forEach((exercise) => {
             // Skip if no actual or weight logged

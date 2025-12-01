@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { loadWorkoutLog } from '../services/workoutStorage.service';
-import { getDaysAgo } from '../utils/formatters';
+import { getDaysAgo, formatDateToKey } from '../utils/formatters';
 
 export interface HeatmapDay {
   date: string; // YYYY-MM-DD
@@ -47,7 +47,7 @@ export const useWorkoutHeatmap = (daysToLoad: number = 182): UseWorkoutHeatmapRe
         // Build heatmap data
         const heatmap: HeatmapDay[] = dates.map((date, index) => {
           const workout = workoutLogs[index];
-          const dateKey = date.toISOString().split('T')[0];
+          const dateKey = formatDateToKey(date);
 
           if (!workout || workout.isRest) {
             return {

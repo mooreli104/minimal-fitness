@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useWindowDimensions, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { TimeRangeSelector } from './TimeRangeSelector';
 import { CaloriesTrendChart } from './CaloriesTrendChart';
@@ -20,8 +20,6 @@ interface NutritionChartsProps {
   avgFat: number;
 }
 
-const SCREEN_WIDTH = Dimensions.get('window').width - 40; // Account for padding
-
 export const NutritionCharts: React.FC<NutritionChartsProps> = ({
   timeRange,
   onChangeTimeRange,
@@ -31,30 +29,35 @@ export const NutritionCharts: React.FC<NutritionChartsProps> = ({
   avgFat,
 }) => {
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
   const [currentPage, setCurrentPage] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+
+  // Calculate page width to match viewport exactly
+  // Account for Analytics screen padding (20px on each side)
+  const pageWidth = width - 40;
 
   // Memoize scroll handler to prevent recreation
   const handleScroll = useCallback((event: any) => {
     const offsetX = event.nativeEvent.contentOffset.x;
-    const page = Math.round(offsetX / SCREEN_WIDTH);
+    const page = Math.round(offsetX / pageWidth);
     setCurrentPage(page);
-  }, []);
+  }, [pageWidth]);
 
   // Memoize scroll function to prevent recreation
   const scrollToPage = useCallback((page: number) => {
     scrollViewRef.current?.scrollTo({
-      x: page * SCREEN_WIDTH,
+      x: page * pageWidth,
       animated: true,
     });
     setCurrentPage(page);
-  }, []);
+  }, [pageWidth]);
 
   // Memoize pages array to prevent recreating chart components on every render
   const pages = useMemo(() => [
     {
       title: 'Calorie Intake',
-      component: <CaloriesTrendChart data={aggregatedData} height={220} />,
+      component: <CaloriesTrendChart data={aggregatedData} height={220} key={`calories-${timeRange}`} />,
     },
     {
       title: 'Macronutrients',
@@ -65,10 +68,11 @@ export const NutritionCharts: React.FC<NutritionChartsProps> = ({
           avgCarbs={avgCarbs}
           avgFat={avgFat}
           height={220}
+          key={`macros-${timeRange}`}
         />
       ),
     },
-  ], [aggregatedData, avgProtein, avgCarbs, avgFat]);
+  ], [aggregatedData, avgProtein, avgCarbs, avgFat, timeRange]);
 
   return (
     <View style={styles.container}>
@@ -95,22 +99,23 @@ export const NutritionCharts: React.FC<NutritionChartsProps> = ({
       </View>
 
       {/* Swipeable Charts */}
-      <ScrollView
-        ref={scrollViewRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {pages.map((page, index) => (
-          <View key={index} style={[styles.page, { width: SCREEN_WIDTH }]}>
-            {page.component}
-          </View>
-        ))}
-      </ScrollView>
+      <View style={{ width: pageWidth, overflow: 'hidden' }}>
+        <ScrollView
+          ref={scrollViewRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          style={styles.scrollView}
+        >
+          {pages.map((page, index) => (
+            <View key={index} style={[styles.page, { width: pageWidth }]}>
+              {page.component}
+            </View>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Time Range Selector - Moved below charts */}
       <View style={styles.timeRangeSelectorContainer}>
@@ -145,10 +150,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   scrollView: {
-    marginHorizontal: -20, // Offset container padding
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
+    flex: 1,
   },
   page: {
     justifyContent: 'center',

@@ -5,6 +5,7 @@
 
 import { getItem, setItem } from '../utils/storage';
 import { STORAGE_KEYS } from '../utils/constants';
+import { formatDateToKey } from '../utils/formatters';
 
 export interface WeightEntry {
   date: string; // ISO date string (YYYY-MM-DD)
@@ -25,7 +26,7 @@ export const loadWeightEntries = async (): Promise<WeightEntry[]> => {
  */
 export const saveWeightEntry = async (weight: number): Promise<void> => {
   const entries = await loadWeightEntries();
-  const date = new Date().toISOString().split('T')[0];
+  const date = formatDateToKey(new Date());
   const timestamp = Date.now();
 
   const newEntry: WeightEntry = { date, weight, timestamp };
@@ -63,8 +64,8 @@ export const getWeightEntriesInRange = async (
   endDate: Date
 ): Promise<WeightEntry[]> => {
   const entries = await loadWeightEntries();
-  const start = startDate.toISOString().split('T')[0];
-  const end = endDate.toISOString().split('T')[0];
+  const start = formatDateToKey(startDate);
+  const end = formatDateToKey(endDate);
 
   return entries.filter((entry) => entry.date >= start && entry.date <= end);
 };

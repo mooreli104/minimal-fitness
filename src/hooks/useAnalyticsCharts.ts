@@ -55,7 +55,7 @@ export interface AnalyticsChartsData {
 }
 
 const TIME_RANGE_DAYS: Record<TimeRange, number> = {
-  day: 1,
+  day: 2, // Show today and yesterday for chart compatibility
   week: 7,
   month: 30,
   '3months': 90,
@@ -106,6 +106,10 @@ const aggregateData = (
 
     // Calculate averages
     const daysWithFood = chunk.filter((d) => d.hasFood).length;
+
+    // Skip periods with no data to avoid cluttering charts with empty points
+    if (daysWithFood === 0) continue;
+
     const totalCalories = chunk.reduce((sum, d) => sum + d.calories, 0);
     const totalProtein = chunk.reduce((sum, d) => sum + d.protein, 0);
     const totalCarbs = chunk.reduce((sum, d) => sum + d.carbs, 0);
@@ -123,14 +127,30 @@ const aggregateData = (
     aggregated.push({
       date: startDate,
       label,
-      calories: daysWithFood > 0 ? Math.round(totalCalories / daysWithFood) : 0,
-      protein: daysWithFood > 0 ? Math.round(totalProtein / daysWithFood) : 0,
-      carbs: daysWithFood > 0 ? Math.round(totalCarbs / daysWithFood) : 0,
-      fat: daysWithFood > 0 ? Math.round(totalFat / daysWithFood) : 0,
+      calories: Math.round(totalCalories / daysWithFood),
+      protein: Math.round(totalProtein / daysWithFood),
+      carbs: Math.round(totalCarbs / daysWithFood),
+      fat: Math.round(totalFat / daysWithFood),
       volume: totalVolume,
       daysWithWorkout,
       daysWithFood,
     });
+  }
+
+  // If aggregation resulted in too few data points, fall back to daily view
+  if (aggregated.length < 2) {
+    const daysWithData = dailyData.filter((d) => d.hasFood);
+    return daysWithData.map((d) => ({
+      date: d.date,
+      label: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      calories: d.calories,
+      protein: d.protein,
+      carbs: d.carbs,
+      fat: d.fat,
+      volume: d.volume,
+      daysWithWorkout: d.hasWorkout ? 1 : 0,
+      daysWithFood: d.hasFood ? 1 : 0,
+    }));
   }
 
   return aggregated;

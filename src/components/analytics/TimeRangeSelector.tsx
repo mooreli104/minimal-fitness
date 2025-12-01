@@ -14,7 +14,6 @@ interface TimeRangeSelectorProps {
 }
 
 const TIME_RANGES: { value: TimeRange; label: string }[] = [
-  { value: 'day', label: 'Day' },
   { value: 'week', label: 'Week' },
   { value: 'month', label: '1M' },
   { value: '3months', label: '3M' },

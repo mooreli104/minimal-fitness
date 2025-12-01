@@ -142,79 +142,104 @@ export const MacroStackedBarChart: React.FC<MacroStackedBarChartProps> = ({
         </View>
       </View>
 
-      {/* Chart */}
+      {/* Chart and Labels */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingRight: 20 }}
       >
-        <Svg width={totalWidth} height={height}>
-          {daysWithFood.map((day, i) => {
-            const x = CHART_PADDING.left + i * (BAR_WIDTH + BAR_GAP);
-            const totalGrams = day.protein + day.carbs + day.fat;
+        <View>
+          {/* Bars */}
+          <Svg width={totalWidth} height={height}>
+            {daysWithFood.map((day, i) => {
+              const x = CHART_PADDING.left + i * (BAR_WIDTH + BAR_GAP);
+              const totalGrams = day.protein + day.carbs + day.fat;
 
-            // Calculate heights for each macro section
-            const proteinHeight = (day.protein / maxTotalGrams) * chartHeight;
-            const carbsHeight = (day.carbs / maxTotalGrams) * chartHeight;
-            const fatHeight = (day.fat / maxTotalGrams) * chartHeight;
+              // Calculate heights for each macro section
+              const proteinHeight = (day.protein / maxTotalGrams) * chartHeight;
+              const carbsHeight = (day.carbs / maxTotalGrams) * chartHeight;
+              const fatHeight = (day.fat / maxTotalGrams) * chartHeight;
 
-            // Y positions (stack from bottom to top: protein, carbs, fat)
-            const proteinY = CHART_PADDING.top + chartHeight - proteinHeight;
-            const carbsY = proteinY - carbsHeight;
-            const fatY = carbsY - fatHeight;
+              // Y positions (stack from bottom to top: protein, carbs, fat)
+              const proteinY = CHART_PADDING.top + chartHeight - proteinHeight;
+              const carbsY = proteinY - carbsHeight;
+              const fatY = carbsY - fatHeight;
 
-            return (
-              <React.Fragment key={i}>
-                {/* Protein (bottom) */}
-                {day.protein > 0 && (
-                  <Rect
-                    x={x}
-                    y={proteinY}
-                    width={BAR_WIDTH}
-                    height={proteinHeight}
-                    fill={colors.blue}
-                    rx={i === 0 ? 0 : 4}
-                  />
-                )}
+              return (
+                <React.Fragment key={i}>
+                  {/* Protein (bottom) */}
+                  {day.protein > 0 && (
+                    <Rect
+                      x={x}
+                      y={proteinY}
+                      width={BAR_WIDTH}
+                      height={proteinHeight}
+                      fill={colors.blue}
+                      rx={i === 0 ? 0 : 4}
+                    />
+                  )}
 
-                {/* Carbs (middle) */}
-                {day.carbs > 0 && (
-                  <Rect
-                    x={x}
-                    y={carbsY}
-                    width={BAR_WIDTH}
-                    height={carbsHeight}
-                    fill={colors.orange}
-                  />
-                )}
+                  {/* Carbs (middle) */}
+                  {day.carbs > 0 && (
+                    <Rect
+                      x={x}
+                      y={carbsY}
+                      width={BAR_WIDTH}
+                      height={carbsHeight}
+                      fill={colors.orange}
+                    />
+                  )}
 
-                {/* Fat (top) */}
-                {day.fat > 0 && (
-                  <Rect
-                    x={x}
-                    y={fatY}
-                    width={BAR_WIDTH}
-                    height={fatHeight}
-                    fill={colors.green}
-                    rx={4}
-                  />
-                )}
-              </React.Fragment>
-            );
-          })}
-        </Svg>
+                  {/* Fat (top) */}
+                  {day.fat > 0 && (
+                    <Rect
+                      x={x}
+                      y={fatY}
+                      width={BAR_WIDTH}
+                      height={fatHeight}
+                      fill={colors.green}
+                      rx={4}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </Svg>
+
+          {/* X-axis labels aligned with bars */}
+          <View style={[styles.xAxisLabels, { width: totalWidth }]}>
+            {daysWithFood.map((day, i) => {
+              // Only show label every N bars to avoid crowding
+              const shouldShowLabel = i % Math.max(1, Math.ceil(daysWithFood.length / 5)) === 0;
+              if (!shouldShowLabel) return null;
+
+              // Align label with left edge of bar for rotated text
+              const barX = CHART_PADDING.left + i * (BAR_WIDTH + BAR_GAP);
+
+              return (
+                <View
+                  key={i}
+                  style={{
+                    position: 'absolute',
+                    left: barX - 10,
+                    top: 0,
+                    transform: [{ rotate: '-45deg' }],
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.xAxisLabel,
+                      { color: colors.textTertiary }
+                    ]}
+                  >
+                    {formatDate(day)}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
       </ScrollView>
-
-      {/* X-axis labels (shown below, sampled for readability) */}
-      <View style={styles.xAxisLabels}>
-        {daysWithFood
-          .filter((_, i) => i % Math.ceil(daysWithFood.length / 5) === 0)
-          .map((day, i) => (
-            <Text key={i} style={[styles.xAxisLabel, { color: colors.textTertiary }]}>
-              {formatDate(day)}
-            </Text>
-          ))}
-      </View>
     </View>
   );
 };
@@ -244,10 +269,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 16,
-    gap: 12,
   },
   summaryItem: {
     flex: 1,
+    minWidth: 0, // Prevent flex items from overflowing
+    marginHorizontal: 4,
   },
   summaryHeader: {
     flexDirection: 'row',
@@ -276,13 +302,13 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   xAxisLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-    paddingHorizontal: 8,
+    marginTop: -16,
+    height: 25,
+    position: 'relative',
   },
   xAxisLabel: {
     fontSize: 10,
     fontWeight: '500',
+    textAlign: 'left',
   },
 });
