@@ -6,10 +6,14 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { TrendingUp, TrendingDown, Scale } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../context/ThemeContext';
 import { VolumeSparkline } from '../analytics/VolumeSparkline';
 import { useBodyWeight } from '../../hooks/useBodyWeight';
 import { WeightInputModal } from '../common/WeightInputModal';
+import BodyWeightCalendarModal from '../common/BodyWeightCalendarModal';
+import { saveWeightEntry, getWeightForDate } from '../../services/weightStorage.service';
+import { formatDateToKey } from '../../utils/formatters';
 import type { DailyDataPoint } from '../../hooks/useAnalyticsCharts';
 
 interface QuickStatsProps {
@@ -24,20 +28,44 @@ export const QuickStats: React.FC<QuickStatsProps> = ({
   dailyData,
 }) => {
   const { colors, theme } = useTheme();
-  const { latestWeight, logWeight, isLoading: weightLoading } = useBodyWeight();
+  const { latestWeight, logWeight, isLoading: weightLoading, refreshData } = useBodyWeight();
   const [showWeightModal, setShowWeightModal] = useState(false);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDateWeight, setSelectedDateWeight] = useState<number | undefined>(undefined);
 
   // Memoize styles to prevent recreation on every render
   const styles = useMemo(() => getStyles(colors, theme), [colors, theme]);
 
   // Memoize callbacks to prevent child re-renders
   const handleLogWeight = useCallback(() => {
+    setSelectedDate(new Date());
+    setSelectedDateWeight(latestWeight?.weight);
+    setShowWeightModal(true);
+  }, [latestWeight]);
+
+  const handleLongPress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setShowCalendarModal(true);
+  }, []);
+
+  const handleCalendarDateSelect = useCallback(async (date: Date) => {
+    setShowCalendarModal(false);
+    setSelectedDate(date);
+
+    // Load existing weight for this date
+    const dateKey = formatDateToKey(date);
+    const existingEntry = await getWeightForDate(dateKey);
+    setSelectedDateWeight(existingEntry?.weight);
+
     setShowWeightModal(true);
   }, []);
 
-  const handleWeightSubmit = useCallback((weight: number) => {
-    logWeight(weight);
-  }, [logWeight]);
+  const handleWeightSubmit = useCallback(async (weight: number) => {
+    const dateKey = formatDateToKey(selectedDate);
+    await saveWeightEntry(dateKey, weight);
+    await refreshData();
+  }, [selectedDate, refreshData]);
 
   const formatDateTime = useCallback((dateString: string, timestamp: number) => {
     // Parse date string as local date (YYYY-MM-DD) to avoid timezone issues
@@ -112,7 +140,12 @@ export const QuickStats: React.FC<QuickStatsProps> = ({
       </View>
 
       {/* Weight Tracking */}
-      <TouchableOpacity style={styles.card} onPress={handleLogWeight} activeOpacity={0.7}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={handleLogWeight}
+        onLongPress={handleLongPress}
+        activeOpacity={0.7}
+      >
         <View style={styles.cardHeader}>
           <Text style={styles.cardLabel}>Body Weight</Text>
           <Scale size={14} color={colors.accent} strokeWidth={2} />
@@ -121,7 +154,9 @@ export const QuickStats: React.FC<QuickStatsProps> = ({
           {latestWeight ? `${latestWeight.weight} lbs` : '—'}
         </Text>
         <Text style={styles.cardSubtext}>
-          {latestWeight ? formatDateTime(latestWeight.date, latestWeight.timestamp) : 'Tap to log'}
+          {latestWeight
+            ? formatDateTime(latestWeight.date, latestWeight.timestamp)
+            : 'Tap to log, hold for history'}
         </Text>
       </TouchableOpacity>
     </View>
@@ -131,7 +166,15 @@ export const QuickStats: React.FC<QuickStatsProps> = ({
         isVisible={showWeightModal}
         onClose={() => setShowWeightModal(false)}
         onSubmit={handleWeightSubmit}
-        initialValue={latestWeight?.weight}
+        initialValue={selectedDateWeight}
+      />
+
+      {/* Body Weight Calendar Modal */}
+      <BodyWeightCalendarModal
+        isVisible={showCalendarModal}
+        onClose={() => setShowCalendarModal(false)}
+        onDateSelect={handleCalendarDateSelect}
+        selectedDate={selectedDate}
       />
     </>
   );

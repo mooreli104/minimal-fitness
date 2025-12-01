@@ -52,7 +52,7 @@ export const BodyWeightChart: React.FC<BodyWeightChartProps> = ({
   }
 
   // Sort data by date (oldest to newest)
-  const sortedData = [...data].sort((a, b) => a.timestamp - b.timestamp);
+  const sortedData = [...data].sort((a, b) => a.date.localeCompare(b.date));
 
   // Calculate width accounting for container padding (12px on each side)
   const width = screenWidth - (CONTAINER_PADDING * 2);
