@@ -1,10 +1,10 @@
 import { Platform } from 'react-native';
 
-// Import react-native-live-activities only on iOS
+// Import expo-live-activity only on iOS
 let LiveActivities: any = null;
 if (Platform.OS === 'ios') {
   try {
-    LiveActivities = require('react-native-live-activities');
+    LiveActivities = require('expo-live-activity');
   } catch (e) {
     console.log('Live Activities not available');
   }
@@ -22,7 +22,7 @@ export async function startTimerLiveActivity(remainingSeconds: number): Promise<
 
   try {
     // Check if startActivity method exists (won't in Expo Go)
-    if (typeof LiveActivities.startActivity !== 'function') {
+    if (typeof LiveActivities?.startActivity !== 'function') {
       // Silently return - this is expected in Expo Go
       return null;
     }
@@ -42,7 +42,7 @@ export async function startTimerLiveActivity(remainingSeconds: number): Promise<
 
     const targetEndTime = Date.now() + remainingSeconds * 1000;
 
-    const activityId = await LiveActivities.startActivity('WorkoutTimer', {
+    const activityId = await LiveActivities.startActivity({
       timerName: 'Workout Timer',
       remainingTime: timeString,
       targetEndTime,
@@ -67,7 +67,7 @@ export async function updateTimerLiveActivity(remainingSeconds: number): Promise
 
   try {
     // Check if updateActivity method exists (won't in Expo Go)
-    if (typeof LiveActivities.updateActivity !== 'function') {
+    if (typeof LiveActivities?.updateActivity !== 'function') {
       return;
     }
 
@@ -101,7 +101,7 @@ export async function endTimerLiveActivity(showCompletionState: boolean = false)
 
   try {
     // Check if methods exist (won't in Expo Go)
-    if (typeof LiveActivities.endActivity !== 'function') {
+    if (typeof LiveActivities?.stopActivity !== 'function') {
       currentActivityId = null;
       return;
     }
@@ -116,13 +116,21 @@ export async function endTimerLiveActivity(showCompletionState: boolean = false)
 
       // Wait 2 seconds then end
       setTimeout(async () => {
-        if (currentActivityId && LiveActivities && typeof LiveActivities.endActivity === 'function') {
-          await LiveActivities.endActivity(currentActivityId);
+        if (currentActivityId && LiveActivities && typeof LiveActivities.stopActivity === 'function') {
+          await LiveActivities.stopActivity(currentActivityId, {
+            remainingTime: '0:00',
+            targetEndTime: Date.now(),
+            isRunning: false,
+          });
           currentActivityId = null;
         }
       }, 2000);
     } else {
-      await LiveActivities.endActivity(currentActivityId);
+      await LiveActivities.stopActivity(currentActivityId, {
+        remainingTime: '0:00',
+        targetEndTime: Date.now(),
+        isRunning: false,
+      });
       currentActivityId = null;
     }
   } catch (error) {
@@ -140,7 +148,9 @@ export async function areLiveActivitiesEnabled(): Promise<boolean> {
   }
 
   try {
-    return await LiveActivities.areActivitiesEnabled();
+    // expo-live-activity doesn't have an areActivitiesEnabled method
+    // Check if startActivity exists as a proxy for availability
+    return typeof LiveActivities?.startActivity === 'function';
   } catch (error) {
     console.error('Error checking Live Activities support:', error);
     return false;
