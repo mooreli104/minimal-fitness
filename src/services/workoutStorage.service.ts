@@ -3,7 +3,7 @@
  * Handles all workout CRUD operations with AsyncStorage
  */
 
-import { WorkoutDay, WorkoutTemplate, Exercise } from '../types';
+import { WorkoutDay, WorkoutTemplate, Exercise, ExerciseHistoryEntry } from '../types';
 import { setItem, removeItem, getItemWithMigration, getArrayWithMigration } from '../utils/storage';
 import { STORAGE_KEYS } from '../utils/constants';
 import { formatDateToKey } from '../utils/formatters';
@@ -147,4 +147,44 @@ export const findLastExerciseOccurrence = async (
   } catch (error) {
     return null;
   }
+};
+
+/**
+ * Finds all occurrences of a specific exercise across past workouts
+ * @param exerciseName Name of the exercise to search for
+ * @param beforeDate Search for exercises before this date
+ * @param maxDaysBack Maximum number of days to search back (default 90)
+ * @returns Array of exercise history entries
+ */
+export const findExerciseHistory = async (
+  exerciseName: string,
+  beforeDate: Date,
+  maxDaysBack: number = 90
+): Promise<ExerciseHistoryEntry[]> => {
+  const results: ExerciseHistoryEntry[] = [];
+  if (!exerciseName.trim()) return results;
+
+  for (let i = 1; i <= maxDaysBack; i++) {
+    const checkDate = new Date(beforeDate);
+    checkDate.setDate(checkDate.getDate() - i);
+
+    const log = await loadWorkoutLog(checkDate);
+    if (!log || log.isRest || !log.exercises) continue;
+
+    const match = log.exercises.find(
+      ex => ex.name.toLowerCase() === exerciseName.toLowerCase() &&
+            (ex.actual || ex.weight)
+    );
+
+    if (match) {
+      results.push({
+        date: formatDateToKey(checkDate),
+        workoutName: log.name,
+        target: match.target,
+        actual: match.actual,
+        weight: match.weight,
+      });
+    }
+  }
+  return results;
 };
