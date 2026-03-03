@@ -52,16 +52,16 @@ export default function Workout() {
     yesterdaysWorkoutName,
     addDayToProgram,
     deleteProgramDay,
-    addExerciseToLog,
-    updateExerciseInLog,
-    deleteExerciseFromLog,
+    addExercise,
+    updateExercise,
+    deleteExercise,
     selectDayToLog,
     saveCurrentAsTemplate,
     loadTemplate,
     renameTemplate,
     deleteTemplate,
     setWorkoutLog,
-    saveWorkoutLog,
+    saveLog,
   } = useWorkout(selectedDate);
 
   const modals = useWorkoutModals();
@@ -86,7 +86,7 @@ export default function Workout() {
     if (workoutLog) {
       const updatedLog = { ...workoutLog, name: newDayName.trim() };
       setWorkoutLog(updatedLog);
-      saveWorkoutLog(updatedLog);
+      saveLog(updatedLog);
     }
     modals.renameModal.close();
   };
@@ -128,7 +128,7 @@ export default function Workout() {
             onPress: () => {
               const updatedLog = { ...workoutLog, isRest: true };
               setWorkoutLog(updatedLog);
-              saveWorkoutLog(updatedLog);
+              saveLog(updatedLog);
             },
           },
         ]
@@ -348,7 +348,7 @@ export default function Workout() {
               if (workoutLog) {
                 const updatedLog = { ...workoutLog, name };
                 setWorkoutLog(updatedLog);
-                saveWorkoutLog(updatedLog);
+                saveLog(updatedLog);
               }
               modals.changeDayModal.close();
             }}
@@ -418,9 +418,9 @@ export default function Workout() {
                 }
               }}
               onToggleRestDay={handleToggleRestDay}
-              onUpdateExercise={updateExerciseInLog}
-              onDeleteExercise={deleteExerciseFromLog}
-              onAddExercise={addExerciseToLog}
+              onUpdateExercise={updateExercise}
+              onDeleteExercise={deleteExercise}
+              onAddExercise={addExercise}
             />
 
             <InlineLoopingTimer />
