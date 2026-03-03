@@ -6,6 +6,7 @@ export const useWorkoutModals = () => {
   const [isChangeDayModalVisible, setChangeDayModalVisible] = useState(false);
   const [isRenameModalVisible, setRenameModalVisible] = useState(false);
   const [isTimerVisible, setTimerVisible] = useState(false);
+  const [isProgramEditorVisible, setProgramEditorVisible] = useState(false);
 
   const openTemplateManager = () => setTemplateManagerVisible(true);
   const closeTemplateManager = () => setTemplateManagerVisible(false);
@@ -47,6 +48,11 @@ export const useWorkoutModals = () => {
       isVisible: isTimerVisible,
       open: openTimer,
       close: closeTimer,
+    },
+    programEditor: {
+      isVisible: isProgramEditorVisible,
+      open: () => setProgramEditorVisible(true),
+      close: () => setProgramEditorVisible(false),
     },
   };
 };

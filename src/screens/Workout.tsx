@@ -22,6 +22,7 @@ import { useWorkoutModals } from '../hooks/useWorkoutModals';
 import { WorkoutContent } from '../components/workout/WorkoutContent';
 import { ExerciseHistoryModal } from '../components/workout/ExerciseHistoryModal';
 import { useWeekPopulator } from '../hooks/useWeekPopulator';
+import ProgramEditor from '../components/workout/ProgramEditor';
 
 import { getWorkoutStyles } from '../styles/Workout.styles';
 
@@ -47,7 +48,14 @@ export default function Workout() {
     isLoading,
     yesterdaysWorkoutName,
     addDayToProgram,
+    renameProgramDay,
+    duplicateProgramDay,
     deleteProgramDay,
+    toggleRestDay,
+    addExerciseToDay,
+    updateExerciseInDay,
+    removeExerciseFromDay,
+    reorderDays,
     addExercise,
     updateExercise,
     deleteExercise,
@@ -227,9 +235,26 @@ export default function Workout() {
             currentDate={selectedDate}
             onClose={() => setIsHistoryVisible(false)}
           />
+          <ProgramEditor
+            isVisible={modals.programEditor.isVisible}
+            onClose={modals.programEditor.close}
+            program={program}
+            onAddDay={addDayToProgram}
+            onRenameDay={renameProgramDay}
+            onDuplicateDay={duplicateProgramDay}
+            onDeleteDay={deleteProgramDay}
+            onToggleRestDay={toggleRestDay}
+            onReorderDays={reorderDays}
+            onAddExercise={addExerciseToDay}
+            onUpdateExercise={updateExerciseInDay}
+            onRemoveExercise={removeExerciseFromDay}
+          />
 
           <ScrollView contentContainerStyle={styles.content}>
-            <WorkoutHeader onOpenTemplateManager={modals.templateManager.open} />
+            <WorkoutHeader
+              onOpenTemplateManager={modals.templateManager.open}
+              onOpenProgramEditor={modals.programEditor.open}
+            />
             <DaySelector
               program={program}
               onSelectDay={selectDayToLog}
