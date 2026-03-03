@@ -3,4 +3,3 @@
  */
 
 export * from './workoutStorage.service';
-export * from './foodStorage.service';

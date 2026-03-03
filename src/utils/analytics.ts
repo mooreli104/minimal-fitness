@@ -2,7 +2,7 @@
  * Analytics utility functions for workout and food tracking
  */
 
-import { WorkoutDay, DailyFoodLog } from '../types';
+import { WorkoutDay } from '../types';
 
 /**
  * Parse exercise format to extract sets and reps
@@ -83,9 +83,3 @@ export const isWorkoutCompleted = (workout: WorkoutDay): boolean => {
   );
 };
 
-/**
- * Check if a food log has any entries
- */
-export const hasFoodEntries = (log: DailyFoodLog): boolean => {
-  return Object.values(log).some((meal) => meal.length > 0);
-};

@@ -2,7 +2,7 @@
  * Data migration utilities for handling legacy data formats
  */
 
-import { Exercise, WorkoutDay, WorkoutTemplate, FoodEntry, DailyFoodLog, MealCategory } from '../types';
+import { Exercise, WorkoutDay, WorkoutTemplate } from '../types';
 
 /**
  * Migrates an exercise from old format (sets/reps) to new format (target/actual)
@@ -51,42 +51,3 @@ export const migrateWorkoutTemplate = (template: WorkoutTemplate): WorkoutTempla
   };
 };
 
-/**
- * Ensures a food entry has a valid timestamp
- * @param entry Food entry to fix
- * @param defaultDate Date to use if timestamp is missing
- * @returns Food entry with valid timestamp
- */
-export const ensureFoodTimestamp = (entry: FoodEntry, defaultDate: Date): FoodEntry => {
-  if (!entry.timestamp) {
-    return {
-      ...entry,
-      timestamp: defaultDate.toISOString(),
-    };
-  }
-  return entry;
-};
-
-/**
- * Ensures all meals exist in a food log with default empty arrays
- * @param log Potentially incomplete food log
- * @param defaultDate Date for default timestamps
- * @returns Complete food log with all meals
- */
-export const normalizeFoodLog = (log: Partial<DailyFoodLog>, defaultDate: Date): DailyFoodLog => {
-  const normalized: DailyFoodLog = {
-    Breakfast: log.Breakfast ?? [],
-    Lunch: log.Lunch ?? [],
-    Dinner: log.Dinner ?? [],
-    Snacks: log.Snacks ?? [],
-  };
-
-  // Ensure all entries have timestamps
-  for (const meal of Object.keys(normalized) as MealCategory[]) {
-    normalized[meal] = normalized[meal].map(entry =>
-      ensureFoodTimestamp(entry, defaultDate)
-    );
-  }
-
-  return normalized;
-};

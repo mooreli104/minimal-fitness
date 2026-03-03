@@ -1,6 +1,6 @@
 import React from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
-import { Home, Menu, Dumbbell, ForkKnifeCrossed, ChartColumnIncreasing } from "lucide-react-native";
+import { Menu, Dumbbell } from "lucide-react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTheme } from "../context/ThemeContext";
 
@@ -10,24 +10,11 @@ export default function BottomNav() {
   const { colors } = useTheme();
 
   const navItems = [
-    { icon: Home, route: "Dashboard", name: "home" },
     { icon: Dumbbell, route: "Workout", name: "workout" },
-    { icon: ForkKnifeCrossed, route: "FoodLog", name: "foodlog" },
-    { icon: ChartColumnIncreasing, route: "Analytics", name: "analytics" },
     { icon: Menu, route: "More", name: "more" },
   ];
 
-  const isActive = (r: string) => {
-    // Check if current route matches the target route
-    if (route.name === r) return true;
-
-    // For FoodLog, also check if we're on FoodLogMain or FoodSearch (nested stack screens)
-    if (r === "FoodLog" && (route.name === "FoodLogMain" || route.name === "FoodSearch")) {
-      return true;
-    }
-
-    return false;
-  };
+  const isActive = (r: string) => route.name === r;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
