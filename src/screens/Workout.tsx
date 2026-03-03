@@ -90,11 +90,7 @@ export default function Workout() {
   });
 
   const handleAddDay = () => {
-    Alert.prompt('Add Day', 'Enter the name for the new day:', (name) => {
-      if (name) {
-        addDayToProgram(name);
-      }
-    });
+    modals.programEditor.open();
   };
 
   const handleSaveRename = () => {
@@ -110,12 +106,8 @@ export default function Workout() {
     modals.renameModal.close();
   };
 
-  const handleSaveTemplate = () => {
-    Alert.prompt('Save Template', 'Enter a name for this template:', (templateName) => {
-      if (templateName) {
-        saveCurrentAsTemplate(templateName);
-      }
-    });
+  const handleSaveTemplate = (templateName: string) => {
+    saveCurrentAsTemplate(templateName);
   };
 
   const handleLoadTemplate = (template: WorkoutTemplate) => {

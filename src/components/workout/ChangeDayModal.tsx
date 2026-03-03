@@ -4,6 +4,7 @@ import { Plus, Trash2 } from 'lucide-react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Reanimated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from 'react-native-reanimated';
 import { WorkoutDay } from '../../types';
+import { useTheme } from '../../context/ThemeContext';
 
 interface ChangeDayModalProps {
   isVisible: boolean;
@@ -15,6 +16,7 @@ interface ChangeDayModalProps {
 }
 
 const WorkoutDayRow = ({ day, onSelect, onDelete }: { day: WorkoutDay, onSelect: (name: string) => void, onDelete: () => void }) => {
+  const { colors } = useTheme();
   const translateX = useSharedValue(0);
   const SWIPE_THRESHOLD = -80;
 
@@ -44,8 +46,8 @@ const WorkoutDayRow = ({ day, onSelect, onDelete }: { day: WorkoutDay, onSelect:
       </View>
       <GestureDetector gesture={panGesture}>
         <Reanimated.View style={animatedStyle}>
-          <TouchableOpacity style={styles.sheetOption} onPress={() => onSelect(day.name)}>
-            <Text style={styles.sheetOptionText}>{day.name}</Text>
+          <TouchableOpacity style={[styles.sheetOption, { backgroundColor: colors.cardBackground }]} onPress={() => onSelect(day.name)}>
+            <Text style={[styles.sheetOptionText, { color: colors.textPrimary }]}>{day.name}</Text>
           </TouchableOpacity>
         </Reanimated.View>
       </GestureDetector>
@@ -54,27 +56,29 @@ const WorkoutDayRow = ({ day, onSelect, onDelete }: { day: WorkoutDay, onSelect:
 };
 
 export const ChangeDayModal = ({ isVisible, onClose, onSelect, programDays, onAdd, onDelete }: ChangeDayModalProps) => {
+  const { colors } = useTheme();
+
   return (
     <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onClose}>
       <TouchableOpacity style={styles.sheetBackdrop} activeOpacity={1} onPress={onClose}>
-        <View style={styles.sheetContainer} onStartShouldSetResponder={() => true}>
-          <Text style={styles.sheetTitle}>Change Workout Day</Text>
-          <ScrollView style={styles.sheetOptionsContainer}>
+        <View style={[styles.sheetContainer, { backgroundColor: colors.cardBackground }]} onStartShouldSetResponder={() => true}>
+          <Text style={[styles.sheetTitle, { color: colors.textSecondary, borderBottomColor: colors.border }]}>Change Workout Day</Text>
+          <ScrollView style={[styles.sheetOptionsContainer, { backgroundColor: colors.surface }]}>
             <GestureHandlerRootView>
               {programDays.filter(day => !day.isRest).map((day, index) => (
                 <React.Fragment key={day.id}>
                   <WorkoutDayRow day={day} onSelect={onSelect} onDelete={() => onDelete(day.id)} />
-                  {index < programDays.length - 1 && <View style={styles.sheetDivider} />}
+                  {index < programDays.length - 1 && <View style={[styles.sheetDivider, { backgroundColor: colors.border }]} />}
                 </React.Fragment>
               ))}
             </GestureHandlerRootView>
           </ScrollView>
-          <TouchableOpacity style={styles.sheetAction} onPress={onAdd}>
-            <Plus size={16} color="#000" />
-            <Text style={styles.sheetActionText}>Add New Day</Text>
+          <TouchableOpacity style={[styles.sheetAction, { backgroundColor: colors.surface }]} onPress={onAdd}>
+            <Plus size={16} color={colors.textPrimary} />
+            <Text style={[styles.sheetActionText, { color: colors.textPrimary }]}>Add New Day</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.sheetCancel} onPress={onClose}>
-            <Text style={styles.sheetCancelText}>Cancel</Text>
+          <TouchableOpacity style={[styles.sheetCancel, { backgroundColor: colors.surface }]} onPress={onClose}>
+            <Text style={[styles.sheetCancelText, { color: colors.textSecondary }]}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -89,7 +93,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheetContainer: {
-    backgroundColor: 'white',
     marginHorizontal: 16,
     marginBottom: 48,
     borderRadius: 16,
@@ -97,38 +100,31 @@ const styles = StyleSheet.create({
   sheetTitle: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#999',
     textAlign: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
   },
   sheetOptionsContainer: {
     maxHeight: 300,
     marginHorizontal: 16,
-    backgroundColor: '#f8f8f8',
     overflow: 'hidden',
     borderRadius: 12,
   },
   sheetOption: {
     paddingVertical: 16,
     alignItems: 'center',
-    backgroundColor: 'white',
   },
   sheetOptionText: {
     fontSize: 18,
     fontWeight: '500',
-    color: '#000',
   },
   sheetDivider: {
     height: 1,
-    backgroundColor: '#e5e5e5',
     marginLeft: 16,
   },
   sheetAction: {
     flexDirection: 'row',
     gap: 8,
-    backgroundColor: '#f8f8f8',
     borderRadius: 12,
     marginHorizontal: 16,
     marginTop: 16,
@@ -139,10 +135,8 @@ const styles = StyleSheet.create({
   sheetActionText: {
     fontSize: 18,
     fontWeight: '500',
-    color: '#000',
   },
   sheetCancel: {
-    backgroundColor: '#f8f8f8',
     borderRadius: 12,
     marginHorizontal: 16,
     marginTop: 8,
@@ -153,7 +147,6 @@ const styles = StyleSheet.create({
   sheetCancelText: {
     fontSize: 18,
     fontWeight: '500',
-    color: '#999',
   },
   sheetDeleteActionContainer: {
     ...StyleSheet.absoluteFillObject,

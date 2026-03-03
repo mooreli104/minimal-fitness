@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 export const useWorkoutModals = () => {
   const [isTemplateManagerVisible, setTemplateManagerVisible] = useState(false);
-  const [isActionSheetVisible, setIsActionSheetVisible] = useState(false);
   const [isChangeDayModalVisible, setChangeDayModalVisible] = useState(false);
   const [isRenameModalVisible, setRenameModalVisible] = useState(false);
   const [isTimerVisible, setTimerVisible] = useState(false);
@@ -10,9 +9,6 @@ export const useWorkoutModals = () => {
 
   const openTemplateManager = () => setTemplateManagerVisible(true);
   const closeTemplateManager = () => setTemplateManagerVisible(false);
-
-  const openActionSheet = () => setIsActionSheetVisible(true);
-  const closeActionSheet = () => setIsActionSheetVisible(false);
 
   const openChangeDayModal = () => setChangeDayModalVisible(true);
   const closeChangeDayModal = () => setChangeDayModalVisible(false);
@@ -28,11 +24,6 @@ export const useWorkoutModals = () => {
       isVisible: isTemplateManagerVisible,
       open: openTemplateManager,
       close: closeTemplateManager,
-    },
-    actionSheet: {
-      isVisible: isActionSheetVisible,
-      open: openActionSheet,
-      close: closeActionSheet,
     },
     changeDayModal: {
       isVisible: isChangeDayModalVisible,

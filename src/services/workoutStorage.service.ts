@@ -3,7 +3,7 @@
  * Handles all workout CRUD operations with AsyncStorage
  */
 
-import { WorkoutDay, WorkoutTemplate, Exercise, ExerciseHistoryEntry } from '../types';
+import { WorkoutDay, WorkoutTemplate, ExerciseHistoryEntry } from '../types';
 import { setItem, removeItem, getItemWithMigration, getArrayWithMigration } from '../utils/storage';
 import { STORAGE_KEYS } from '../utils/constants';
 import { formatDateToKey } from '../utils/formatters';
@@ -102,44 +102,6 @@ export const findPreviousWorkoutByName = async (
       const log = await loadWorkoutLog(checkDate);
       if (log && !log.isRest && log.name === workoutName) {
         return log;
-      }
-    }
-
-    return null;
-  } catch (error) {
-    return null;
-  }
-};
-
-/**
- * Finds the most recent occurrence of a specific exercise across all workouts
- * @param exerciseName Name of the exercise to search for
- * @param beforeDate Search for exercises before this date
- * @param maxDaysBack Maximum number of days to search back (default 90)
- * @returns The most recent exercise with values, or null
- */
-export const findLastExerciseOccurrence = async (
-  exerciseName: string,
-  beforeDate: Date,
-  maxDaysBack: number = 90
-): Promise<Exercise | null> => {
-  try {
-    if (!exerciseName.trim()) return null;
-
-    for (let i = 1; i <= maxDaysBack; i++) {
-      const checkDate = new Date(beforeDate);
-      checkDate.setDate(checkDate.getDate() - i);
-
-      const log = await loadWorkoutLog(checkDate);
-      if (log && !log.isRest && log.exercises) {
-        const exercise = log.exercises.find(
-          ex => ex.name.toLowerCase() === exerciseName.toLowerCase() &&
-                (ex.target || ex.actual || ex.weight)
-        );
-
-        if (exercise) {
-          return exercise;
-        }
       }
     }
 
