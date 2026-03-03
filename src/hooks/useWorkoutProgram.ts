@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Alert } from 'react-native';
 import { WorkoutDay } from '../types';
-import { generateId } from '../utils/generators';
+import { generateUniqueId } from '../utils/generators';
 import { DEFAULTS } from '../utils/constants';
 import { loadWorkoutProgram, saveWorkoutProgram } from '../services/workoutStorage.service';
 
@@ -33,9 +33,9 @@ export const useWorkoutProgram = () => {
 
   const addDayToProgram = useCallback(async (newDayName: string) => {
     const newDay: WorkoutDay = {
-      id: generateId(),
+      id: generateUniqueId(),
       name: newDayName,
-      exercises: [{ id: generateId() + 1, ...DEFAULTS.NEW_EXERCISE_TEMPLATE }],
+      exercises: [{ id: generateUniqueId() + 1, ...DEFAULTS.NEW_EXERCISE_TEMPLATE }],
       isRest: false,
     };
     const newProgram = [...program, newDay];
@@ -55,7 +55,7 @@ export const useWorkoutProgram = () => {
 
     const newDay: WorkoutDay = {
       ...dayToDuplicate,
-      id: generateId(),
+      id: generateUniqueId(),
       name: `${dayToDuplicate.name} (Copy)`,
       isRest: dayToDuplicate.isRest,
     };
@@ -79,7 +79,7 @@ export const useWorkoutProgram = () => {
         return {
           ...day,
           isRest,
-          exercises: isRest ? [] : [{ id: generateId(), ...DEFAULTS.NEW_EXERCISE_TEMPLATE }],
+          exercises: isRest ? [] : [{ id: generateUniqueId(), ...DEFAULTS.NEW_EXERCISE_TEMPLATE }],
         };
       }
       return day;
@@ -88,6 +88,47 @@ export const useWorkoutProgram = () => {
     await saveProgram(newProgram);
   }, [program]);
 
+  const addExerciseToDay = useCallback(async (dayId: number) => {
+    const newProgram = program.map(day => {
+      if (day.id !== dayId) return day;
+      return {
+        ...day,
+        exercises: [...day.exercises, { id: generateUniqueId(), ...DEFAULTS.NEW_EXERCISE_TEMPLATE }],
+      };
+    });
+    await saveProgram(newProgram);
+  }, [program]);
+
+  const updateExerciseInDay = useCallback(async (
+    dayId: number, exerciseId: number, field: 'name' | 'target', value: string
+  ) => {
+    const newProgram = program.map(day => {
+      if (day.id !== dayId) return day;
+      return {
+        ...day,
+        exercises: day.exercises.map(ex =>
+          ex.id === exerciseId ? { ...ex, [field]: value } : ex
+        ),
+      };
+    });
+    await saveProgram(newProgram);
+  }, [program]);
+
+  const removeExerciseFromDay = useCallback(async (dayId: number, exerciseId: number) => {
+    const newProgram = program.map(day => {
+      if (day.id !== dayId) return day;
+      return {
+        ...day,
+        exercises: day.exercises.filter(ex => ex.id !== exerciseId),
+      };
+    });
+    await saveProgram(newProgram);
+  }, [program]);
+
+  const reorderDays = useCallback(async (newOrder: WorkoutDay[]) => {
+    await saveProgram(newOrder);
+  }, []);
+
   return {
     program,
     addDayToProgram,
@@ -95,6 +136,10 @@ export const useWorkoutProgram = () => {
     duplicateProgramDay,
     deleteProgramDay,
     toggleRestDay,
+    addExerciseToDay,
+    updateExerciseInDay,
+    removeExerciseFromDay,
+    reorderDays,
     setProgram: saveProgram, // Use saveProgram to persist changes
   };
 };
