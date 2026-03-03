@@ -8,7 +8,7 @@ import { useTheme } from '../../context/ThemeContext';
 interface DaySelectorProps {
   program: WorkoutDay[];
   onSelectDay: (day: WorkoutDay) => void;
-  onLongPressDay: (day: WorkoutDay) => void;
+  onLongPressDay?: (day: WorkoutDay) => void;
   onAddDay: () => void;
 }
 
@@ -33,7 +33,7 @@ const DaySelector = ({
             key={day.id}
             style={[styles.dayButton, day.isRest && styles.restDayButton]}
             onPress={() => !day.isRest && onSelectDay(day)}
-            onLongPress={() => onLongPressDay(day)}
+            onLongPress={onLongPressDay ? () => onLongPressDay(day) : undefined}
           >
             <Text style={[styles.dayButtonText, day.isRest && styles.restDayButtonText]}>{day.name}</Text>
             {day.isRest && <Text style={styles.restDayBadge}>REST</Text>}

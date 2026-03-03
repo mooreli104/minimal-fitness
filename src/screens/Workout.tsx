@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { View, ScrollView, Alert, KeyboardAvoidingView, Platform, Text, TouchableOpacity } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import * as Haptics from 'expo-haptics';
 import BottomNav from '../components/BottomNav';
 import TemplateManager from '../components/TemplateManager';
-import WorkoutDayActionSheet from '../components/WorkoutDayActionSheet';
 import { useDateManager } from '../hooks/useDateManager';
 import { useWorkout } from '../hooks/useWorkout';
 import { useWeeklyPlan } from '../hooks/useWeeklyPlan';
@@ -53,10 +51,7 @@ export default function Workout() {
     isLoading,
     yesterdaysWorkoutName,
     addDayToProgram,
-    renameProgramDay,
-    duplicateProgramDay,
     deleteProgramDay,
-    toggleRestDay,
     addExerciseToLog,
     updateExerciseInLog,
     deleteExerciseFromLog,
@@ -70,42 +65,10 @@ export default function Workout() {
   } = useWorkout(selectedDate);
 
   const modals = useWorkoutModals();
-  const [selectedDay, setSelectedDay] = useState<WorkoutDay | null>(null);
   const [newDayName, setNewDayName] = useState('');
   const [isWeekPlannerVisible, setIsWeekPlannerVisible] = useState(false);
 
   const { weeklyPlan, updateDayPlan, clearWeeklyPlan } = useWeeklyPlan();
-
-  const handleOpenDayActionSheet = (day: WorkoutDay) => {
-    setSelectedDay(day);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    modals.actionSheet.open();
-  };
-
-  const handleEditDay = () => {
-    if (!selectedDay || selectedDay.isRest) return;
-    modals.actionSheet.close();
-    Alert.prompt('Rename Day', 'Enter the new name:', (newName) => {
-      if (newName) {
-        renameProgramDay(selectedDay.id, newName);
-      }
-    });
-  };
-
-  const handleDuplicateDay = () => {
-    if (!selectedDay) return;
-    duplicateProgramDay(selectedDay.id);
-    modals.actionSheet.close();
-  };
-
-  const handleDeleteDay = () => {
-    if (!selectedDay) return;
-    modals.actionSheet.close();
-    Alert.alert('Delete Day', `Are you sure you want to delete "${selectedDay.name}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteProgramDay(selectedDay.id) },
-    ]);
-  };
 
   const handleAddDay = () => {
     Alert.prompt('Add Day', 'Enter the name for the new day:', (name) => {
@@ -372,20 +335,6 @@ export default function Workout() {
             onRenameTemplate={renameTemplate}
             onDeleteTemplate={deleteTemplate}
           />
-          <WorkoutDayActionSheet
-            visible={modals.actionSheet.isVisible}
-            onClose={modals.actionSheet.close}
-            onEdit={handleEditDay}
-            onDuplicate={handleDuplicateDay}
-            onDelete={handleDeleteDay}
-            onToggleRestDay={() => {
-              if (selectedDay) {
-                toggleRestDay(selectedDay.id);
-              }
-              modals.actionSheet.close();
-            }}
-            isRestDay={selectedDay?.isRest}
-          />
           <WorkoutCalendarModal
             isVisible={isCalendarVisible}
             onClose={closeCalendar}
@@ -433,7 +382,6 @@ export default function Workout() {
             <DaySelector
               program={program}
               onSelectDay={selectDayToLog}
-              onLongPressDay={handleOpenDayActionSheet}
               onAddDay={handleAddDay}
             />
 

@@ -14,7 +14,6 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { MoreHorizontal, X } from "lucide-react-native";
 import { WorkoutTemplate } from "../types";
-import { defaultTemplates } from "../data/defaultTemplates";
 import { useTheme } from "../context/ThemeContext";
 
 interface TemplateManagerProps {
@@ -111,16 +110,6 @@ export default function TemplateManager({
           </View>
 
           <ScrollView contentContainerStyle={styles.content}>
-            <Text style={[styles.sectionHeader, { color: colors.textTertiary }]}>Default Templates</Text>
-            {defaultTemplates.map((template) => (
-              <TemplateCard
-                key={template.id}
-                template={template}
-                onSelect={() => onLoadTemplate(template)}
-                onShowOptions={() => {}} // No options for default templates
-              />
-            ))}
-
             <Text style={[styles.sectionHeader, { color: colors.textTertiary }]}>My Templates</Text>
             {templates.map((template) => (
               <TemplateCard
