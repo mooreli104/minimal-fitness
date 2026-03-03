@@ -1,9 +1,9 @@
 /**
  * Workout Calendar Modal
  * Shows workout status indicators:
- * - Green highlight: Rest day
- * - Red highlight: Incomplete workout (missing weights or actual sets)
+ * - Blue highlight: Rest day
  * - Green highlight: Complete workout (all exercises logged)
+ * - Red highlight: Incomplete workout or unlogged past day
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -21,7 +21,7 @@ interface WorkoutCalendarModalProps {
 }
 
 interface DayStatus {
-  [key: string]: 'rest' | 'complete' | 'incomplete' | null;
+  [key: string]: 'rest' | 'complete' | 'incomplete' | 'unlogged' | null;
 }
 
 const WorkoutCalendarModal = ({
@@ -46,6 +46,9 @@ const WorkoutCalendarModal = ({
     const month = date.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const statuses: DayStatus = {};
 
     // Load all workouts for the month in parallel
@@ -63,6 +66,8 @@ const WorkoutCalendarModal = ({
             } else {
               statuses[key] = 'incomplete';
             }
+          } else if (dateToCheck < today) {
+            statuses[key] = 'unlogged';
           } else {
             statuses[key] = null;
           }
@@ -139,13 +144,13 @@ const WorkoutCalendarModal = ({
       } else if (status && !isFuture) {
         // Status highlighting (slightly smaller than selected)
         if (status === 'rest') {
-          backgroundColor = `${colors.green}40`; // Green with 25% opacity
+          backgroundColor = `${colors.blue}40`; // Blue for rest
           textColor = colors.textPrimary;
         } else if (status === 'complete') {
-          backgroundColor = `${colors.green}40`; // Green with 25% opacity
+          backgroundColor = `${colors.green}40`; // Green for complete
           textColor = colors.textPrimary;
-        } else if (status === 'incomplete') {
-          backgroundColor = `${colors.red}40`; // Red with 25% opacity
+        } else if (status === 'incomplete' || status === 'unlogged') {
+          backgroundColor = `${colors.red}40`; // Red for incomplete and unlogged
           textColor = colors.textPrimary;
         }
       }
