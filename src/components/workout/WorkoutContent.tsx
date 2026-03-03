@@ -40,8 +40,11 @@ export const WorkoutContent: React.FC<WorkoutContentProps> = ({
     return <Text style={styles.loadingText}>Loading workouts...</Text>;
   }
 
-  if (!workoutLog || workoutLog.isRest) {
-    return <WorkoutEmptyState text="Today is a rest day." />;
+  if (!workoutLog) {
+    return <WorkoutEmptyState text="Select a workout day above to start logging." />;
+  }
+  if (workoutLog.isRest) {
+    return <WorkoutEmptyState text="Rest day." />;
   }
 
   return (
