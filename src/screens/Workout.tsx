@@ -17,7 +17,6 @@ import DaySelector from '../components/workout/DaySelector';
 import { BackgroundPattern } from '../components/common/BackgroundPattern';
 import { useWorkoutModals } from '../hooks/useWorkoutModals';
 import { WorkoutContent } from '../components/workout/WorkoutContent';
-import { ExerciseHistoryModal } from '../components/workout/ExerciseHistoryModal';
 import { useWeekPopulator } from '../hooks/useWeekPopulator';
 import ProgramEditor from '../components/workout/ProgramEditor';
 
@@ -67,13 +66,6 @@ export default function Workout() {
 
   const modals = useWorkoutModals();
   const [newDayName, setNewDayName] = useState('');
-  const [historyExercise, setHistoryExercise] = useState<string>('');
-  const [isHistoryVisible, setIsHistoryVisible] = useState(false);
-
-  const handleShowHistory = (exerciseName: string) => {
-    setHistoryExercise(exerciseName);
-    setIsHistoryVisible(true);
-  };
   const [isWeekPlannerVisible, setIsWeekPlannerVisible] = useState(false);
 
   const { weeklyPlan, updateDayPlan, clearWeeklyPlan } = useWeeklyPlan();
@@ -199,12 +191,6 @@ export default function Workout() {
             onClearPlan={handleClearWeeklyPlan}
             onPopulateWeek={handlePopulateWeek}
           />
-          <ExerciseHistoryModal
-            isVisible={isHistoryVisible}
-            exerciseName={historyExercise}
-            currentDate={selectedDate}
-            onClose={() => setIsHistoryVisible(false)}
-          />
           <ProgramEditor
             isVisible={modals.programEditor.isVisible}
             onClose={modals.programEditor.close}
@@ -220,7 +206,7 @@ export default function Workout() {
             onRemoveExercise={removeExerciseFromDay}
           />
 
-          <ScrollView contentContainerStyle={styles.content}>
+          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={true}>
             <WorkoutHeader
               onOpenTemplateManager={modals.templateManager.open}
               onOpenProgramEditor={modals.programEditor.open}
@@ -265,7 +251,6 @@ export default function Workout() {
               onUpdateExercise={updateExercise}
               onDeleteExercise={deleteExercise}
               onAddExercise={addExercise}
-              onShowHistory={handleShowHistory}
             />
 
             <TouchableOpacity

@@ -12,7 +12,6 @@ interface WorkoutTableProps {
   onExerciseChange: (id: number, field: keyof Exercise, value: string) => void;
   onDeleteExercise: (id: number) => void;
   onAddExercise: () => void;
-  onShowHistory?: (exerciseName: string) => void;
 }
 
 const WorkoutTable = ({
@@ -21,7 +20,6 @@ const WorkoutTable = ({
   onExerciseChange,
   onDeleteExercise,
   onAddExercise,
-  onShowHistory,
 }: WorkoutTableProps) => {
   const { colors } = useTheme();
   const styles = getWorkoutStyles(colors);
@@ -48,7 +46,6 @@ const WorkoutTable = ({
             previousExercise={findPreviousExercise(item.name)}
             onExerciseChange={onExerciseChange}
             onDeleteExercise={onDeleteExercise}
-            onShowHistory={onShowHistory}
           />
         ))}
         <TouchableOpacity style={styles.addButton} onPress={onAddExercise}>
