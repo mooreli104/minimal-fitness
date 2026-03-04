@@ -2,9 +2,7 @@
  * Barrel export for all custom hooks
  */
 
-export { useCountdownTimer } from './useCountdownTimer';
 export { useDateManager } from './useDateManager';
-export { useTimerPresets } from './useTimerPresets';
 export { useWeeklyPlan } from './useWeeklyPlan';
 export { useWeekPopulator } from './useWeekPopulator';
 export { useWorkout } from './useWorkout';

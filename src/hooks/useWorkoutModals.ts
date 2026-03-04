@@ -2,43 +2,19 @@ import { useState } from 'react';
 
 export const useWorkoutModals = () => {
   const [isTemplateManagerVisible, setTemplateManagerVisible] = useState(false);
-  const [isChangeDayModalVisible, setChangeDayModalVisible] = useState(false);
   const [isRenameModalVisible, setRenameModalVisible] = useState(false);
-  const [isTimerVisible, setTimerVisible] = useState(false);
   const [isProgramEditorVisible, setProgramEditorVisible] = useState(false);
-
-  const openTemplateManager = () => setTemplateManagerVisible(true);
-  const closeTemplateManager = () => setTemplateManagerVisible(false);
-
-  const openChangeDayModal = () => setChangeDayModalVisible(true);
-  const closeChangeDayModal = () => setChangeDayModalVisible(false);
-
-  const openRenameModal = () => setRenameModalVisible(true);
-  const closeRenameModal = () => setRenameModalVisible(false);
-
-  const openTimer = () => setTimerVisible(true);
-  const closeTimer = () => setTimerVisible(false);
 
   return {
     templateManager: {
       isVisible: isTemplateManagerVisible,
-      open: openTemplateManager,
-      close: closeTemplateManager,
-    },
-    changeDayModal: {
-      isVisible: isChangeDayModalVisible,
-      open: openChangeDayModal,
-      close: closeChangeDayModal,
+      open: () => setTemplateManagerVisible(true),
+      close: () => setTemplateManagerVisible(false),
     },
     renameModal: {
       isVisible: isRenameModalVisible,
-      open: openRenameModal,
-      close: closeRenameModal,
-    },
-    timer: {
-      isVisible: isTimerVisible,
-      open: openTimer,
-      close: closeTimer,
+      open: () => setRenameModalVisible(true),
+      close: () => setRenameModalVisible(false),
     },
     programEditor: {
       isVisible: isProgramEditorVisible,

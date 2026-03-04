@@ -9,10 +9,7 @@ import { useWeeklyPlan } from '../hooks/useWeeklyPlan';
 import { WorkoutTemplate } from '../types';
 import DateHeader from '../components/common/DateHeader';
 import WorkoutCalendarModal from '../components/workout/WorkoutCalendarModal';
-import { ChangeDayModal } from '../components/workout/ChangeDayModal';
 import { RenameDayModal } from '../components/workout/RenameDayModal';
-import { CountdownTimer } from '../components/workout/CountdownTimer';
-import { InlineLoopingTimer } from '../components/workout/InlineLoopingTimer';
 import { WeekPlannerModal } from '../components/workout/WeekPlannerModal';
 import { useTheme } from '../context/ThemeContext';
 import WorkoutHeader from '../components/workout/WorkoutHeader';
@@ -42,7 +39,7 @@ export default function Workout() {
 
   const {
     workoutLog,
-    previousWorkout,
+    previousExercises,
     program,
     templates,
     isLoading,
@@ -186,31 +183,12 @@ export default function Workout() {
             onDateSelect={handleDateSelectFromCalendar}
             selectedDate={selectedDate}
           />
-          <ChangeDayModal
-            isVisible={modals.changeDayModal.isVisible}
-            onClose={modals.changeDayModal.close}
-            onSelect={(name) => {
-              if (workoutLog) {
-                const updatedLog = { ...workoutLog, name };
-                setWorkoutLog(updatedLog);
-                saveLog(updatedLog);
-              }
-              modals.changeDayModal.close();
-            }}
-            programDays={program}
-            onAdd={handleAddDay}
-            onDelete={deleteProgramDay}
-          />
           <RenameDayModal
             isVisible={modals.renameModal.isVisible}
             onClose={modals.renameModal.close}
             onSave={handleSaveRename}
             newDayName={newDayName}
             setNewDayName={setNewDayName}
-          />
-          <CountdownTimer
-            isVisible={modals.timer.isVisible}
-            onClose={modals.timer.close}
           />
           <WeekPlannerModal
             isVisible={isWeekPlannerVisible}
@@ -275,10 +253,8 @@ export default function Workout() {
 
             <WorkoutContent
               workoutLog={workoutLog}
-              previousWorkout={previousWorkout}
+              previousExercises={previousExercises}
               isLoading={isLoading}
-              onOpenTimer={modals.timer.open}
-              onOpenChangeDayModal={modals.changeDayModal.open}
               onOpenRenameModal={() => {
                 if (workoutLog) {
                   setNewDayName(workoutLog.name);
@@ -291,8 +267,6 @@ export default function Workout() {
               onAddExercise={addExercise}
               onShowHistory={handleShowHistory}
             />
-
-            <InlineLoopingTimer />
 
             <TouchableOpacity
               style={styles.planWeekButton}

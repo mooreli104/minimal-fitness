@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TextInput, TouchableOpacity, Dimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import { Trash2, Clock } from 'lucide-react-native';
+import { Trash2 } from 'lucide-react-native';
 import { Exercise } from '../../types';
 import { getWorkoutStyles } from '../../styles/Workout.styles';
 import { useTheme } from '../../context/ThemeContext';
@@ -14,10 +14,9 @@ interface ExerciseRowProps {
   previousExercise?: Exercise;
   onExerciseChange: (id: number, field: keyof Exercise, value: string) => void;
   onDeleteExercise: (id: number) => void;
-  onShowHistory?: (exerciseName: string) => void;
 }
 
-const ExerciseRow = ({ item, previousExercise, onExerciseChange, onDeleteExercise, onShowHistory }: ExerciseRowProps) => {
+const ExerciseRow = ({ item, previousExercise, onExerciseChange, onDeleteExercise }: ExerciseRowProps) => {
   const { colors, theme } = useTheme();
   const styles = getWorkoutStyles(colors);
   const translateX = useSharedValue(0);
@@ -49,14 +48,6 @@ const ExerciseRow = ({ item, previousExercise, onExerciseChange, onDeleteExercis
       </View>
       <GestureDetector gesture={panGesture}>
         <Reanimated.View style={[styles.row, animatedStyle]}>
-          {item.name.trim() && onShowHistory && (
-            <TouchableOpacity
-              onPress={() => onShowHistory(item.name)}
-              style={{ justifyContent: 'center', paddingLeft: 8 }}
-            >
-              <Clock size={14} color={colors.textTertiary} />
-            </TouchableOpacity>
-          )}
           <TextInput
             style={[styles.cell, styles.exerciseCol]}
             value={item.name}

@@ -7,13 +7,13 @@ import {
   loadWorkoutLog as loadWorkoutLogService,
   saveWorkoutLog as saveWorkoutLogService,
   deleteWorkoutLog,
-  findPreviousWorkoutByName,
+  findLastLoggedExercises,
 } from '../services/workoutStorage.service';
 import { getYesterday } from '../utils/formatters';
 
 export const useWorkoutLog = (selectedDate: Date) => {
   const [workoutLog, setWorkoutLog] = useState<WorkoutDay | null>(null);
-  const [previousWorkout, setPreviousWorkout] = useState<WorkoutDay | null>(null);
+  const [previousExercises, setPreviousExercises] = useState<Exercise[]>([]);
   const [yesterdaysWorkoutName, setYesterdaysWorkoutName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -43,12 +43,8 @@ export const useWorkoutLog = (selectedDate: Date) => {
       const log = await loadWorkoutLogService(selectedDate);
       setWorkoutLog(log);
 
-      if (log && !log.isRest && log.name) {
-        const prev = await findPreviousWorkoutByName(log.name, selectedDate);
-        setPreviousWorkout(prev);
-      } else {
-        setPreviousWorkout(null);
-      }
+      const prevExercises = await findLastLoggedExercises(selectedDate);
+      setPreviousExercises(prevExercises);
 
       const yesterdayLog = await loadWorkoutLogService(getYesterday(selectedDate));
       setYesterdaysWorkoutName(
@@ -106,12 +102,8 @@ export const useWorkoutLog = (selectedDate: Date) => {
     setWorkoutLog(newLog);
     await saveLog(newLog);
 
-    if (!dayToLog.isRest && dayToLog.name) {
-      const prev = await findPreviousWorkoutByName(dayToLog.name, selectedDate);
-      setPreviousWorkout(prev);
-    } else {
-      setPreviousWorkout(null);
-    }
+    const prevExercises = await findLastLoggedExercises(selectedDate);
+    setPreviousExercises(prevExercises);
   }, [saveLog, selectedDate]);
 
   const markRestDay = useCallback(() => {
@@ -124,7 +116,7 @@ export const useWorkoutLog = (selectedDate: Date) => {
 
   return {
     workoutLog,
-    previousWorkout,
+    previousExercises,
     yesterdaysWorkoutName,
     isLoading,
     setWorkoutLog,

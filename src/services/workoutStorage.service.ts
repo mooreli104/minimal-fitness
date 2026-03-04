@@ -112,6 +112,34 @@ export const findPreviousWorkoutByName = async (
 };
 
 /**
+ * Finds the most recent logged data for each unique exercise across all past workouts.
+ * Returns an Exercise[] where each entry is the last time that exercise had actual/weight data.
+ * This searches across ALL workout types, not just workouts with the same name.
+ */
+export const findLastLoggedExercises = async (
+  beforeDate: Date,
+  maxDaysBack: number = 90
+): Promise<Exercise[]> => {
+  const found = new Map<string, Exercise>();
+
+  for (let i = 1; i <= maxDaysBack; i++) {
+    const checkDate = new Date(beforeDate);
+    checkDate.setDate(checkDate.getDate() - i);
+
+    const log = await loadWorkoutLog(checkDate);
+    if (!log || log.isRest || !log.exercises) continue;
+
+    for (const ex of log.exercises) {
+      const key = ex.name.trim().toLowerCase();
+      if (key && !found.has(key) && (ex.actual || ex.weight)) {
+        found.set(key, ex);
+      }
+    }
+  }
+  return Array.from(found.values());
+};
+
+/**
  * Finds all occurrences of a specific exercise across past workouts
  * @param exerciseName Name of the exercise to search for
  * @param beforeDate Search for exercises before this date
