@@ -3,16 +3,17 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { ExerciseHistoryEntry } from '../../types';
-import { findExerciseHistory } from '../../services/workoutStorage.service';
+import { findExerciseHistory, findExerciseHistoryForDay } from '../../services/workoutStorage.service';
 
 interface Props {
   isVisible: boolean;
   exerciseName: string;
+  workoutDayName?: string;
   currentDate: Date;
   onClose: () => void;
 }
 
-export const ExerciseHistoryModal = ({ isVisible, exerciseName, currentDate, onClose }: Props) => {
+export const ExerciseHistoryModal = ({ isVisible, exerciseName, workoutDayName, currentDate, onClose }: Props) => {
   const { colors } = useTheme();
   const [history, setHistory] = useState<ExerciseHistoryEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -20,10 +21,13 @@ export const ExerciseHistoryModal = ({ isVisible, exerciseName, currentDate, onC
   useEffect(() => {
     if (!isVisible || !exerciseName.trim()) return;
     setLoading(true);
-    findExerciseHistory(exerciseName, currentDate)
+    const fetchHistory = workoutDayName
+      ? findExerciseHistoryForDay(exerciseName, workoutDayName)
+      : findExerciseHistory(exerciseName, currentDate);
+    fetchHistory
       .then(setHistory)
       .finally(() => setLoading(false));
-  }, [isVisible, exerciseName, currentDate]);
+  }, [isVisible, exerciseName, workoutDayName, currentDate]);
 
   const formatDate = (dateStr: string) => {
     const [y, m, d] = dateStr.split('-').map(Number);
