@@ -88,6 +88,10 @@ export const useWorkoutLog = (selectedDate: Date) => {
     }));
   }, [mutateLog]);
 
+  const reorderExercises = useCallback((newOrder: Exercise[]) => {
+    mutateLog(log => ({ ...log, exercises: newOrder }));
+  }, [mutateLog]);
+
   const selectDayToLog = useCallback(async (dayToLog: WorkoutDay) => {
     const newLog: WorkoutDay = {
       ...structuredClone(dayToLog),
@@ -124,6 +128,7 @@ export const useWorkoutLog = (selectedDate: Date) => {
     addExercise,
     updateExercise,
     deleteExercise,
+    reorderExercises,
     selectDayToLog,
     markRestDay,
     renameLog,
