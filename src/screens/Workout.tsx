@@ -17,6 +17,7 @@ import DaySelector from '../components/workout/DaySelector';
 import { BackgroundPattern } from '../components/common/BackgroundPattern';
 import { useWorkoutModals } from '../hooks/useWorkoutModals';
 import { WorkoutContent } from '../components/workout/WorkoutContent';
+import { ExerciseHistoryModal } from '../components/workout/ExerciseHistoryModal';
 import { useWeekPopulator } from '../hooks/useWeekPopulator';
 import ProgramEditor from '../components/workout/ProgramEditor';
 
@@ -67,7 +68,14 @@ export default function Workout() {
 
   const modals = useWorkoutModals();
   const [newDayName, setNewDayName] = useState('');
+  const [historyExercise, setHistoryExercise] = useState<string>('');
+  const [isHistoryVisible, setIsHistoryVisible] = useState(false);
   const [isWeekPlannerVisible, setIsWeekPlannerVisible] = useState(false);
+
+  const handleShowHistory = (exerciseName: string) => {
+    setHistoryExercise(exerciseName);
+    setIsHistoryVisible(true);
+  };
 
   const { weeklyPlan, updateDayPlan, clearWeeklyPlan } = useWeeklyPlan();
 
@@ -192,7 +200,6 @@ export default function Workout() {
             onClearPlan={handleClearWeeklyPlan}
             onPopulateWeek={handlePopulateWeek}
           />
-<<<<<<< HEAD
           <ExerciseHistoryModal
             isVisible={isHistoryVisible}
             exerciseName={historyExercise}
@@ -200,8 +207,6 @@ export default function Workout() {
             currentDate={selectedDate}
             onClose={() => setIsHistoryVisible(false)}
           />
-=======
->>>>>>> 11529207db8a4f532de4be207c9bbea8c283980f
           <ProgramEditor
             isVisible={modals.programEditor.isVisible}
             onClose={modals.programEditor.close}
@@ -262,11 +267,8 @@ export default function Workout() {
               onUpdateExercise={updateExercise}
               onDeleteExercise={deleteExercise}
               onAddExercise={addExercise}
-<<<<<<< HEAD
               onReorderExercises={reorderExercises}
               onShowHistory={handleShowHistory}
-=======
->>>>>>> 11529207db8a4f532de4be207c9bbea8c283980f
             />
 
             <TouchableOpacity

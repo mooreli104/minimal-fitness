@@ -13,11 +13,8 @@ interface WorkoutTableProps {
   onExerciseChange: (id: number, field: keyof Exercise, value: string) => void;
   onDeleteExercise: (id: number) => void;
   onAddExercise: () => void;
-<<<<<<< HEAD
   onReorderExercises: (newOrder: Exercise[]) => void;
   onShowHistory?: (exerciseName: string) => void;
-=======
->>>>>>> 11529207db8a4f532de4be207c9bbea8c283980f
 }
 
 const WorkoutTable = ({
@@ -26,11 +23,8 @@ const WorkoutTable = ({
   onExerciseChange,
   onDeleteExercise,
   onAddExercise,
-<<<<<<< HEAD
   onReorderExercises,
   onShowHistory,
-=======
->>>>>>> 11529207db8a4f532de4be207c9bbea8c283980f
 }: WorkoutTableProps) => {
   const { colors } = useTheme();
   const styles = getWorkoutStyles(colors);
@@ -64,7 +58,6 @@ const WorkoutTable = ({
           <Text style={[styles.headerText, styles.targetActualCol]}>Actual</Text>
           <Text style={[styles.headerText, styles.numberCol]}>Weight</Text>
         </View>
-<<<<<<< HEAD
         <DraggableFlatList
           data={exercises}
           keyExtractor={(item) => item.id.toString()}
@@ -72,17 +65,6 @@ const WorkoutTable = ({
           onDragEnd={({ data }) => onReorderExercises(data)}
           scrollEnabled={false}
         />
-=======
-        {exercises.map((item) => (
-          <ExerciseRow
-            key={item.id}
-            item={item}
-            previousExercise={findPreviousExercise(item.name)}
-            onExerciseChange={onExerciseChange}
-            onDeleteExercise={onDeleteExercise}
-          />
-        ))}
->>>>>>> 11529207db8a4f532de4be207c9bbea8c283980f
         <TouchableOpacity style={styles.addButton} onPress={onAddExercise}>
           <Plus size={16} color={colors.textPrimary} strokeWidth={2} />
           <Text style={styles.addButtonText}>Add exercise</Text>
