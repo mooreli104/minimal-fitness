@@ -3,6 +3,7 @@
  * Handles all workout CRUD operations with AsyncStorage
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WorkoutDay, WorkoutTemplate, ExerciseHistoryEntry } from '../types';
 import { setItem, removeItem, getItemWithMigration, getArrayWithMigration } from '../utils/storage';
 import { STORAGE_KEYS } from '../utils/constants';
@@ -220,4 +221,33 @@ export const findExerciseHistoryForDay = async (
     }
   }
   return results;
+};
+
+/**
+ * Returns all workout log entries across all stored dates, newest first.
+ * Used for building stats/charts.
+ */
+export const getAllWorkoutLogs = async (): Promise<Array<{ date: string; log: WorkoutDay }>> => {
+  try {
+    const allKeys = await AsyncStorage.getAllKeys();
+    const logKeys = allKeys.filter(k => k.startsWith(STORAGE_KEYS.WORKOUT_LOG_PREFIX));
+
+    const pairs = await AsyncStorage.multiGet(logKeys);
+    const results: Array<{ date: string; log: WorkoutDay }> = [];
+
+    for (const [key, value] of pairs) {
+      if (!value) continue;
+      try {
+        const log: WorkoutDay = JSON.parse(value);
+        const date = key.replace(STORAGE_KEYS.WORKOUT_LOG_PREFIX, '');
+        if (!log.isRest) results.push({ date, log });
+      } catch {
+        // skip malformed entries
+      }
+    }
+
+    return results.sort((a, b) => b.date.localeCompare(a.date));
+  } catch {
+    return [];
+  }
 };
