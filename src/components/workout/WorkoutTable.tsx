@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { Plus } from 'lucide-react-native';
 import { Exercise } from '../../types';
 import ExerciseRow from './ExerciseRow';
@@ -12,6 +13,7 @@ interface WorkoutTableProps {
   onExerciseChange: (id: number, field: keyof Exercise, value: string) => void;
   onDeleteExercise: (id: number) => void;
   onAddExercise: () => void;
+  onReorderExercises: (newOrder: Exercise[]) => void;
   onShowHistory?: (exerciseName: string) => void;
 }
 
@@ -21,6 +23,7 @@ const WorkoutTable = ({
   onExerciseChange,
   onDeleteExercise,
   onAddExercise,
+  onReorderExercises,
   onShowHistory,
 }: WorkoutTableProps) => {
   const { colors } = useTheme();
@@ -32,6 +35,20 @@ const WorkoutTable = ({
     return previousExercises.find(ex => ex.name.toLowerCase() === exerciseName.toLowerCase());
   };
 
+  const renderItem = useCallback(({ item, drag, isActive }: RenderItemParams<Exercise>) => (
+    <ScaleDecorator>
+      <ExerciseRow
+        item={item}
+        previousExercise={findPreviousExercise(item.name)}
+        onExerciseChange={onExerciseChange}
+        onDeleteExercise={onDeleteExercise}
+        onShowHistory={onShowHistory}
+        drag={drag}
+        isActive={isActive}
+      />
+    </ScaleDecorator>
+  ), [findPreviousExercise, onExerciseChange, onDeleteExercise, onShowHistory]);
+
   return (
     <View style={styles.tableContainer}>
       <View style={styles.tableInner}>
@@ -41,16 +58,13 @@ const WorkoutTable = ({
           <Text style={[styles.headerText, styles.targetActualCol]}>Actual</Text>
           <Text style={[styles.headerText, styles.numberCol]}>Weight</Text>
         </View>
-        {exercises.map((item) => (
-          <ExerciseRow
-            key={item.id}
-            item={item}
-            previousExercise={findPreviousExercise(item.name)}
-            onExerciseChange={onExerciseChange}
-            onDeleteExercise={onDeleteExercise}
-            onShowHistory={onShowHistory}
-          />
-        ))}
+        <DraggableFlatList
+          data={exercises}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          onDragEnd={({ data }) => onReorderExercises(data)}
+          scrollEnabled={false}
+        />
         <TouchableOpacity style={styles.addButton} onPress={onAddExercise}>
           <Plus size={16} color={colors.textPrimary} strokeWidth={2} />
           <Text style={styles.addButtonText}>Add exercise</Text>
