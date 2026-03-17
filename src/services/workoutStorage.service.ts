@@ -79,58 +79,20 @@ export const saveWorkoutTemplates = async (templates: WorkoutTemplate[]): Promis
 };
 
 /**
- * Finds the most recent workout log with the specified name before the given date
- * @param workoutName Name of the workout to search for
- * @param beforeDate Search for workouts before this date
- * @param maxDaysBack Maximum number of days to search back (default 90)
- * @returns The most recent matching workout or null
- */
-export const findPreviousWorkoutByName = async (
-  workoutName: string,
-  beforeDate: Date,
-  maxDaysBack: number = 90
-): Promise<WorkoutDay | null> => {
-  try {
-    const startDate = new Date(beforeDate);
-    startDate.setDate(startDate.getDate() - maxDaysBack);
-
-    for (let i = 1; i <= maxDaysBack; i++) {
-      const checkDate = new Date(beforeDate);
-      checkDate.setDate(checkDate.getDate() - i);
-
-      if (checkDate < startDate) break;
-
-      const log = await loadWorkoutLog(checkDate);
-      if (log && !log.isRest && log.name === workoutName) {
-        return log;
-      }
-    }
-
-    return null;
-  } catch (error) {
-    return null;
-  }
-};
-
-/**
  * Finds the most recent logged data for each unique exercise across all past workouts.
  * Returns an Exercise[] where each entry is the last time that exercise had actual/weight data.
  * This searches across ALL workout types, not just workouts with the same name.
  */
 export const findLastLoggedExercises = async (
   beforeDate: Date,
-  maxDaysBack: number = 90
 ): Promise<Exercise[]> => {
+  const beforeKey = formatDateToKey(beforeDate);
+  const allLogs = await getAllWorkoutLogs();
   const found = new Map<string, Exercise>();
 
-  for (let i = 1; i <= maxDaysBack; i++) {
-    const checkDate = new Date(beforeDate);
-    checkDate.setDate(checkDate.getDate() - i);
-
-    const log = await loadWorkoutLog(checkDate);
-    if (!log || log.isRest || !log.exercises) continue;
-
-    for (const ex of log.exercises) {
+  for (const { date, log } of allLogs) {
+    if (date >= beforeKey) continue;
+    for (const ex of log.exercises ?? []) {
       const key = ex.name.trim().toLowerCase();
       if (key && !found.has(key) && (ex.actual || ex.weight)) {
         found.set(key, ex);

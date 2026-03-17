@@ -78,22 +78,19 @@ export default function Stats() {
     const freqArr: WeekCount[] = Array.from(weekMap.entries()).map(([label, value]) => ({ label, value }));
     setFrequencyData(freqArr);
 
-    // Collect all unique exercise names
-    const nameSet = new Set<string>();
-    for (const { log } of logs) {
-      for (const ex of log.exercises ?? []) {
-        if (ex.name?.trim()) nameSet.add(ex.name.trim());
-      }
-    }
     setLogVersion(v => v + 1);
-    setSelectedExercise(prev => prev || Array.from(nameSet).sort()[0] || '');
-
     setLoading(false);
   }, []);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (allExerciseNames.length > 0) {
+      setSelectedExercise(prev => prev || allExerciseNames[0]);
+    }
+  }, [allExerciseNames]);
 
   useEffect(() => {
     if (!selectedExercise) return;
