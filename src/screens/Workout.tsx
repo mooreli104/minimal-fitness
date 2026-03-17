@@ -7,6 +7,7 @@ import { useDateManager } from '../hooks/useDateManager';
 import { useWorkout } from '../hooks/useWorkout';
 import { useWeeklyPlan } from '../hooks/useWeeklyPlan';
 import { WorkoutTemplate } from '../types';
+import { SENTINELS } from '../utils/constants';
 import DateHeader from '../components/common/DateHeader';
 import WorkoutCalendarModal from '../components/workout/WorkoutCalendarModal';
 import { RenameDayModal } from '../components/workout/RenameDayModal';
@@ -246,7 +247,7 @@ export default function Workout() {
                 <TouchableOpacity onPress={() => handleDateChange('today')}>
                   <Text style={styles.yesterdayText}>Jump to Today</Text>
                 </TouchableOpacity>
-              ) : yesterdaysWorkoutName === 'REST_DAY' ? (
+              ) : yesterdaysWorkoutName === SENTINELS.REST_DAY ? (
                 <Text style={styles.yesterdayText}>Yesterday: Rest Day</Text>
               ) : yesterdaysWorkoutName ? (
                 <Text style={styles.yesterdayText}>Yesterday: {yesterdaysWorkoutName}</Text>

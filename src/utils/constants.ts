@@ -25,6 +25,11 @@ export const DEFAULTS = {
   },
 } as const;
 
+// Sentinel values
+export const SENTINELS = {
+  REST_DAY: 'REST_DAY',
+} as const;
+
 // UI Constants
 export const UI = {
   SWIPE_THRESHOLD_PERCENTAGE: 0.2,

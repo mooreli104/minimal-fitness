@@ -6,6 +6,7 @@ import { Trash2, GripVertical, Clock } from 'lucide-react-native';
 import { Exercise } from '../../types';
 import { getWorkoutStyles } from '../../styles/Workout.styles';
 import { useTheme } from '../../context/ThemeContext';
+import { UI } from '../../utils/constants';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -23,16 +24,16 @@ const ExerciseRow = ({ item, previousExercise, onExerciseChange, onDeleteExercis
   const { colors, theme } = useTheme();
   const styles = getWorkoutStyles(colors);
   const translateX = useSharedValue(0);
-  const SWIPE_THRESHOLD = -SCREEN_WIDTH * 0.2;
+  const swipeThreshold = -SCREEN_WIDTH * UI.SWIPE_THRESHOLD_PERCENTAGE;
 
   const panGesture = Gesture.Pan()
     .activeOffsetX([-10, 10])
     .onUpdate((event) => {
-      translateX.value = Math.max(-100, Math.min(0, event.translationX));
+      translateX.value = Math.max(-UI.MAX_SWIPE_DISTANCE, Math.min(0, event.translationX));
     })
     .onEnd((event) => {
-      if (event.translationX < SWIPE_THRESHOLD) {
-        translateX.value = withTiming(-100);
+      if (event.translationX < swipeThreshold) {
+        translateX.value = withTiming(-UI.MAX_SWIPE_DISTANCE);
       } else {
         translateX.value = withTiming(0);
       }

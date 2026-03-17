@@ -103,6 +103,20 @@ export const getStartOfWeek = (date: Date = new Date()): Date => {
 };
 
 /**
+ * Get start of current week (Monday)
+ * @param date Reference date (defaults to today)
+ * @returns Start of week date (Monday)
+ */
+export const getStartOfWeekMonday = (date: Date = new Date()): Date => {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day; // Days since Monday
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+/**
  * Formats a number with thousands separators
  * @param value Number to format
  * @returns Formatted string

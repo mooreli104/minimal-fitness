@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Alert } from 'react-native';
 import { Exercise, WorkoutDay } from '../types';
 import { generateUniqueId } from '../utils/generators';
-import { DEFAULTS } from '../utils/constants';
+import { DEFAULTS, SENTINELS } from '../utils/constants';
 import {
   loadWorkoutLog as loadWorkoutLogService,
   saveWorkoutLog as saveWorkoutLogService,
@@ -48,7 +48,7 @@ export const useWorkoutLog = (selectedDate: Date) => {
 
       const yesterdayLog = await loadWorkoutLogService(getYesterday(selectedDate));
       setYesterdaysWorkoutName(
-        yesterdayLog ? (yesterdayLog.isRest ? 'REST_DAY' : yesterdayLog.name ?? null) : null
+        yesterdayLog ? (yesterdayLog.isRest ? SENTINELS.REST_DAY : yesterdayLog.name ?? null) : null
       );
     } catch (error) {
       Alert.alert('Error', 'Failed to load workout data.');

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { useTheme } from '../context/ThemeContext';
 import BottomNav from '../components/BottomNav';
 import { getAllWorkoutLogs } from '../services/workoutStorage.service';
 import { parseWeight } from '../utils/parseWeight';
+import { getStartOfWeekMonday } from '../utils/formatters';
 import { BackgroundPattern } from '../components/common/BackgroundPattern';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -31,13 +32,24 @@ interface WeekCount {
 export default function Stats() {
   const { colors } = useTheme();
 
-  const [allExerciseNames, setAllExerciseNames] = useState<string[]>([]);
   const [selectedExercise, setSelectedExercise] = useState<string>('');
   const [weightData, setWeightData] = useState<WeightDataPoint[]>([]);
   const [frequencyData, setFrequencyData] = useState<WeekCount[]>([]);
   const [loading, setLoading] = useState(true);
 
   const logsCache = React.useRef<Array<{ date: string; log: any }>>([]);
+  const [logVersion, setLogVersion] = useState(0);
+
+  const allExerciseNames = useMemo(() => {
+    const nameSet = new Set<string>();
+    for (const { log } of logsCache.current) {
+      for (const ex of log.exercises ?? []) {
+        if (ex.name?.trim()) nameSet.add(ex.name.trim());
+      }
+    }
+    return Array.from(nameSet).sort();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [logVersion]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -46,27 +58,19 @@ export default function Stats() {
 
     // Frequency chart: workouts per week for last 12 weeks
     // Seed last 12 weeks with 0, anchored to current week's Monday
+    const toLabel = (d: Date) =>
+      `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
     const weekMap = new Map<string, number>();
-    const getMonday = (d: Date): Date => {
-      const day = d.getDay();
-      const diff = day === 0 ? -6 : 1 - day;
-      const monday = new Date(d);
-      monday.setDate(d.getDate() + diff);
-      return monday;
-    };
-    const now = new Date();
-    const thisMonday = getMonday(now);
+    const thisMonday = getStartOfWeekMonday(new Date());
     for (let i = 11; i >= 0; i--) {
       const monday = new Date(thisMonday);
       monday.setDate(thisMonday.getDate() - i * 7);
-      const label = `${String(monday.getMonth()+1).padStart(2,'0')}/${String(monday.getDate()).padStart(2,'0')}`;
-      weekMap.set(label, 0);
+      weekMap.set(toLabel(monday), 0);
     }
     for (const { date } of logs) {
       const [y, m, d] = date.split('-').map(Number);
-      const logDate = new Date(y, m - 1, d);
-      const monday = getMonday(logDate);
-      const label = `${String(monday.getMonth()+1).padStart(2,'0')}/${String(monday.getDate()).padStart(2,'0')}`;
+      const monday = getStartOfWeekMonday(new Date(y, m - 1, d));
+      const label = toLabel(monday);
       if (weekMap.has(label)) {
         weekMap.set(label, (weekMap.get(label) ?? 0) + 1);
       }
@@ -81,9 +85,8 @@ export default function Stats() {
         if (ex.name?.trim()) nameSet.add(ex.name.trim());
       }
     }
-    const names = Array.from(nameSet).sort();
-    setAllExerciseNames(names);
-    if (names.length > 0) setSelectedExercise(prev => prev || names[0]);
+    setLogVersion(v => v + 1);
+    setSelectedExercise(prev => prev || Array.from(nameSet).sort()[0] || '');
 
     setLoading(false);
   }, []);

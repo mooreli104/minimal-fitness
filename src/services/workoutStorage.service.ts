@@ -144,32 +144,27 @@ export const findLastLoggedExercises = async (
  * Finds all occurrences of a specific exercise across past workouts
  * @param exerciseName Name of the exercise to search for
  * @param beforeDate Search for exercises before this date
- * @param maxDaysBack Maximum number of days to search back (default 90)
- * @returns Array of exercise history entries
+ * @returns Array of exercise history entries, newest first
  */
 export const findExerciseHistory = async (
   exerciseName: string,
   beforeDate: Date,
-  maxDaysBack: number = 90
 ): Promise<ExerciseHistoryEntry[]> => {
+  if (!exerciseName.trim()) return [];
+  const nameLower = exerciseName.toLowerCase();
+  const beforeKey = formatDateToKey(beforeDate);
+
+  const allLogs = await getAllWorkoutLogs();
   const results: ExerciseHistoryEntry[] = [];
-  if (!exerciseName.trim()) return results;
 
-  for (let i = 1; i <= maxDaysBack; i++) {
-    const checkDate = new Date(beforeDate);
-    checkDate.setDate(checkDate.getDate() - i);
-
-    const log = await loadWorkoutLog(checkDate);
-    if (!log || log.isRest || !log.exercises) continue;
-
-    const match = log.exercises.find(
-      ex => ex.name.toLowerCase() === exerciseName.toLowerCase() &&
-            (ex.actual || ex.weight)
+  for (const { date, log } of allLogs) {
+    if (date >= beforeKey) continue;
+    const match = log.exercises?.find(
+      ex => ex.name.toLowerCase() === nameLower && (ex.actual || ex.weight)
     );
-
     if (match) {
       results.push({
-        date: formatDateToKey(checkDate),
+        date,
         workoutName: log.name,
         target: match.target,
         actual: match.actual,
@@ -184,34 +179,31 @@ export const findExerciseHistory = async (
  * Finds all occurrences of a specific exercise for a specific workout day name
  * @param exerciseName Name of the exercise to search for
  * @param workoutDayName Name of the workout day to filter by (e.g. "Upper A")
- * @param maxDaysBack Maximum number of days to search back (default 365)
+ * @param beforeDate Search for exercises before this date
  * @returns Array of exercise history entries, newest first
  */
 export const findExerciseHistoryForDay = async (
   exerciseName: string,
   workoutDayName: string,
   beforeDate: Date,
-  maxDaysBack: number = 365
 ): Promise<ExerciseHistoryEntry[]> => {
+  if (!exerciseName.trim() || !workoutDayName.trim()) return [];
+  const nameLower = exerciseName.toLowerCase();
+  const dayLower = workoutDayName.toLowerCase();
+  const beforeKey = formatDateToKey(beforeDate);
+
+  const allLogs = await getAllWorkoutLogs();
   const results: ExerciseHistoryEntry[] = [];
-  if (!exerciseName.trim() || !workoutDayName.trim()) return results;
 
-  for (let i = 1; i <= maxDaysBack; i++) {
-    const checkDate = new Date(beforeDate);
-    checkDate.setDate(checkDate.getDate() - i);
-
-    const log = await loadWorkoutLog(checkDate);
-    if (!log || log.isRest || !log.exercises) continue;
-    if (log.name.toLowerCase() !== workoutDayName.toLowerCase()) continue;
-
-    const match = log.exercises.find(
-      ex => ex.name.toLowerCase() === exerciseName.toLowerCase() &&
-            (ex.actual || ex.weight)
+  for (const { date, log } of allLogs) {
+    if (date >= beforeKey) continue;
+    if (log.name.toLowerCase() !== dayLower) continue;
+    const match = log.exercises?.find(
+      ex => ex.name.toLowerCase() === nameLower && (ex.actual || ex.weight)
     );
-
     if (match) {
       results.push({
-        date: formatDateToKey(checkDate),
+        date,
         workoutName: log.name,
         target: match.target,
         actual: match.actual,

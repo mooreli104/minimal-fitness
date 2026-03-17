@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { Plus } from 'lucide-react-native';
@@ -27,7 +27,7 @@ const WorkoutTable = ({
   onShowHistory,
 }: WorkoutTableProps) => {
   const { colors } = useTheme();
-  const styles = getWorkoutStyles(colors);
+  const styles = useMemo(() => getWorkoutStyles(colors), [colors]);
 
   // Find matching exercise from previous workout by name
   const findPreviousExercise = useCallback((exerciseName: string): Exercise | undefined => {
