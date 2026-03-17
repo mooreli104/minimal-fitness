@@ -1,0 +1,4 @@
+// src/screens/Stats.tsx - placeholder, will be replaced
+import React from 'react';
+import { View } from 'react-native';
+export default function Stats() { return <View />; }

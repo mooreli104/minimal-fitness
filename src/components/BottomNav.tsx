@@ -1,6 +1,6 @@
 import React from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
-import { Menu, Dumbbell } from "lucide-react-native";
+import { Menu, Dumbbell, BarChart2 } from "lucide-react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTheme } from "../context/ThemeContext";
 
@@ -10,8 +10,9 @@ export default function BottomNav() {
   const { colors } = useTheme();
 
   const navItems = [
-    { icon: Dumbbell, route: "Workout", name: "workout" },
-    { icon: Menu, route: "More", name: "more" },
+    { icon: Dumbbell, route: 'Workout', name: 'workout' },
+    { icon: BarChart2, route: 'Stats', name: 'stats' },
+    { icon: Menu, route: 'More', name: 'more' },
   ];
 
   const isActive = (r: string) => route.name === r;

@@ -42,6 +42,7 @@ export interface ExerciseHistoryEntry {
 // Navigation types
 export type RootStackParamList = {
   Workout: undefined;
+  Stats: undefined;
   More: undefined;
 };
 
