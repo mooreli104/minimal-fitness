@@ -178,3 +178,46 @@ export const findExerciseHistory = async (
   }
   return results;
 };
+
+/**
+ * Finds all occurrences of a specific exercise for a specific workout day name
+ * @param exerciseName Name of the exercise to search for
+ * @param workoutDayName Name of the workout day to filter by (e.g. "Upper A")
+ * @param maxDaysBack Maximum number of days to search back (default 365)
+ * @returns Array of exercise history entries, newest first
+ */
+export const findExerciseHistoryForDay = async (
+  exerciseName: string,
+  workoutDayName: string,
+  maxDaysBack: number = 365
+): Promise<ExerciseHistoryEntry[]> => {
+  const results: ExerciseHistoryEntry[] = [];
+  if (!exerciseName.trim() || !workoutDayName.trim()) return results;
+
+  const today = new Date();
+
+  for (let i = 1; i <= maxDaysBack; i++) {
+    const checkDate = new Date(today);
+    checkDate.setDate(checkDate.getDate() - i);
+
+    const log = await loadWorkoutLog(checkDate);
+    if (!log || log.isRest || !log.exercises) continue;
+    if (log.name.toLowerCase() !== workoutDayName.toLowerCase()) continue;
+
+    const match = log.exercises.find(
+      ex => ex.name.toLowerCase() === exerciseName.toLowerCase() &&
+            (ex.actual || ex.weight)
+    );
+
+    if (match) {
+      results.push({
+        date: formatDateToKey(checkDate),
+        workoutName: log.name,
+        target: match.target,
+        actual: match.actual,
+        weight: match.weight,
+      });
+    }
+  }
+  return results;
+};
