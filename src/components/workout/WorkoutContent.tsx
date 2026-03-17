@@ -15,6 +15,7 @@ interface WorkoutContentProps {
   onUpdateExercise: (exerciseId: number, field: keyof Exercise, value: string) => void;
   onDeleteExercise: (exerciseId: number) => void;
   onAddExercise: () => void;
+  onReorderExercises: (newOrder: Exercise[]) => void;
   onShowHistory?: (exerciseName: string) => void;
 }
 
@@ -27,6 +28,7 @@ export const WorkoutContent: React.FC<WorkoutContentProps> = ({
   onUpdateExercise,
   onDeleteExercise,
   onAddExercise,
+  onReorderExercises,
   onShowHistory,
 }) => {
   const { colors } = useTheme();
@@ -61,6 +63,7 @@ export const WorkoutContent: React.FC<WorkoutContentProps> = ({
         onExerciseChange={onUpdateExercise}
         onDeleteExercise={onDeleteExercise}
         onAddExercise={onAddExercise}
+        onReorderExercises={onReorderExercises}
         onShowHistory={onShowHistory}
       />
     </>

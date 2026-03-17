@@ -56,6 +56,7 @@ export default function Workout() {
     addExercise,
     updateExercise,
     deleteExercise,
+    reorderExercises,
     selectDayToLog,
     saveCurrentAsTemplate,
     loadTemplate,
@@ -202,6 +203,7 @@ export default function Workout() {
           <ExerciseHistoryModal
             isVisible={isHistoryVisible}
             exerciseName={historyExercise}
+            workoutDayName={workoutLog?.name}
             currentDate={selectedDate}
             onClose={() => setIsHistoryVisible(false)}
           />
@@ -265,6 +267,7 @@ export default function Workout() {
               onUpdateExercise={updateExercise}
               onDeleteExercise={deleteExercise}
               onAddExercise={addExercise}
+              onReorderExercises={reorderExercises}
               onShowHistory={handleShowHistory}
             />
 
