@@ -66,7 +66,7 @@ const darkColors: ThemeColors = {
   accent: '#FFFFFF',
   error: '#FF4D4D',
   orange: '#FB923C',
-  blue: '#60A5FA',
+  blue: '#4A80C4',
   green: '#34D399',
   cyan: '#22D3EE',
   red: '#F87171',
