@@ -32,6 +32,10 @@
         "VIBRATE",
         "POST_NOTIFICATIONS",
         "FOREGROUND_SERVICE",
+        "WAKE_LOCK",
+        "VIBRATE",
+        "POST_NOTIFICATIONS",
+        "FOREGROUND_SERVICE",
         "WAKE_LOCK"
       ],
       "package": "com.robinandlamb.calibu"
@@ -63,6 +67,12 @@
       "eas": {
         "projectId": "0749d9ba-d935-47a2-8659-280b179bbe9f"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0749d9ba-d935-47a2-8659-280b179bbe9f"
     }
   }
 }

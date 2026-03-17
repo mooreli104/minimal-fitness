@@ -110,19 +110,6 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
     paddingHorizontal: 4,
     borderRadius: 4,
   },
-  timerToggle: {
-    position: 'absolute',
-    left: 8,
-    top: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    paddingHorizontal: 8,
-  },
-  timerToggleText: {
-    color: '#007AFF',
-    fontSize: 12,
-    fontWeight: '500',
-  },
   restToggle: {
     position: 'absolute',
     right: 8,
@@ -230,24 +217,6 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
   emptyStateText: {
     fontSize: 16,
     color: colors.textSecondary,
-  },
-  loopingTimerButton: {
-    backgroundColor: '#22C55E',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    marginTop: 24,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  loopingTimerButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
   },
   planWeekButton: {
     backgroundColor: '#007AFF',
