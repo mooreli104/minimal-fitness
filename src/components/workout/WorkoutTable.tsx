@@ -30,10 +30,10 @@ const WorkoutTable = ({
   const styles = getWorkoutStyles(colors);
 
   // Find matching exercise from previous workout by name
-  const findPreviousExercise = (exerciseName: string): Exercise | undefined => {
+  const findPreviousExercise = useCallback((exerciseName: string): Exercise | undefined => {
     if (!exerciseName) return undefined;
     return previousExercises.find(ex => ex.name.toLowerCase() === exerciseName.toLowerCase());
-  };
+  }, [previousExercises]);
 
   const renderItem = useCallback(({ item, drag, isActive }: RenderItemParams<Exercise>) => (
     <ScaleDecorator>

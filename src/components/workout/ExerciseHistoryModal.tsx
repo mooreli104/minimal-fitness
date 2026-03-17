@@ -20,9 +20,10 @@ export const ExerciseHistoryModal = ({ isVisible, exerciseName, workoutDayName, 
 
   useEffect(() => {
     if (!isVisible || !exerciseName.trim()) return;
+    setHistory([]);
     setLoading(true);
     const fetchHistory = workoutDayName
-      ? findExerciseHistoryForDay(exerciseName, workoutDayName)
+      ? findExerciseHistoryForDay(exerciseName, workoutDayName, currentDate)
       : findExerciseHistory(exerciseName, currentDate);
     fetchHistory
       .then(setHistory)

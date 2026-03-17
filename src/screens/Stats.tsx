@@ -28,18 +28,6 @@ interface WeekCount {
   label: string;
 }
 
-const getISOWeekLabel = (dateStr: string): string => {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  const day = date.getDay();
-  const diff = (day === 0 ? -6 : 1 - day);
-  const monday = new Date(date);
-  monday.setDate(date.getDate() + diff);
-  const mm = String(monday.getMonth() + 1).padStart(2, '0');
-  const dd = String(monday.getDate()).padStart(2, '0');
-  return `${mm}/${dd}`;
-};
-
 export default function Stats() {
   const { colors } = useTheme();
 
@@ -49,23 +37,36 @@ export default function Stats() {
   const [frequencyData, setFrequencyData] = useState<WeekCount[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const logsCache = React.useRef<Array<{ date: string; log: any }>>([]);
+
   const loadData = useCallback(async () => {
     setLoading(true);
     const logs = await getAllWorkoutLogs();
+    logsCache.current = logs;
 
     // Frequency chart: workouts per week for last 12 weeks
+    // Seed last 12 weeks with 0, anchored to current week's Monday
     const weekMap = new Map<string, number>();
+    const getMonday = (d: Date): Date => {
+      const day = d.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      const monday = new Date(d);
+      monday.setDate(d.getDate() + diff);
+      return monday;
+    };
     const now = new Date();
+    const thisMonday = getMonday(now);
     for (let i = 11; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(now.getDate() - i * 7);
-      const label = getISOWeekLabel(
-        `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-      );
-      if (!weekMap.has(label)) weekMap.set(label, 0);
+      const monday = new Date(thisMonday);
+      monday.setDate(thisMonday.getDate() - i * 7);
+      const label = `${String(monday.getMonth()+1).padStart(2,'0')}/${String(monday.getDate()).padStart(2,'0')}`;
+      weekMap.set(label, 0);
     }
     for (const { date } of logs) {
-      const label = getISOWeekLabel(date);
+      const [y, m, d] = date.split('-').map(Number);
+      const logDate = new Date(y, m - 1, d);
+      const monday = getMonday(logDate);
+      const label = `${String(monday.getMonth()+1).padStart(2,'0')}/${String(monday.getDate()).padStart(2,'0')}`;
       if (weekMap.has(label)) {
         weekMap.set(label, (weekMap.get(label) ?? 0) + 1);
       }
@@ -93,23 +94,21 @@ export default function Stats() {
 
   useEffect(() => {
     if (!selectedExercise) return;
-    (async () => {
-      const logs = await getAllWorkoutLogs();
-      const points: WeightDataPoint[] = [];
-      for (const { date, log } of [...logs].reverse()) {
-        const match = log.exercises?.find(
-          ex => ex.name.trim().toLowerCase() === selectedExercise.toLowerCase() && ex.weight
-        );
-        if (match) {
-          const val = parseWeight(match.weight);
-          if (val !== null) {
-            const [, m, d] = date.split('-');
-            points.push({ value: val, label: `${m}/${d}` });
-          }
+    const logs = logsCache.current;
+    const points: WeightDataPoint[] = [];
+    for (const { date, log } of [...logs].reverse()) {
+      const match = log.exercises?.find(
+        (ex: any) => ex.name.trim().toLowerCase() === selectedExercise.toLowerCase() && ex.weight
+      );
+      if (match) {
+        const val = parseWeight(match.weight);
+        if (val !== null) {
+          const [, m, d] = date.split('-');
+          points.push({ value: val, label: `${m}/${d}` });
         }
       }
-      setWeightData(points);
-    })();
+    }
+    setWeightData(points);
   }, [selectedExercise]);
 
   const chartWidth = SCREEN_WIDTH - 48;

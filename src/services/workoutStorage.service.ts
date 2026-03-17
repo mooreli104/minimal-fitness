@@ -4,7 +4,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { WorkoutDay, WorkoutTemplate, ExerciseHistoryEntry } from '../types';
+import { WorkoutDay, WorkoutTemplate, ExerciseHistoryEntry, Exercise } from '../types';
 import { setItem, removeItem, getItemWithMigration, getArrayWithMigration } from '../utils/storage';
 import { STORAGE_KEYS } from '../utils/constants';
 import { formatDateToKey } from '../utils/formatters';
@@ -190,15 +190,14 @@ export const findExerciseHistory = async (
 export const findExerciseHistoryForDay = async (
   exerciseName: string,
   workoutDayName: string,
+  beforeDate: Date,
   maxDaysBack: number = 365
 ): Promise<ExerciseHistoryEntry[]> => {
   const results: ExerciseHistoryEntry[] = [];
   if (!exerciseName.trim() || !workoutDayName.trim()) return results;
 
-  const today = new Date();
-
   for (let i = 1; i <= maxDaysBack; i++) {
-    const checkDate = new Date(today);
+    const checkDate = new Date(beforeDate);
     checkDate.setDate(checkDate.getDate() - i);
 
     const log = await loadWorkoutLog(checkDate);
