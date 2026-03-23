@@ -204,3 +204,28 @@ export const getAllWorkoutLogs = async (): Promise<Array<{ date: string; log: Wo
     return [];
   }
 };
+
+export const deleteExerciseFromAllLogs = async (exerciseName: string): Promise<void> => {
+  try {
+    const allKeys = await AsyncStorage.getAllKeys();
+    const logKeys = allKeys.filter(k => k.startsWith(STORAGE_KEYS.WORKOUT_LOG_PREFIX));
+    const pairs = await AsyncStorage.multiGet(logKeys);
+    const nameLower = exerciseName.trim().toLowerCase();
+
+    for (const [key, value] of pairs) {
+      if (!value) continue;
+      try {
+        const log: WorkoutDay = JSON.parse(value);
+        const hadExercise = log.exercises.some(ex => ex.name.trim().toLowerCase() === nameLower);
+        if (hadExercise) {
+          log.exercises = log.exercises.filter(ex => ex.name.trim().toLowerCase() !== nameLower);
+          await AsyncStorage.setItem(key, JSON.stringify(log));
+        }
+      } catch {
+        // skip malformed entries
+      }
+    }
+  } catch (error) {
+    console.error('Failed to delete exercise from logs:', error);
+  }
+};

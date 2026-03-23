@@ -8,12 +8,13 @@ import {
   ActivityIndicator,
   Dimensions,
   TextInput,
+  Alert,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LineChart, BarChart } from 'react-native-gifted-charts';
 import { useTheme } from '../context/ThemeContext';
 import BottomNav from '../components/BottomNav';
-import { getAllWorkoutLogs } from '../services/workoutStorage.service';
+import { getAllWorkoutLogs, deleteExerciseFromAllLogs } from '../services/workoutStorage.service';
 import { parseWeight } from '../utils/parseWeight';
 import { getStartOfWeekMonday } from '../utils/formatters';
 import { BackgroundPattern } from '../components/common/BackgroundPattern';
@@ -58,6 +59,25 @@ export default function Stats() {
     const query = exerciseSearch.trim().toLowerCase();
     return allExerciseNames.filter(name => name.toLowerCase().includes(query));
   }, [allExerciseNames, exerciseSearch]);
+
+  const handleDeleteExercise = useCallback((name: string) => {
+    Alert.alert(
+      'Delete Exercise',
+      `Remove "${name}" from all workout logs? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteExerciseFromAllLogs(name);
+            if (selectedExercise === name) setSelectedExercise('');
+            await loadData();
+          },
+        },
+      ]
+    );
+  }, [selectedExercise]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -153,6 +173,7 @@ export default function Stats() {
                   <TouchableOpacity
                     key={name}
                     onPress={() => { setSelectedExercise(name); setExerciseSearch(''); }}
+                    onLongPress={() => handleDeleteExercise(name)}
                     style={[
                       s.pill,
                       {
