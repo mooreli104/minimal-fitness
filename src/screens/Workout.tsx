@@ -53,6 +53,7 @@ export default function Workout() {
     addExerciseToDay,
     updateExerciseInDay,
     removeExerciseFromDay,
+    reorderExercisesInDay,
     reorderDays,
     addExercise,
     updateExercise,
@@ -221,9 +222,10 @@ export default function Workout() {
             onAddExercise={addExerciseToDay}
             onUpdateExercise={updateExerciseInDay}
             onRemoveExercise={removeExerciseFromDay}
+            onReorderExercisesInDay={reorderExercisesInDay}
           />
 
-          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={true}>
+          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={true} decelerationRate={0.985}>
             <WorkoutHeader
               onOpenTemplateManager={modals.templateManager.open}
               onOpenProgramEditor={modals.programEditor.open}

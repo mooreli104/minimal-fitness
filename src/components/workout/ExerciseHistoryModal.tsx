@@ -50,7 +50,7 @@ export const ExerciseHistoryModal = ({ isVisible, exerciseName, workoutDayName, 
           ) : history.length === 0 ? (
             <Text style={[styles.empty, { color: colors.textSecondary }]}>No previous entries found.</Text>
           ) : (
-            <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.list} showsVerticalScrollIndicator={true} nestedScrollEnabled={true}>
               {history.map((entry, i) => (
                 <View key={i} style={[styles.entry, i > 0 && { borderTopWidth: 1, borderTopColor: colors.border }]}>
                   <View style={styles.entryHeader}>
@@ -58,9 +58,14 @@ export const ExerciseHistoryModal = ({ isVisible, exerciseName, workoutDayName, 
                     <Text style={[styles.entryWorkout, { color: colors.textTertiary }]}>{entry.workoutName}</Text>
                   </View>
                   <View style={styles.entryDetails}>
-                    {entry.target ? <Text style={[styles.detail, { color: colors.textSecondary }]}>Target: {entry.target}</Text> : null}
-                    {entry.actual ? <Text style={[styles.detail, { color: colors.textSecondary }]}>Actual: {entry.actual}</Text> : null}
-                    {entry.weight ? <Text style={[styles.detail, { color: colors.accent }]}>@ {entry.weight}</Text> : null}
+                    <Text style={[styles.detailLabel, { color: colors.textTertiary }]}>Target</Text>
+                    <Text style={[styles.detailLabel, { color: colors.textTertiary }]}>Actual</Text>
+                    <Text style={[styles.detailLabel, { color: colors.textTertiary }]}>Weight</Text>
+                  </View>
+                  <View style={styles.entryDetails}>
+                    <Text style={[styles.detailValue, { color: colors.textSecondary }]}>{entry.target || '—'}</Text>
+                    <Text style={[styles.detailValue, { color: colors.textSecondary }]}>{entry.actual || '—'}</Text>
+                    <Text style={[styles.detailValue, { color: colors.accent }]}>{entry.weight || '—'}</Text>
                   </View>
                 </View>
               ))}
@@ -126,10 +131,19 @@ const styles = StyleSheet.create({
   },
   entryDetails: {
     flexDirection: 'row',
-    gap: 12,
   },
-  detail: {
+  detailLabel: {
+    flex: 1,
+    fontSize: 11,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    marginBottom: 2,
+  },
+  detailValue: {
+    flex: 1,
     fontSize: 14,
+    fontWeight: '500',
   },
   closeButton: {
     borderTopWidth: 1,

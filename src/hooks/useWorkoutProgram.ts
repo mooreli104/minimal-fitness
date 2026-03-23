@@ -125,6 +125,14 @@ export const useWorkoutProgram = () => {
     await saveProgram(newProgram);
   }, [program]);
 
+  const reorderExercisesInDay = useCallback(async (dayId: number, newOrder: { id: number; name: string; target: string }[]) => {
+    const newProgram = program.map(day => {
+      if (day.id !== dayId) return day;
+      return { ...day, exercises: newOrder.map(ex => day.exercises.find(e => e.id === ex.id) || ex) as typeof day.exercises };
+    });
+    await saveProgram(newProgram);
+  }, [program]);
+
   const reorderDays = useCallback(async (newOrder: WorkoutDay[]) => {
     await saveProgram(newOrder);
   }, []);
@@ -139,6 +147,7 @@ export const useWorkoutProgram = () => {
     addExerciseToDay,
     updateExerciseInDay,
     removeExerciseFromDay,
+    reorderExercisesInDay,
     reorderDays,
     setProgram: saveProgram, // Use saveProgram to persist changes
   };

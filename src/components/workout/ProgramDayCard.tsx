@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,10 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { ChevronDown, ChevronRight, MoreHorizontal, Plus, Trash2 } from 'lucide-react-native';
+import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
+import { ChevronDown, ChevronRight, MoreHorizontal, Plus, Trash2, GripVertical } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { WorkoutDay } from '../../types';
+import { WorkoutDay, Exercise } from '../../types';
 
 interface ProgramDayCardProps {
   day: WorkoutDay;
@@ -22,6 +23,7 @@ interface ProgramDayCardProps {
   onAddExercise: () => void;
   onUpdateExercise: (exerciseId: number, field: 'name' | 'target', value: string) => void;
   onRemoveExercise: (exerciseId: number) => void;
+  onReorderExercises?: (newOrder: Exercise[]) => void;
 }
 
 export default function ProgramDayCard({
@@ -35,6 +37,7 @@ export default function ProgramDayCard({
   onAddExercise,
   onUpdateExercise,
   onRemoveExercise,
+  onReorderExercises,
 }: ProgramDayCardProps) {
   const { colors, theme } = useTheme();
   const [isRenaming, setIsRenaming] = useState(false);
@@ -66,6 +69,42 @@ export default function ProgramDayCard({
   };
 
   const exerciseCount = day.exercises.length;
+
+  const renderExerciseItem = useCallback(({ item: exercise, drag, isActive }: RenderItemParams<Exercise>) => (
+    <ScaleDecorator>
+      <View style={[styles.exerciseRow, isActive && { opacity: 0.9 }]}>
+        <TouchableOpacity
+          onLongPress={drag}
+          delayLongPress={150}
+          style={styles.dragHandle}
+        >
+          <GripVertical size={14} color={colors.textTertiary} />
+        </TouchableOpacity>
+        <TextInput
+          style={[styles.exerciseNameInput, { color: colors.textPrimary, backgroundColor: colors.inputBackground }]}
+          value={exercise.name}
+          placeholder="Exercise name"
+          placeholderTextColor={colors.textTertiary}
+          onChangeText={(text) => onUpdateExercise(exercise.id, 'name', text)}
+          keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
+        />
+        <TextInput
+          style={[styles.exerciseTargetInput, { color: colors.textPrimary, backgroundColor: colors.inputBackground }]}
+          value={exercise.target}
+          placeholder="3x8"
+          placeholderTextColor={colors.textTertiary}
+          onChangeText={(text) => onUpdateExercise(exercise.id, 'target', text)}
+          keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
+        />
+        <TouchableOpacity
+          style={styles.removeExerciseButton}
+          onPress={() => onRemoveExercise(exercise.id)}
+        >
+          <Trash2 size={16} color={colors.red} />
+        </TouchableOpacity>
+      </View>
+    </ScaleDecorator>
+  ), [colors, theme, onUpdateExercise, onRemoveExercise]);
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface }]}>
@@ -123,32 +162,13 @@ export default function ProgramDayCard({
       {/* Expanded exercises section */}
       {isExpanded && !day.isRest && (
         <View style={[styles.exercisesSection, { borderTopColor: colors.border }]}>
-          {day.exercises.map((exercise) => (
-            <View key={exercise.id} style={styles.exerciseRow}>
-              <TextInput
-                style={[styles.exerciseNameInput, { color: colors.textPrimary, backgroundColor: colors.inputBackground }]}
-                value={exercise.name}
-                placeholder="Exercise name"
-                placeholderTextColor={colors.textTertiary}
-                onChangeText={(text) => onUpdateExercise(exercise.id, 'name', text)}
-                keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
-              />
-              <TextInput
-                style={[styles.exerciseTargetInput, { color: colors.textPrimary, backgroundColor: colors.inputBackground }]}
-                value={exercise.target}
-                placeholder="3x8"
-                placeholderTextColor={colors.textTertiary}
-                onChangeText={(text) => onUpdateExercise(exercise.id, 'target', text)}
-                keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
-              />
-              <TouchableOpacity
-                style={styles.removeExerciseButton}
-                onPress={() => onRemoveExercise(exercise.id)}
-              >
-                <Trash2 size={16} color={colors.red} />
-              </TouchableOpacity>
-            </View>
-          ))}
+          <DraggableFlatList
+            data={day.exercises}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderExerciseItem}
+            onDragEnd={({ data }) => onReorderExercises?.(data)}
+            scrollEnabled={false}
+          />
 
           <TouchableOpacity
             style={[styles.addExerciseButton, { borderColor: colors.border }]}
@@ -218,13 +238,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingBottom: 14,
     borderTopWidth: 1,
-    gap: 8,
     paddingTop: 10,
   },
   exerciseRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
+    marginBottom: 8,
+  },
+  dragHandle: {
+    paddingVertical: 8,
+    paddingHorizontal: 2,
+    justifyContent: 'center',
   },
   exerciseNameInput: {
     flex: 1,

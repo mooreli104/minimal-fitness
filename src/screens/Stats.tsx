@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Dimensions,
+  TextInput,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LineChart, BarChart } from 'react-native-gifted-charts';
@@ -39,6 +40,7 @@ export default function Stats() {
 
   const logsCache = React.useRef<Array<{ date: string; log: any }>>([]);
   const [logVersion, setLogVersion] = useState(0);
+  const [exerciseSearch, setExerciseSearch] = useState('');
 
   const allExerciseNames = useMemo(() => {
     const nameSet = new Set<string>();
@@ -50,6 +52,12 @@ export default function Stats() {
     return Array.from(nameSet).sort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logVersion]);
+
+  const filteredExerciseNames = useMemo(() => {
+    if (!exerciseSearch.trim()) return allExerciseNames;
+    const query = exerciseSearch.trim().toLowerCase();
+    return allExerciseNames.filter(name => name.toLowerCase().includes(query));
+  }, [allExerciseNames, exerciseSearch]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -126,15 +134,25 @@ export default function Stats() {
             <>
               <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>Weight Progression</Text>
 
+              {allExerciseNames.length > 6 && (
+                <TextInput
+                  style={[s.searchInput, { color: colors.textPrimary, backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+                  value={exerciseSearch}
+                  onChangeText={setExerciseSearch}
+                  placeholder="Search exercises..."
+                  placeholderTextColor={colors.textTertiary}
+                />
+              )}
+
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={s.pickerRow}
               >
-                {allExerciseNames.map(name => (
+                {filteredExerciseNames.map(name => (
                   <TouchableOpacity
                     key={name}
-                    onPress={() => setSelectedExercise(name)}
+                    onPress={() => { setSelectedExercise(name); setExerciseSearch(''); }}
                     style={[
                       s.pill,
                       {
@@ -234,6 +252,14 @@ const s = StyleSheet.create({
   pageTitle: { fontSize: 28, fontWeight: '700', marginBottom: 28 },
   sectionTitle: { fontSize: 18, fontWeight: '600', marginTop: 28, marginBottom: 8 },
   sectionSub: { fontSize: 13, marginBottom: 12 },
+  searchInput: {
+    fontSize: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 8,
+  },
   pickerRow: { flexDirection: 'row', gap: 8, paddingBottom: 12 },
   pill: {
     paddingHorizontal: 12,

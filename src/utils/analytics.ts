@@ -73,13 +73,16 @@ export const isWorkoutCompleted = (workout: WorkoutDay): boolean => {
     return false;
   }
 
-  // All exercises must have actual and weight filled
-  return workout.exercises.every(
+  // Count exercises that have actual and weight filled
+  const completedCount = workout.exercises.filter(
     (exercise) =>
       exercise.actual &&
       exercise.actual.trim() !== '' &&
       exercise.weight &&
       exercise.weight.trim() !== ''
-  );
+  ).length;
+
+  // 80% or more of exercises completed counts as a completed workout
+  return completedCount / workout.exercises.length >= 0.8;
 };
 

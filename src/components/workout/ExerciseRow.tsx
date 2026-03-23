@@ -28,6 +28,7 @@ const ExerciseRow = ({ item, previousExercise, onExerciseChange, onDeleteExercis
 
   const panGesture = Gesture.Pan()
     .activeOffsetX([-10, 10])
+    .failOffsetY([-5, 5])
     .onUpdate((event) => {
       translateX.value = Math.max(-UI.MAX_SWIPE_DISTANCE, Math.min(0, event.translationX));
     })

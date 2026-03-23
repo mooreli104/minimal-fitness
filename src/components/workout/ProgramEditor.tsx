@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X, Plus, Moon } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
@@ -29,6 +30,7 @@ interface ProgramEditorProps {
   onAddExercise: (dayId: number) => void;
   onUpdateExercise: (dayId: number, exerciseId: number, field: 'name' | 'target', value: string) => void;
   onRemoveExercise: (dayId: number, exerciseId: number) => void;
+  onReorderExercisesInDay: (dayId: number, newOrder: { id: number; name: string; target: string }[]) => void;
   onAddRestDay?: () => void;
 }
 
@@ -45,6 +47,7 @@ export default function ProgramEditor({
   onAddExercise,
   onUpdateExercise,
   onRemoveExercise,
+  onReorderExercisesInDay,
   onAddRestDay,
 }: ProgramEditorProps) {
   const { colors, theme } = useTheme();
@@ -81,6 +84,7 @@ export default function ProgramEditor({
 
   return (
     <Modal visible={isVisible} animationType="slide" transparent={false}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView
         style={[styles.modalContainer, { backgroundColor: colors.background }]}
         edges={['left', 'right', 'bottom']}
@@ -117,6 +121,7 @@ export default function ProgramEditor({
                   onUpdateExercise(day.id, exerciseId, field, value)
                 }
                 onRemoveExercise={(exerciseId) => onRemoveExercise(day.id, exerciseId)}
+                onReorderExercises={(newOrder) => onReorderExercisesInDay(day.id, newOrder)}
               />
             ))}
 
@@ -174,6 +179,7 @@ export default function ProgramEditor({
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
