@@ -225,7 +225,7 @@ export default function Workout() {
             onReorderExercisesInDay={reorderExercisesInDay}
           />
 
-          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={true} decelerationRate={0.985}>
+          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={true} decelerationRate={0.985} keyboardShouldPersistTaps="handled">
             <WorkoutHeader
               onOpenTemplateManager={modals.templateManager.open}
               onOpenProgramEditor={modals.programEditor.open}

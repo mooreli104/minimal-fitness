@@ -1,6 +1,6 @@
 // src/components/workout/ExerciseHistoryModal.tsx
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Pressable, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { ExerciseHistoryEntry } from '../../types';
 import { findExerciseHistory, findExerciseHistoryForDay } from '../../services/workoutStorage.service';
@@ -38,11 +38,9 @@ export const ExerciseHistoryModal = ({ isVisible, exerciseName, workoutDayName, 
 
   return (
     <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onClose}>
-      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
-        <View
-          style={[styles.container, { backgroundColor: colors.cardBackground }]}
-          onStartShouldSetResponder={() => true}
-        >
+      <View style={styles.backdrop}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <View style={[styles.container, { backgroundColor: colors.cardBackground }]}>
           <Text style={[styles.title, { color: colors.textPrimary }]}>{exerciseName}</Text>
 
           {loading ? (
@@ -76,7 +74,7 @@ export const ExerciseHistoryModal = ({ isVisible, exerciseName, workoutDayName, 
             <Text style={[styles.closeText, { color: colors.accent }]}>Close</Text>
           </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+      </View>
     </Modal>
   );
 };
@@ -111,6 +109,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   list: {
+    flex: 1,
     paddingHorizontal: 20,
   },
   entry: {
