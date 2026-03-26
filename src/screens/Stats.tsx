@@ -145,14 +145,14 @@ export default function Stats() {
   const chartWidth = SCREEN_WIDTH - 48;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={s.flex}>
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <BackgroundPattern />
         <ScrollView contentContainerStyle={[s.content, { paddingTop: insets.top + 16 }]} showsVerticalScrollIndicator={false}>
           <Text style={[s.pageTitle, { color: colors.textPrimary }]}>Stats</Text>
 
           {loading ? (
-            <ActivityIndicator style={{ marginTop: 60 }} color={colors.accent} />
+            <ActivityIndicator style={s.loadingIndicator} color={colors.accent} />
           ) : (
             <>
               <Text style={[s.sectionTitle, { color: colors.textPrimary }]}>Weight Progression</Text>
@@ -188,7 +188,7 @@ export default function Stats() {
                     <Text
                       style={[
                         s.pillText,
-                        { color: name === selectedExercise ? '#FFFFFF' : colors.textSecondary },
+                        { color: name === selectedExercise ? colors.surface : colors.textSecondary },
                       ]}
                       numberOfLines={1}
                     >
@@ -260,7 +260,7 @@ export default function Stats() {
                 </View>
               )}
 
-              <View style={{ height: 100 }} />
+              <View style={s.bottomSpacer} />
             </>
           )}
         </ScrollView>
@@ -271,6 +271,7 @@ export default function Stats() {
 }
 
 const s = StyleSheet.create({
+  flex: { flex: 1 },
   container: { flex: 1 },
   content: { paddingHorizontal: 24 },
   pageTitle: { fontSize: 28, fontWeight: '700', marginBottom: 28 },
@@ -300,4 +301,6 @@ const s = StyleSheet.create({
     overflow: 'hidden',
   },
   empty: { textAlign: 'center', paddingVertical: 24, fontSize: 14 },
+  loadingIndicator: { marginTop: 60 },
+  bottomSpacer: { height: 100 },
 });

@@ -238,4 +238,7 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   daySelectorScrollContent: { paddingHorizontal: 8, paddingVertical: 4 },
   daySelectorScroll: { overflow: 'visible' as const },
+  dragHandle: { paddingHorizontal: 6, justifyContent: 'center' as const },
+  historyButton: { paddingLeft: 4, paddingRight: 2 },
+  workoutDayHeaderCenter: { flex: 1, alignItems: 'center' as const },
 });

@@ -45,7 +45,7 @@ export const ExerciseHistoryModal = ({ isVisible, exerciseName, workoutDayName, 
           <Text style={[styles.title, { color: colors.textPrimary }]}>{exerciseName}</Text>
 
           {loading ? (
-            <ActivityIndicator style={{ marginVertical: 32 }} color={colors.accent} />
+            <ActivityIndicator style={styles.loadingIndicator} color={colors.accent} />
           ) : history.length === 0 ? (
             <Text style={[styles.empty, { color: colors.textSecondary }]}>No previous entries found.</Text>
           ) : (
@@ -154,4 +154,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  loadingIndicator: { marginVertical: 32 },
 });

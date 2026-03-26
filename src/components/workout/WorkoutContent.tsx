@@ -48,7 +48,7 @@ export const WorkoutContent: React.FC<WorkoutContentProps> = ({
   return (
     <>
       <View style={styles.workoutDayHeader}>
-        <View style={{ flex: 1, alignItems: 'center' }}>
+        <View style={styles.workoutDayHeaderCenter}>
           <TouchableOpacity onLongPress={onOpenRenameModal}>
             <Text style={styles.workoutDayHeaderText}>{workoutLog.name}</Text>
           </TouchableOpacity>

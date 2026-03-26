@@ -46,7 +46,7 @@ const ExerciseRow = ({ item, previousExercise, onExerciseChange, onDeleteExercis
         <TouchableOpacity
           onLongPress={drag}
           delayLongPress={150}
-          style={{ paddingHorizontal: 6, justifyContent: 'center' }}
+          style={styles.dragHandle}
         >
           <GripVertical size={16} color={colors.textTertiary} />
         </TouchableOpacity>
@@ -68,7 +68,7 @@ const ExerciseRow = ({ item, previousExercise, onExerciseChange, onDeleteExercis
           {onShowHistory && (
             <TouchableOpacity
               onPress={() => onShowHistory(item.name)}
-              style={{ paddingLeft: 4, paddingRight: 2 }}
+              style={styles.historyButton}
               hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
             >
               <Clock size={14} color={colors.textTertiary} />
