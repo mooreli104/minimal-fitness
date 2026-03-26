@@ -42,7 +42,7 @@ export default function Settings() {
         <Text style={[styles.subText, { color: colors.textSecondary }]}>Questions or suggestions? Contact</Text>
         <View style={styles.emailContainer}>
             <TouchableOpacity onPress={handleEmailPress}>
-              <Text style={styles.emailLink}>mooreli@robinandlamb.com</Text>
+              <Text style={[styles.emailLink, { color: colors.link }]}>mooreli@robinandlamb.com</Text>
             </TouchableOpacity>
         </View>
       </View>
@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emailLink: {
-    color: "#007AFF",
     textDecorationLine: "underline",
     fontSize: 14,
   },

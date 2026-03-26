@@ -21,7 +21,7 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
   templateButton: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#007AFF', // This color is fine for both themes
+    color: colors.link,
   },
   loadingText: {
     textAlign: 'center',
@@ -119,7 +119,7 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
     paddingHorizontal: 8,
   },
   restToggleText: {
-    color: '#007AFF',
+    color: colors.link,
     fontSize: 12,
     fontWeight: '500',
   },
@@ -219,7 +219,7 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
     color: colors.textSecondary,
   },
   planWeekButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.link,
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 12,

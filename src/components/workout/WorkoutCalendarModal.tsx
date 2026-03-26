@@ -296,7 +296,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   },
   calendarDayTextToday: {
     fontWeight: 'bold',
-    color: '#007AFF'
+    color: colors.link,
   },
 });
 

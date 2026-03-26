@@ -17,6 +17,7 @@ export interface ThemeColors {
 
   // Accent
   accent: string;
+  link: string;
 
   // Status
   error: string;
@@ -43,6 +44,7 @@ const lightColors: ThemeColors = {
   textSecondary: '#4B5563',
   textTertiary: '#9CA3AF',
   accent: '#0A0A0A',
+  link: '#007AFF',
   error: '#DC2626',
   orange: '#F97316',
   blue: '#3B82F6',
@@ -64,6 +66,7 @@ const darkColors: ThemeColors = {
   textSecondary: '#A0A0A0',
   textTertiary: '#707070',
   accent: '#FFFFFF',
+  link: '#0A84FF',
   error: '#FF4D4D',
   orange: '#FB923C',
   blue: '#4A80C4',
