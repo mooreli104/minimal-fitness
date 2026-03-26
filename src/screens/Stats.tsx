@@ -40,7 +40,7 @@ export default function Stats() {
   const [frequencyData, setFrequencyData] = useState<WeekCount[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const logsCache = React.useRef<Array<{ date: string; log: any }>>([]);
+  const logsCache = React.useRef<Array<{ date: string; log: WorkoutDay }>>([]);
   const [logVersion, setLogVersion] = useState(0);
   const [exerciseSearch, setExerciseSearch] = useState('');
 
@@ -127,7 +127,7 @@ export default function Stats() {
     const points: WeightDataPoint[] = [];
     for (const { date, log } of [...logs].reverse()) {
       const match = log.exercises?.find(
-        (ex: any) => ex.name.trim().toLowerCase() === selectedExercise.toLowerCase() && ex.weight
+        (ex) => ex.name.trim().toLowerCase() === selectedExercise.toLowerCase() && ex.weight
       );
       if (match) {
         const val = parseWeight(match.weight);

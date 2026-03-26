@@ -237,7 +237,7 @@ const WorkoutCalendarModal = ({
  * Get styles function - memoized by component for performance
  * Following RN best practices: styles are created once and reused
  */
-const getStyles = (colors: any) => StyleSheet.create({
+const getStyles = (colors: ThemeColors) => StyleSheet.create({
   calendarBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
