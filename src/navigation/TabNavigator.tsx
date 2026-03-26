@@ -1,9 +1,13 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationProp, useNavigation as useRNNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
 import Workout from '../screens/Workout';
 import Stats from '../screens/Stats';
 import More from '../screens/More';
+
+export type AppNavigationProp = NavigationProp<RootStackParamList>;
+export const useAppNavigation = () => useRNNavigation<AppNavigationProp>();
 
 const Tab = createBottomTabNavigator<RootStackParamList>();
 

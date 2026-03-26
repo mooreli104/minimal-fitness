@@ -1,17 +1,19 @@
 import React from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { Menu, Dumbbell, BarChart2 } from "lucide-react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useRoute } from "@react-navigation/native";
+import { useAppNavigation } from "../navigation/TabNavigator";
+import { ScreenName } from "../types";
 import { useTheme } from "../context/ThemeContext";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BottomNav() {
-  const navigation = useNavigation();
+  const navigation = useAppNavigation();
   const route = useRoute();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const navItems = [
+  const navItems: Array<{ icon: typeof Dumbbell; route: ScreenName; name: string }> = [
     { icon: Dumbbell, route: 'Workout', name: 'workout' },
     { icon: BarChart2, route: 'Stats', name: 'stats' },
     { icon: Menu, route: 'More', name: 'more' },
@@ -29,7 +31,7 @@ export default function BottomNav() {
           return (
             <TouchableOpacity
               key={item.name}
-              onPress={() => navigation.navigate(item.route as never)}
+              onPress={() => navigation.navigate(item.route)}
               style={styles.navButton}
               activeOpacity={0.7}
             >
