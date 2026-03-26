@@ -227,6 +227,6 @@ export const deleteExerciseFromAllLogs = async (exerciseName: string): Promise<v
       }
     }
   } catch (error) {
-    console.error('Failed to delete exercise from logs:', error);
+    // Silent failure - exercise deletion is non-critical
   }
 };

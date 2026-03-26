@@ -14,7 +14,6 @@ export const useWorkoutTemplates = (program: WorkoutDay[]) => {
         setTemplates(loadedTemplates);
       } catch (error) {
         Alert.alert('Error', 'Failed to load workout templates.');
-        console.error('Workout templates load error:', error);
       }
     };
     loadTemplates();
@@ -26,7 +25,6 @@ export const useWorkoutTemplates = (program: WorkoutDay[]) => {
       setTemplates(newTemplates);
     } catch (error) {
       Alert.alert('Error', 'Failed to save workout templates.');
-      console.error('Workout templates save error:', error);
     }
   };
 

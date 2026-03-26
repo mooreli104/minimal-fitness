@@ -123,7 +123,6 @@ export const useWeekPopulator = ({
         Alert.alert('Info', 'All days in the week already have workout logs.');
       }
     } catch (error) {
-      console.error('Error populating week:', error);
       Alert.alert('Error', 'Failed to populate the week. Please try again.');
     }
   }, [program, weeklyPlan, selectedDate, updateDayPlan, setWorkoutLog]);

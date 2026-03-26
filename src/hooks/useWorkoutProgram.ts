@@ -15,7 +15,6 @@ export const useWorkoutProgram = () => {
         setProgram(loadedProgram);
       } catch (error) {
         Alert.alert('Error', 'Failed to load workout program.');
-        console.error('Workout program load error:', error);
       }
     };
     loadProgram();
@@ -27,7 +26,6 @@ export const useWorkoutProgram = () => {
       setProgram(newProgram);
     } catch (error) {
       Alert.alert('Error', 'Failed to save workout program.');
-      console.error('Workout program save error:', error);
     }
   };
 

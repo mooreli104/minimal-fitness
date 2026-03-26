@@ -104,7 +104,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         setThemeState(storedTheme);
       }
     } catch (error) {
-      console.error('Failed to load theme:', error);
+      // Silent failure - use default theme
     }
   };
 
@@ -113,7 +113,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       setThemeState(newTheme);
       await AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme);
     } catch (error) {
-      console.error('Failed to save theme:', error);
+      // Silent failure - theme change will still be visible in UI
     }
   };
 

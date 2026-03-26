@@ -1,6 +1,7 @@
 import 'react-native-gesture-handler';
 
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -12,7 +13,7 @@ function AppContent() {
   const { theme } = useTheme();
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={appStyles.root}>
       <NavigationContainer>
         <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
         <TabNavigator />
@@ -30,3 +31,5 @@ export default function App(): React.JSX.Element {
     </ThemeProvider>
   );
 }
+
+const appStyles = StyleSheet.create({ root: { flex: 1 } });

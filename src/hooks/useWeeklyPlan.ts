@@ -22,7 +22,6 @@ export const useWeeklyPlan = () => {
         setWeeklyPlan(plan);
       } catch (error) {
         Alert.alert('Error', 'Failed to load weekly plan.');
-        console.error('Weekly plan load error:', error);
       } finally {
         setIsLoading(false);
       }
@@ -37,7 +36,6 @@ export const useWeeklyPlan = () => {
       setWeeklyPlan(updatedPlan);
     } catch (error) {
       Alert.alert('Error', 'Failed to update weekly plan.');
-      console.error('Weekly plan update error:', error);
     }
   }, [weeklyPlan]);
 
@@ -56,7 +54,6 @@ export const useWeeklyPlan = () => {
       setWeeklyPlan(emptyPlan);
     } catch (error) {
       Alert.alert('Error', 'Failed to clear weekly plan.');
-      console.error('Weekly plan clear error:', error);
     }
   }, []);
 
