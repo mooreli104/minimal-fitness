@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Calendar, X } from 'lucide-react-native';
 import { WorkoutDay, WeeklyPlan, DayOfWeek } from '../../types';
 import { UI } from '../../utils/constants';
+import { useTheme, ThemeColors } from '../../context/ThemeContext';
 
 interface WeekPlannerModalProps {
   isVisible: boolean;
@@ -19,11 +20,13 @@ interface DayPlannerRowProps {
   selectedWorkoutId: number | null;
   programDays: WorkoutDay[];
   onSelect: (dayOfWeek: DayOfWeek, workoutDayId: number | null) => void;
+  colors: ThemeColors;
 }
 
-const DayPlannerRow = ({ dayOfWeek, selectedWorkoutId, programDays, onSelect }: DayPlannerRowProps) => {
+const DayPlannerRow = ({ dayOfWeek, selectedWorkoutId, programDays, onSelect, colors }: DayPlannerRowProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const selectedWorkout = programDays.find(day => day.id === selectedWorkoutId);
+  const styles = useMemo(() => getStyles(colors), [colors]);
 
   // Display text based on selection
   const getDisplayText = () => {
@@ -85,17 +88,20 @@ export const WeekPlannerModal = ({
   onClearPlan,
   onPopulateWeek,
 }: WeekPlannerModalProps) => {
+  const { colors } = useTheme();
+  const styles = useMemo(() => getStyles(colors), [colors]);
+
   return (
     <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.container}>
           <View style={styles.header}>
             <View style={styles.titleContainer}>
-              <Calendar size={20} color="#000" />
+              <Calendar size={20} color={colors.textPrimary} />
               <Text style={styles.title}>Plan Your Week</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <X size={24} color="#666" />
+              <X size={24} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -113,6 +119,7 @@ export const WeekPlannerModal = ({
                 selectedWorkoutId={weeklyPlan[day]}
                 programDays={programDays}
                 onSelect={onUpdateDay}
+                colors={colors}
               />
             ))}
           </ScrollView>
@@ -131,7 +138,7 @@ export const WeekPlannerModal = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: ThemeColors) => StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -140,7 +147,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   container: {
-    backgroundColor: 'white',
+    backgroundColor: colors.cardBackground,
     borderRadius: 16,
     width: '100%',
     height: '80%',
@@ -153,7 +160,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: colors.border,
   },
   titleContainer: {
     flexDirection: 'row',
@@ -163,7 +170,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#000',
+    color: colors.textPrimary,
   },
   closeButton: {
     padding: 4,
@@ -174,12 +181,12 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textSecondary,
     marginTop: 16,
     marginBottom: 12,
   },
   populateButton: {
-    backgroundColor: '#22C55E',
+    backgroundColor: colors.green,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,
@@ -203,7 +210,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#f8f8f8',
+    backgroundColor: colors.surfaceAlt,
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 10,
@@ -211,16 +218,16 @@ const styles = StyleSheet.create({
   dayName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000',
+    color: colors.textPrimary,
   },
   selectedWorkout: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textSecondary,
   },
   workoutOptions: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
+    borderColor: colors.border,
     borderRadius: 10,
     marginTop: 4,
     overflow: 'hidden',
@@ -229,14 +236,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: colors.border,
   },
   workoutOptionSelected: {
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.link,
   },
   workoutOptionText: {
     fontSize: 15,
-    color: '#000',
+    color: colors.textPrimary,
   },
   workoutOptionTextSelected: {
     color: '#fff',
@@ -248,11 +255,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
+    borderTopColor: colors.border,
   },
   clearButton: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: colors.surfaceAlt,
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
@@ -260,11 +267,11 @@ const styles = StyleSheet.create({
   clearButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#DC2626',
+    color: colors.error,
   },
   doneButton: {
     flex: 1,
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.link,
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',

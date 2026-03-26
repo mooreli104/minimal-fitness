@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, Modal, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme, ThemeColors } from '../../context/ThemeContext';
 
 interface RenameDayModalProps {
   isVisible: boolean;
@@ -11,7 +11,8 @@ interface RenameDayModalProps {
 }
 
 export const RenameDayModal = ({ isVisible, onClose, onSave, newDayName, setNewDayName }: RenameDayModalProps) => {
-  const { theme } = useTheme();
+  const { theme, colors } = useTheme();
+  const styles = useMemo(() => getStyles(colors), [colors]);
 
   return (
     <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onClose}>
@@ -24,14 +25,15 @@ export const RenameDayModal = ({ isVisible, onClose, onSave, newDayName, setNewD
             onChangeText={setNewDayName}
             autoFocus
             placeholder="Enter new name"
+            placeholderTextColor={colors.textTertiary}
             keyboardAppearance={theme === 'dark' ? 'dark' : 'light'}
           />
           <View style={styles.renameActions}>
             <TouchableOpacity style={[styles.renameButton, styles.renameCancelButton]} onPress={onClose}>
-              <Text style={styles.renameButtonText}>Cancel</Text>
+              <Text style={styles.renameCancelButtonText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.renameButton, styles.renameSaveButton]} onPress={onSave}>
-              <Text style={[styles.renameButtonText, { color: '#fff' }]}>Save</Text>
+              <Text style={styles.renameSaveButtonText}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -40,7 +42,7 @@ export const RenameDayModal = ({ isVisible, onClose, onSave, newDayName, setNewD
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: ThemeColors) => StyleSheet.create({
   renameModalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -50,7 +52,7 @@ const styles = StyleSheet.create({
   },
   renameModalContainer: {
     width: '100%',
-    backgroundColor: 'white',
+    backgroundColor: colors.cardBackground,
     borderRadius: 16,
     padding: 24,
   },
@@ -59,9 +61,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 16,
+    color: colors.textPrimary,
   },
   renameInput: {
-    backgroundColor: '#f8f8f8',
+    backgroundColor: colors.inputBackground,
+    color: colors.textPrimary,
     padding: 12,
     borderRadius: 8,
     fontSize: 16,
@@ -78,13 +82,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   renameCancelButton: {
-    backgroundColor: '#e5e5e5',
+    backgroundColor: colors.surfaceAlt,
   },
   renameSaveButton: {
-    backgroundColor: '#000',
+    backgroundColor: colors.accent,
   },
-  renameButtonText: {
+  renameCancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  renameSaveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.background,
   },
 });
