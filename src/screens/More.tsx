@@ -5,16 +5,18 @@ import { Moon, Sun } from "lucide-react-native";
 import BottomNav from "../components/BottomNav";
 import { BackgroundPattern } from "../components/common/BackgroundPattern";
 import { useTheme } from "../context/ThemeContext";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Settings() {
   const { theme, colors, toggleTheme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const handleEmailPress = () => {
     Linking.openURL("mailto:mooreli@robinandlamb.com");
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       <BackgroundPattern />
       <View style={styles.mainContent}>
         {/* Dark Mode Toggle */}

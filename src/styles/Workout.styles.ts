@@ -5,7 +5,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background, paddingTop: 24 },
-  content: { paddingHorizontal: 16, paddingTop: 48, paddingBottom: 120 },
+  content: { paddingHorizontal: 16, paddingBottom: 120 },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -19,6 +19,7 @@ import { getAllWorkoutLogs, deleteExerciseFromAllLogs } from '../services/workou
 import { parseWeight } from '../utils/parseWeight';
 import { getStartOfWeekMonday } from '../utils/formatters';
 import { BackgroundPattern } from '../components/common/BackgroundPattern';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -34,6 +35,7 @@ interface WeekCount {
 
 export default function Stats() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const [selectedExercise, setSelectedExercise] = useState<string>('');
   const [weightData, setWeightData] = useState<WeightDataPoint[]>([]);
@@ -146,7 +148,7 @@ export default function Stats() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={[s.container, { backgroundColor: colors.background }]}>
         <BackgroundPattern />
-        <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[s.content, { paddingTop: insets.top + 16 }]} showsVerticalScrollIndicator={false}>
           <Text style={[s.pageTitle, { color: colors.textPrimary }]}>Stats</Text>
 
           {loading ? (
@@ -270,7 +272,7 @@ export default function Stats() {
 
 const s = StyleSheet.create({
   container: { flex: 1 },
-  content: { paddingHorizontal: 24, paddingTop: 60 },
+  content: { paddingHorizontal: 24 },
   pageTitle: { fontSize: 28, fontWeight: '700', marginBottom: 28 },
   sectionTitle: { fontSize: 18, fontWeight: '600', marginTop: 28, marginBottom: 8 },
   sectionSub: { fontSize: 13, marginBottom: 12 },

@@ -23,10 +23,12 @@ import { useWeekPopulator } from '../hooks/useWeekPopulator';
 import ProgramEditor from '../components/workout/ProgramEditor';
 
 import { getWorkoutStyles } from '../styles/Workout.styles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Workout() {
   const { colors } = useTheme();
   const styles = getWorkoutStyles(colors);
+  const insets = useSafeAreaInsets();
 
   const {
     selectedDate,
@@ -225,7 +227,7 @@ export default function Workout() {
             onReorderExercisesInDay={reorderExercisesInDay}
           />
 
-          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={true} decelerationRate={0.985} keyboardShouldPersistTaps="handled">
+          <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + 16 }]} showsVerticalScrollIndicator={true} decelerationRate={0.985} keyboardShouldPersistTaps="handled">
             <WorkoutHeader
               onOpenTemplateManager={modals.templateManager.open}
               onOpenProgramEditor={modals.programEditor.open}
