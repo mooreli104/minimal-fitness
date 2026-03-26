@@ -159,7 +159,7 @@ export const findExerciseHistoryForDay = async (
 
   for (const { date, log } of allLogs) {
     if (date >= beforeKey) continue;
-    if (log.name.toLowerCase() !== dayLower) continue;
+    if (!log.name || log.name.toLowerCase() !== dayLower) continue;
     const match = log.exercises?.find(
       ex => ex.name.toLowerCase() === nameLower && (ex.actual || ex.weight)
     );
@@ -191,7 +191,8 @@ export const getAllWorkoutLogs = async (): Promise<Array<{ date: string; log: Wo
     for (const [key, value] of pairs) {
       if (!value) continue;
       try {
-        const log: WorkoutDay = JSON.parse(value);
+        const raw: WorkoutDay = JSON.parse(value);
+        const log = migrateWorkoutDay(raw);
         const date = key.replace(STORAGE_KEYS.WORKOUT_LOG_PREFIX, '');
         if (!log.isRest) results.push({ date, log });
       } catch {

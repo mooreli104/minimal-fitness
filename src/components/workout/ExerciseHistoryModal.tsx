@@ -27,6 +27,7 @@ export const ExerciseHistoryModal = ({ isVisible, exerciseName, workoutDayName, 
       : findExerciseHistory(exerciseName, currentDate);
     fetchHistory
       .then(setHistory)
+      .catch(() => setHistory([]))
       .finally(() => setLoading(false));
   }, [isVisible, exerciseName, workoutDayName, currentDate]);
 

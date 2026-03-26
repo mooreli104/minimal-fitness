@@ -1,9 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { Animated, StyleSheet } from 'react-native';
+import { ThemeColors } from '../../context/ThemeContext';
 
 interface RollingDigitProps {
   value: string;
-  colors: any;
+  colors: ThemeColors;
 }
 
 export const RollingDigit: React.FC<RollingDigitProps> = ({ value, colors }) => {

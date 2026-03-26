@@ -13,6 +13,7 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LineChart, BarChart } from 'react-native-gifted-charts';
 import { useTheme } from '../context/ThemeContext';
+import { WorkoutDay } from '../types';
 import BottomNav from '../components/BottomNav';
 import { getAllWorkoutLogs, deleteExerciseFromAllLogs } from '../services/workoutStorage.service';
 import { parseWeight } from '../utils/parseWeight';

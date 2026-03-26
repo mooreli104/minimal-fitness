@@ -9,7 +9,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme, ThemeColors } from '../../context/ThemeContext';
 import { loadWorkoutLog } from '../../services/workoutStorage.service';
 import { isWorkoutCompleted } from '../../utils/analytics';
 
