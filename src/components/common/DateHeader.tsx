@@ -28,11 +28,9 @@ const DateHeader = ({ date, onPrev, onNext, onToday, onPressDate }: DateHeaderPr
       <TouchableOpacity onPress={onPrev} style={styles.dateArrow}>
         <ChevronLeft size={24} color={colors.textPrimary} />
       </TouchableOpacity>
-      <View>
-        <TouchableOpacity onPress={onPressDate} style={{ alignItems: 'center' }}>
-          <Text style={[styles.dateHeaderText, { color: colors.textPrimary }]}>{formattedDate}</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity onPress={onPressDate} style={styles.datePressable}>
+        <Text style={[styles.dateHeaderText, { color: colors.textPrimary }]}>{formattedDate}</Text>
+      </TouchableOpacity>
       <TouchableOpacity onPress={onNext} disabled={isToday} style={styles.dateArrow}>
         <ChevronRight size={24} color={isToday ? colors.textTertiary : colors.textPrimary} />
       </TouchableOpacity>
@@ -55,6 +53,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
+  datePressable: { alignItems: 'center' },
 });
 
 export default DateHeader;

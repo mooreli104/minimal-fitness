@@ -52,7 +52,7 @@ const TemplateCard = ({
       <View style={styles.cardContent}>
         {isRenaming ? (
           <TextInput
-            style={[styles.cardTitle, { color: colors.textPrimary, borderBottomWidth: 1, borderBottomColor: colors.accent, padding: 0 }]}
+            style={[styles.cardTitleEditing, { color: colors.textPrimary, borderBottomColor: colors.accent }]}
             value={renameText}
             onChangeText={onRenameTextChange}
             onSubmitEditing={onRenameSubmit}
@@ -68,7 +68,7 @@ const TemplateCard = ({
           {dayCount} {dayCount === 1 ? "day" : "days"}: {dayNames}
         </Text>
       </View>
-      <TouchableOpacity style={[styles.optionsButton, { opacity: 1 }]} onPress={onShowOptions}>
+      <TouchableOpacity style={styles.optionsButton} onPress={onShowOptions}>
         <MoreHorizontal size={20} color={colors.textSecondary} />
       </TouchableOpacity>
     </TouchableOpacity>
@@ -139,7 +139,7 @@ export default function TemplateManager({
       <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]} edges={["left", "right", "bottom"]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
+          style={styles.flex}
         >
           <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
             <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Templates</Text>
@@ -234,6 +234,8 @@ const styles = StyleSheet.create({
   },
   cardContent: { flex: 1 },
   cardTitle: { fontSize: 17, fontWeight: "600", marginBottom: 4 },
+  cardTitleEditing: { fontSize: 17, fontWeight: '600', marginBottom: 4, borderBottomWidth: 1, padding: 0 },
+  flex: { flex: 1 },
   cardSubtitle: { fontSize: 14 },
   optionsButton: { padding: 8, marginLeft: 12 },
 

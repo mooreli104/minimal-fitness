@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Alert, KeyboardAvoidingView, Platform, Text, TouchableOpacity } from 'react-native';
+import { View, ScrollView, Alert, KeyboardAvoidingView, Platform, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomNav from '../components/BottomNav';
 import TemplateManager from '../components/TemplateManager';
@@ -163,9 +163,9 @@ export default function Workout() {
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={flexStyle.container}>
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={flexStyle.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
@@ -287,3 +287,5 @@ export default function Workout() {
     </GestureHandlerRootView>
   );
 }
+
+const flexStyle = StyleSheet.create({ container: { flex: 1 } });

@@ -25,8 +25,8 @@ const DaySelector = ({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 8, paddingVertical: 4 }}
-        style={{ overflow: 'visible' }}
+        contentContainerStyle={styles.daySelectorScrollContent}
+        style={styles.daySelectorScroll}
       >
         {program.map((day) => (
           <TouchableOpacity

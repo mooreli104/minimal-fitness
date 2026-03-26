@@ -236,4 +236,6 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  daySelectorScrollContent: { paddingHorizontal: 8, paddingVertical: 4 },
+  daySelectorScroll: { overflow: 'visible' as const },
 });

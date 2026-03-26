@@ -84,14 +84,14 @@ export default function ProgramEditor({
 
   return (
     <Modal visible={isVisible} animationType="slide" transparent={false}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={styles.flex}>
       <SafeAreaView
         style={[styles.modalContainer, { backgroundColor: colors.background }]}
         edges={['left', 'right', 'bottom']}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
+          style={styles.flex}
         >
           {/* Header */}
           <View style={[styles.header, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
@@ -188,6 +188,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
   },
+  flex: { flex: 1 },
 
   header: {
     flexDirection: 'row',
