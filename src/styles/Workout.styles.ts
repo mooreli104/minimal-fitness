@@ -193,9 +193,9 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
     letterSpacing: 0.5,
     textAlignVertical: 'center',
   },
-  exerciseCol: { flex: 3 },
-  numberCol: { flex: 1, textAlign: 'center', minWidth: 70 },
-  targetActualCol: { flex: 1, textAlign: 'center', minWidth: 75 },
+  exerciseCol: { flex: 14 },
+  numberCol: { flex: 1, textAlign: 'center', minWidth: 64 },
+  targetActualCol: { flex: 1, textAlign: 'center', minWidth: 68 },
   cell: { padding: 12, fontSize: 14, alignSelf: 'center', minHeight: 48, color: colors.textPrimary },
   addButton: {
     flexDirection: 'row',

@@ -32,7 +32,7 @@ const WorkoutTable = ({
   // Find matching exercise from previous workout by name
   const findPreviousExercise = useCallback((exerciseName: string): Exercise | undefined => {
     if (!exerciseName) return undefined;
-    return previousExercises.find(ex => ex.name.toLowerCase() === exerciseName.toLowerCase());
+    return previousExercises.find(ex => ex.name.trim().toLowerCase() === exerciseName.trim().toLowerCase());
   }, [previousExercises]);
 
   const renderItem = useCallback(({ item, drag, isActive }: RenderItemParams<Exercise>) => (

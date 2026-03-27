@@ -113,7 +113,7 @@ export const findExerciseHistory = async (
   beforeDate: Date,
 ): Promise<ExerciseHistoryEntry[]> => {
   if (!exerciseName.trim()) return [];
-  const nameLower = exerciseName.toLowerCase();
+  const nameLower = exerciseName.trim().toLowerCase();
   const beforeKey = formatDateToKey(beforeDate);
 
   const allLogs = await getAllWorkoutLogs();
@@ -122,7 +122,7 @@ export const findExerciseHistory = async (
   for (const { date, log } of allLogs) {
     if (date >= beforeKey) continue;
     const match = log.exercises?.find(
-      ex => ex.name.toLowerCase() === nameLower && (ex.actual || ex.weight)
+      ex => ex.name.trim().toLowerCase() === nameLower && (ex.actual || ex.weight)
     );
     if (match) {
       results.push({
@@ -138,7 +138,8 @@ export const findExerciseHistory = async (
 };
 
 /**
- * Finds all occurrences of a specific exercise for a specific workout day name
+ * Finds all occurrences of a specific exercise for a specific workout day name.
+ * Falls back to searching across all workout days if no results found for the specific day.
  * @param exerciseName Name of the exercise to search for
  * @param workoutDayName Name of the workout day to filter by (e.g. "Upper A")
  * @param beforeDate Search for exercises before this date
@@ -150,30 +151,35 @@ export const findExerciseHistoryForDay = async (
   beforeDate: Date,
 ): Promise<ExerciseHistoryEntry[]> => {
   if (!exerciseName.trim() || !workoutDayName.trim()) return [];
-  const nameLower = exerciseName.toLowerCase();
-  const dayLower = workoutDayName.toLowerCase();
+  const nameLower = exerciseName.trim().toLowerCase();
+  const dayLower = workoutDayName.trim().toLowerCase();
   const beforeKey = formatDateToKey(beforeDate);
 
   const allLogs = await getAllWorkoutLogs();
-  const results: ExerciseHistoryEntry[] = [];
+  const dayResults: ExerciseHistoryEntry[] = [];
+  const allResults: ExerciseHistoryEntry[] = [];
 
   for (const { date, log } of allLogs) {
     if (date >= beforeKey) continue;
-    if (!log.name || log.name.toLowerCase() !== dayLower) continue;
     const match = log.exercises?.find(
-      ex => ex.name.toLowerCase() === nameLower && (ex.actual || ex.weight)
+      ex => ex.name.trim().toLowerCase() === nameLower && (ex.actual || ex.weight)
     );
     if (match) {
-      results.push({
+      const entry: ExerciseHistoryEntry = {
         date,
         workoutName: log.name,
         target: match.target,
         actual: match.actual,
         weight: match.weight,
-      });
+      };
+      allResults.push(entry);
+      if (log.name && log.name.trim().toLowerCase() === dayLower) {
+        dayResults.push(entry);
+      }
     }
   }
-  return results;
+  // Fall back to all days if no results for the specific day
+  return dayResults.length > 0 ? dayResults : allResults;
 };
 
 /**
