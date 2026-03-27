@@ -110,7 +110,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   list: {
-    flex: 1,
     paddingHorizontal: 20,
   },
   entry: {

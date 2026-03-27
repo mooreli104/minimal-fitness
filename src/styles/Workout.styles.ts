@@ -191,6 +191,7 @@ export const getWorkoutStyles = (colors: ThemeColors) => StyleSheet.create({
     color: colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    textAlign: 'center',
     textAlignVertical: 'center',
   },
   exerciseCol: { flex: 14 },
